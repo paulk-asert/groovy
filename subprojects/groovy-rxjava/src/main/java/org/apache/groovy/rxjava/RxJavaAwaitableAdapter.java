@@ -46,6 +46,13 @@ import java.util.concurrent.CompletableFuture;
  */
 public class RxJavaAwaitableAdapter implements AwaitableAdapter {
 
+    /**
+     * Returns whether the supplied type can be awaited as an RxJava single-result source.
+     *
+     * @param type candidate type to inspect
+     * @return {@code true} if {@code type} is a {@link Single}, {@link Maybe},
+     *         {@link Completable}, or one of their subtypes
+     */
     @Override
     public boolean supportsAwaitable(Class<?> type) {
         return Single.class.isAssignableFrom(type)
@@ -53,6 +60,17 @@ public class RxJavaAwaitableAdapter implements AwaitableAdapter {
                 || Completable.class.isAssignableFrom(type);
     }
 
+    /**
+     * Converts supported RxJava single-result sources into an {@link Awaitable}.
+     * A {@link Single} yields its item, a {@link Maybe} yields its item or
+     * {@code null} when empty, and a {@link Completable} completes with
+     * {@code null}.
+     *
+     * @param source source object to adapt
+     * @param <T> awaited value type
+     * @return awaitable representation of the supplied source
+     * @throws IllegalArgumentException if {@code source} is not a supported RxJava type
+     */
     @Override
     @SuppressWarnings("unchecked")
     public <T> Awaitable<T> toAwaitable(Object source) {
@@ -71,12 +89,28 @@ public class RxJavaAwaitableAdapter implements AwaitableAdapter {
         throw new IllegalArgumentException("Cannot convert to Awaitable: " + source.getClass());
     }
 
+    /**
+     * Returns whether the supplied type can be exposed as an iterable RxJava multi-result source.
+     *
+     * @param type candidate type to inspect
+     * @return {@code true} if {@code type} is an {@link Observable},
+     *         {@link Flowable}, or one of their subtypes
+     */
     @Override
     public boolean supportsIterable(Class<?> type) {
         return Observable.class.isAssignableFrom(type)
                 || Flowable.class.isAssignableFrom(type);
     }
 
+    /**
+     * Converts supported RxJava multi-result sources into blocking iterables
+     * suitable for {@code for await} consumption.
+     *
+     * @param source source object to adapt
+     * @param <T> iterated element type
+     * @return iterable representation of the supplied {@link Observable} or {@link Flowable}
+     * @throws IllegalArgumentException if {@code source} is not a supported RxJava type
+     */
     @Override
     @SuppressWarnings("unchecked")
     public <T> Iterable<T> toIterable(Object source) {

@@ -38,11 +38,26 @@ import reactor.core.publisher.Mono;
  */
 public class ReactorAwaitableAdapter implements AwaitableAdapter {
 
+    /**
+     * Returns whether the supplied type can be awaited as a Reactor single-result source.
+     *
+     * @param type candidate type to inspect
+     * @return {@code true} if {@code type} is a {@link Mono} or one of its subtypes
+     */
     @Override
     public boolean supportsAwaitable(Class<?> type) {
         return Mono.class.isAssignableFrom(type);
     }
 
+    /**
+     * Converts a {@link Mono} into an {@link Awaitable} backed by the mono's
+     * {@linkplain Mono#toFuture() future view}.
+     *
+     * @param source source object to adapt
+     * @param <T> awaited value type
+     * @return awaitable representation of the supplied {@link Mono}
+     * @throws IllegalArgumentException if {@code source} is not a {@link Mono}
+     */
     @Override
     @SuppressWarnings("unchecked")
     public <T> Awaitable<T> toAwaitable(Object source) {
@@ -52,11 +67,26 @@ public class ReactorAwaitableAdapter implements AwaitableAdapter {
         throw new IllegalArgumentException("Cannot convert to Awaitable: " + source.getClass());
     }
 
+    /**
+     * Returns whether the supplied type can be exposed as an iterable Reactor multi-result source.
+     *
+     * @param type candidate type to inspect
+     * @return {@code true} if {@code type} is a {@link Flux} or one of its subtypes
+     */
     @Override
     public boolean supportsIterable(Class<?> type) {
         return Flux.class.isAssignableFrom(type);
     }
 
+    /**
+     * Converts a {@link Flux} into a blocking {@link Iterable} suitable for
+     * {@code for await} consumption.
+     *
+     * @param source source object to adapt
+     * @param <T> iterated element type
+     * @return iterable view of the supplied {@link Flux}
+     * @throws IllegalArgumentException if {@code source} is not a {@link Flux}
+     */
     @Override
     @SuppressWarnings("unchecked")
     public <T> Iterable<T> toIterable(Object source) {
