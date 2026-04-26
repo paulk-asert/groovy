@@ -34,6 +34,12 @@ import java.lang.reflect.AnnotatedElement
 @CompileStatic
 class GroovyConditionExtension implements ExecutionCondition {
 
+    /**
+     * Evaluates the Groovy condition annotations attached to the current JUnit element.
+     *
+     * @param context the JUnit extension context for the current element
+     * @return the enablement decision for the element
+     */
     @Override
     ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
         AnnotatedElement element = context.element.orElse(null)

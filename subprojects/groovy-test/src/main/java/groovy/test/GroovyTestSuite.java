@@ -50,10 +50,21 @@ public class GroovyTestSuite extends TestSuite {
 
     private static final System.Logger LOGGER = System.getLogger(GroovyTestSuite.class.getName());
 
+    /**
+     * Optional script path supplied from the command line when running as an application.
+     */
     protected static String file = null;
 
+    /**
+     * Class loader used to compile and load Groovy test sources.
+     */
     protected final GroovyClassLoader loader = new GroovyClassLoader(GroovyTestSuite.class.getClassLoader());
 
+    /**
+     * Runs the suite as a standalone application.
+     *
+     * @param args optional command-line arguments, where the first argument is the test script path
+     */
     public static void main(String[] args) {
         if (args.length > 0) {
             file = args[0];
@@ -61,6 +72,11 @@ public class GroovyTestSuite extends TestSuite {
         TestRunner.run(suite());
     }
 
+    /**
+     * Creates a suite for the configured Groovy test script.
+     *
+     * @return a suite containing the compiled test or script adapter
+     */
     public static Test suite() {
         GroovyTestSuite suite = new GroovyTestSuite();
         try {
@@ -71,6 +87,11 @@ public class GroovyTestSuite extends TestSuite {
         return suite;
     }
 
+    /**
+     * Loads the configured Groovy test source and adds the resulting test to this suite.
+     *
+     * @throws Exception if the test source cannot be compiled or adapted
+     */
     public void loadTestSuite() throws Exception {
         String fileName = System.getProperty("test", file);
         if (fileName == null) {
@@ -92,6 +113,13 @@ public class GroovyTestSuite extends TestSuite {
         addTestSuite((Class<? extends TestCase>) type);
     }
 
+    /**
+     * Compiles the supplied Groovy source file into a class.
+     *
+     * @param fileName the Groovy source file to compile
+     * @return the compiled class
+     * @throws Exception if compilation fails
+     */
     public Class<?> compile(String fileName) throws Exception {
         return loader.parseClass(new File(fileName));
     }

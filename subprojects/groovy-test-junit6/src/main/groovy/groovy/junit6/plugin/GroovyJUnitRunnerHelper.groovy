@@ -29,9 +29,17 @@ import org.junit.platform.launcher.listeners.SummaryGeneratingListener
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass
 
 /**
+ * Helper for launching a single JUnit Platform test class from Groovy's JUnit 6 runner.
+ *
  * @since 6.0.0
  */
 class GroovyJUnitRunnerHelper {
+    /**
+     * Executes the supplied test class and returns the first failure, if any.
+     *
+     * @param testClass the JUnit 6 test class to execute
+     * @return the first failure exception, or {@code null} when all tests pass
+     */
     @SuppressWarnings('Println')
     static Throwable execute(Class testClass) {
         LauncherDiscoveryRequest request = LauncherDiscoveryRequestBuilder.request()

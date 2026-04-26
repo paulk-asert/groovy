@@ -85,6 +85,13 @@ class JavadocAssertionTestBuilder {
             /(?s)\{@snippet\b[^:{}]*\bid\s*=\s*['"]\s*groovyTestCase\s*['"][^:{}]*:/
         )
 
+    /**
+     * Builds a synthetic test class from assertion snippets found in the supplied source text.
+     *
+     * @param filename the source file name used to derive the generated test class name
+     * @param code the source text to scan for assertion snippets
+     * @return the generated test class, or {@code null} when no assertion snippets are present
+     */
     Class buildTest(String filename, String code) {
         Class test = null
 

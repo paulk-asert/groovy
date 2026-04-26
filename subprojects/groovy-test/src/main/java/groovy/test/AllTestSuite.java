@@ -90,6 +90,11 @@ public class AllTestSuite extends TestSuite {
         }
     }
 
+    /**
+     * Creates a suite using the configured system-property defaults.
+     *
+     * @return the populated test suite
+     */
     public static Test suite() {
         String basedir = System.getProperty(SYSPROP_TEST_DIR, "./test/");
         String pattern = System.getProperty(SYSPROP_TEST_PATTERN, "**/*Test.groovy");
@@ -97,10 +102,25 @@ public class AllTestSuite extends TestSuite {
         return suite(basedir, pattern, excludesPattern);
     }
 
+    /**
+     * Creates a suite for tests matching the supplied include pattern.
+     *
+     * @param basedir the base directory to search
+     * @param pattern the include pattern used to find test sources
+     * @return the populated test suite
+     */
     public static Test suite(String basedir, String pattern) {
         return suite(basedir, pattern, "");
     }
 
+    /**
+     * Creates a suite for tests matching the supplied include and exclude patterns.
+     *
+     * @param basedir the base directory to search
+     * @param pattern the include pattern used to find test sources
+     * @param excludesPattern the exclude pattern used to filter matching sources
+     * @return the populated test suite
+     */
     public static Test suite(String basedir, String pattern, String excludesPattern) {
         AllTestSuite suite = new AllTestSuite();
         List<String> filenames = !excludesPattern.isEmpty()
@@ -120,6 +140,13 @@ public class AllTestSuite extends TestSuite {
         return suite;
     }
 
+    /**
+     * Compiles the supplied source file and adds the resulting test to this suite.
+     *
+     * @param filename the Groovy source file to compile
+     * @throws CompilationFailedException if compilation fails
+     * @throws IOException if the source cannot be read
+     */
     @SuppressWarnings("unchecked")
     protected void loadTest(String filename) throws CompilationFailedException, IOException {
         Class type = compile(filename);
@@ -132,6 +159,14 @@ public class AllTestSuite extends TestSuite {
         }
     }
 
+    /**
+     * Compiles the supplied Groovy source file into a class.
+     *
+     * @param filename the Groovy source file to compile
+     * @return the compiled class
+     * @throws CompilationFailedException if compilation fails
+     * @throws IOException if the source cannot be read
+     */
     protected Class compile(String filename) throws CompilationFailedException, IOException {
         return GROOVY_LOADER.parseClass(new File(filename));
     }

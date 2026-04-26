@@ -30,13 +30,36 @@ import org.junit.jupiter.api.extension.ExtensionContext
 @CompileStatic
 class ConditionEvaluationContext {
 
+    /**
+     * Process environment variables visible to the current JVM.
+     */
     final Map<String, String> systemEnvironment
+    /**
+     * Java system properties visible to the current JVM.
+     */
     final Properties systemProperties
+    /**
+     * Current Java feature version, for example {@code 17} or {@code 21}.
+     */
     final int javaVersion
+    /**
+     * Tags associated with the current JUnit element.
+     */
     final Set<String> junitTags
+    /**
+     * Display name of the current JUnit element.
+     */
     final String junitDisplayName
+    /**
+     * Unique identifier of the current JUnit element.
+     */
     final String junitUniqueId
 
+    /**
+     * Creates a closure delegate backed by the supplied JUnit extension context.
+     *
+     * @param extensionContext the JUnit context currently being evaluated
+     */
     ConditionEvaluationContext(ExtensionContext extensionContext) {
         systemEnvironment = System.getenv()
         systemProperties = System.properties
