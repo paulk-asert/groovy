@@ -25,7 +25,7 @@ endif::[]
 = Processing YAML
 
 Groovy has an optional `groovy-yaml` module which provides support for converting between Groovy objects and YAML. The classes dedicated to
-YAML serialisation and parsing are found in the `groovy.yaml` package.
+YAML serialization and parsing are found in the `groovy.yaml` package.
 
 [[yaml_yamlslurper]]
 == YamlSlurper

@@ -21,6 +21,6 @@
 
 = Groovy JSON Module
 
-Provides integrated support for converting between Groovy objects and JSON with classes for serialisation and parsing.
+Provides integrated support for converting between Groovy objects and JSON with classes for serialization and parsing.
 
 See link:src/spec/doc/json-userguide.adoc[json-userguide.adoc] for detailed documentation.

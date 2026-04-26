@@ -25,7 +25,7 @@ endif::[]
 = Processing TOML
 
 Groovy has an optional `groovy-toml` module which provides support for converting between Groovy objects and TOML. The classes dedicated to
-TOML serialisation and parsing are found in the `groovy.toml` package.
+TOML serialization and parsing are found in the `groovy.toml` package.
 
 [[toml_tomlslurper]]
 == TomlSlurper

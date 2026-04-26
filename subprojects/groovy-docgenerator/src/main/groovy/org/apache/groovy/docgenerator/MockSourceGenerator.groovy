@@ -152,7 +152,7 @@ class MockSourceGenerator {
         appendClassJavadoc(sb, displayName, owner.fqcn, '')
         def kw = classKeyword(owner.type)
         sb << "public ${kw} ${mockName} {\n"
-        owner.methods.each { sb << serialiseMethod(it, kw == 'interface', '    ') }
+        owner.methods.each { sb << serializeMethod(it, kw == 'interface', '    ') }
         owner.nested.values().each { nested ->
             appendNestedClass(sb, nested, '    ')
         }
@@ -168,7 +168,7 @@ class MockSourceGenerator {
         appendClassJavadoc(sb, displayName, owner.fqcn, indent)
         def kw = classKeyword(owner.type)
         sb << "${indent}public static ${kw} ${mockName} {\n"
-        owner.methods.each { sb << serialiseMethod(it, kw == 'interface', indent + '    ') }
+        owner.methods.each { sb << serializeMethod(it, kw == 'interface', indent + '    ') }
         sb << "${indent}}\n"
     }
 
@@ -185,7 +185,7 @@ class MockSourceGenerator {
         (type instanceof JavaClass && ((JavaClass) type).isInterface()) ? 'interface' : 'class'
     }
 
-    private String serialiseMethod(JavaMethod m, boolean ownerIsInterface, String indent) {
+    private String serializeMethod(JavaMethod m, boolean ownerIsInterface, String indent) {
         def sb = new StringBuilder()
         def javadoc = copyJavadoc(m)
         if (javadoc) {

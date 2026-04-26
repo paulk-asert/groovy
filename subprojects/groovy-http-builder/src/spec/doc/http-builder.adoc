@@ -110,7 +110,7 @@ include::../test/HttpBuilderSpecTest.groovy[tags=json_get,indent=0]
 include::../test/HttpBuilderSpecTest.groovy[tags=json_post,indent=0]
 ----
 
-The `json(...)` helper serialises the supplied object as JSON and sets
+The `json(...)` helper serializes the supplied object as JSON and sets
 `Content-Type: application/json` automatically.
 
 == XML

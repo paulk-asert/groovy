@@ -260,7 +260,7 @@ record HttpStreamResult(
 
         // Parsed lines (cross-thread: upstream onNext writes, drain reads).
         private final ConcurrentLinkedQueue<String> buffer = new ConcurrentLinkedQueue<>()
-        // Partial trailing line (upstream-thread only per §1.3 serialisation).
+        // Partial trailing line (upstream-thread only per §1.3 serialization).
         private final StringBuilder pending = new StringBuilder()
 
         private final AtomicLong requested = new AtomicLong()
@@ -270,7 +270,7 @@ record HttpStreamResult(
 
         private volatile boolean done
         private volatile Throwable error
-        // Drain-thread only (wip-serialised).
+        // Drain-thread only (wip-serialized).
         private boolean terminated
 
         LineSubscription(Flow.Subscriber<? super String> downstream, Charset charset) {
@@ -364,7 +364,7 @@ record HttpStreamResult(
             drain()
         }
 
-        // --- drain: emit buffered lines up to downstream demand, serialised by wip ---
+        // --- drain: emit buffered lines up to downstream demand, serialized by wip ---
 
         private void drain() {
             if (wip.getAndIncrement() != 0) return

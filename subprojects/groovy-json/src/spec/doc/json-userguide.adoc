@@ -28,7 +28,7 @@ endif::[]
 = Processing JSON
 
 Groovy comes with integrated support for converting between Groovy objects and JSON. The classes dedicated to
-JSON serialisation and parsing are found in the `groovy.json` package.
+JSON serialization and parsing are found in the `groovy.json` package.
 
 [[json_jsonslurper]]
 == JsonSlurper
@@ -161,7 +161,7 @@ include::../test/json/JsonTest.groovy[tags=set_type,indent=0]
 
 == JsonOutput
 
-`JsonOutput` is responsible for serialising Groovy objects into JSON strings. It can be seen as companion object to
+`JsonOutput` is responsible for serializing Groovy objects into JSON strings. It can be seen as companion object to
 <<#json_jsonslurper,JsonSlurper>>, being a JSON parser.
 
 `JsonOutput` comes with overloaded, static `toJson` methods. Each `toJson` implementation takes a different parameter type.
@@ -175,7 +175,7 @@ include::../test/json/JsonTest.groovy[tags=json_output,indent=0]
 ----
 
 `JsonOutput` does not only support primitive, maps or list data types to be serialized to JSON, it goes further and even
-has support for serialising POGOs, that is, plain-old Groovy objects.
+has support for serializing POGOs, that is, plain-old Groovy objects.
 
 [source,groovy]
 ----
