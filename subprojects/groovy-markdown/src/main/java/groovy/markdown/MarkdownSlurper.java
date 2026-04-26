@@ -99,6 +99,12 @@ public class MarkdownSlurper {
         return this;
     }
 
+    /**
+     * Parses Markdown text into a {@link MarkdownDocument}.
+     *
+     * @param md the Markdown text to parse
+     * @return the parsed document, or an empty document when the input is null or empty
+     */
     public MarkdownDocument parseText(String md) {
         if (md == null || md.isEmpty()) {
             return new MarkdownDocument(List.of());
@@ -106,6 +112,12 @@ public class MarkdownSlurper {
         return parse(new StringReader(md));
     }
 
+    /**
+     * Parses Markdown content from a reader.
+     *
+     * @param reader the reader supplying Markdown content
+     * @return the parsed document
+     */
     public MarkdownDocument parse(Reader reader) {
         try {
             Node doc = buildParser().parseReader(reader);
@@ -115,14 +127,35 @@ public class MarkdownSlurper {
         }
     }
 
+    /**
+     * Parses Markdown content from an input stream. The caller remains
+     * responsible for closing the stream.
+     *
+     * @param stream the input stream supplying Markdown content
+     * @return the parsed document
+     */
     public MarkdownDocument parse(InputStream stream) {
         return parse(new InputStreamReader(stream));
     }
 
+    /**
+     * Parses Markdown content from a file.
+     *
+     * @param file the file to read
+     * @return the parsed document
+     * @throws IOException if the file cannot be read
+     */
     public MarkdownDocument parse(File file) throws IOException {
         return parse(file.toPath());
     }
 
+    /**
+     * Parses Markdown content from a path.
+     *
+     * @param path the path to read
+     * @return the parsed document
+     * @throws IOException if the path cannot be read
+     */
     public MarkdownDocument parse(Path path) throws IOException {
         try (InputStream stream = Files.newInputStream(path)) {
             return parse(new InputStreamReader(stream));
@@ -235,6 +268,13 @@ public class MarkdownSlurper {
         return items;
     }
 
+    /**
+     * Extracts the plain-text content represented by the supplied node and
+     * its descendants.
+     *
+     * @param node the node to flatten
+     * @return the extracted text
+     */
     static String textOf(Node node) {
         StringBuilder sb = new StringBuilder();
         appendText(node, sb);

@@ -30,14 +30,30 @@ import org.apache.groovy.lang.annotation.Incubating;
 public class MarkdownRuntimeException extends GroovyRuntimeException {
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Creates an exception with the supplied detail message.
+     *
+     * @param msg the detail message
+     */
     public MarkdownRuntimeException(String msg) {
         super(msg);
     }
 
+    /**
+     * Creates an exception that wraps the supplied cause.
+     *
+     * @param cause the underlying cause
+     */
     public MarkdownRuntimeException(Throwable cause) {
         super(cause);
     }
 
+    /**
+     * Creates an exception with the supplied detail message and cause.
+     *
+     * @param msg the detail message
+     * @param cause the underlying cause
+     */
     public MarkdownRuntimeException(String msg, Throwable cause) {
         super(msg, cause);
     }

@@ -43,6 +43,11 @@ final class TableSupport {
     private TableSupport() {
     }
 
+    /**
+     * Creates the CommonMark extensions required to parse GFM-style tables.
+     *
+     * @return the table parsing extensions
+     */
     static List<Extension> extensions() {
         return List.of(TablesExtension.create());
     }

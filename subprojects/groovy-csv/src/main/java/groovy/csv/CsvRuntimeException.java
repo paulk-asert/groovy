@@ -30,14 +30,30 @@ import org.apache.groovy.lang.annotation.Incubating;
 public class CsvRuntimeException extends GroovyRuntimeException {
     private static final long serialVersionUID = 2809672072790437945L;
 
+    /**
+     * Creates an exception with the supplied detail message.
+     *
+     * @param msg the detail message
+     */
     public CsvRuntimeException(String msg) {
         super(msg);
     }
 
+    /**
+     * Creates an exception that wraps the supplied cause.
+     *
+     * @param cause the underlying cause
+     */
     public CsvRuntimeException(Throwable cause) {
         super(cause);
     }
 
+    /**
+     * Creates an exception with the supplied detail message and cause.
+     *
+     * @param msg the detail message
+     * @param cause the underlying cause
+     */
     public CsvRuntimeException(String msg, Throwable cause) {
         super(msg, cause);
     }

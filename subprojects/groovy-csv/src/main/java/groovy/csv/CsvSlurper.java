@@ -53,6 +53,10 @@ public class CsvSlurper {
     private char quoteChar = '"';
     private boolean useHeader = true;
 
+    /**
+     * Creates a slurper that uses comma-separated columns, double quotes,
+     * and treats the first row as headers.
+     */
     public CsvSlurper() {
         this.mapper = new CsvMapper();
     }

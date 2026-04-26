@@ -48,6 +48,10 @@ public class CsvBuilder implements Writable {
     private char quoteChar = '"';
     private String content;
 
+    /**
+     * Creates a builder that uses comma-separated columns and double quotes
+     * for field escaping.
+     */
     public CsvBuilder() {
         this.mapper = new CsvMapper();
     }
@@ -148,11 +152,23 @@ public class CsvBuilder implements Writable {
         return this;
     }
 
+    /**
+     * Returns the CSV content built so far, or an empty string if no data has been written yet.
+     *
+     * @return the current CSV content
+     */
     @Override
     public String toString() {
         return content != null ? content : "";
     }
 
+    /**
+     * Writes the current CSV content to the supplied writer.
+     *
+     * @param out the destination writer
+     * @return the writer passed in
+     * @throws IOException if the writer cannot be written to
+     */
     @Override
     public Writer writeTo(Writer out) throws IOException {
         return out.append(toString());

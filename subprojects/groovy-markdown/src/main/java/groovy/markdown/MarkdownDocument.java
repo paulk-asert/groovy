@@ -43,6 +43,11 @@ public class MarkdownDocument implements Iterable<Map<String, Object>> {
 
     private final List<Map<String, Object>> nodes;
 
+    /**
+     * Creates a document view over the parsed top-level Markdown nodes.
+     *
+     * @param nodes the top-level nodes in document order
+     */
     public MarkdownDocument(List<Map<String, Object>> nodes) {
         this.nodes = nodes;
     }
@@ -54,6 +59,11 @@ public class MarkdownDocument implements Iterable<Map<String, Object>> {
         return nodes;
     }
 
+    /**
+     * Returns an iterator over the document's top-level nodes.
+     *
+     * @return an iterator for the top-level nodes
+     */
     @Override
     public Iterator<Map<String, Object>> iterator() {
         return nodes.iterator();
