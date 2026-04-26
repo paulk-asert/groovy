@@ -42,6 +42,9 @@ import java.util.Map;
 public class TomlBuilder extends GroovyObjectSupport implements Writable {
     private final JsonBuilder jsonBuilder;
 
+    /**
+     * Creates an empty builder ready to assemble a TOML document.
+     */
     public TomlBuilder() {
         this.jsonBuilder = new JsonBuilder();
     }
@@ -62,6 +65,11 @@ public class TomlBuilder extends GroovyObjectSupport implements Writable {
         }
     }
 
+    /**
+     * Returns the current root structure managed by this builder.
+     *
+     * @return the current TOML table, array, or scalar content
+     */
     public Object getContent() {
         return jsonBuilder.getContent();
     }
@@ -159,9 +167,11 @@ public class TomlBuilder extends GroovyObjectSupport implements Writable {
     }
 
     /**
-     * Delegates to {@link #call(Iterable, Closure)}
-     * @param coll
-     * @param c
+     * Delegates to {@link #call(Iterable, Closure)} for collection inputs.
+     *
+     * @param coll the collection whose elements are converted into TOML content
+     * @param c the closure that maps each collection element to TOML content
+     * @return a list of values
      */
     public Object call(Collection coll, Closure c) {
         return jsonBuilder.call(coll, c);
@@ -246,7 +256,7 @@ public class TomlBuilder extends GroovyObjectSupport implements Writable {
      * '''
      * </code></pre>
      *
-     * The empty args call will create a key whose value will be an empty YAML object:
+     * The empty args call will create a key whose value will be an empty TOML object:
      * <pre><code class="language-groovy groovyTestCase">
      * def toml = new groovy.toml.TomlBuilder()
      * toml.person()
@@ -287,7 +297,7 @@ public class TomlBuilder extends GroovyObjectSupport implements Writable {
 
     /**
      * The TOML builder implements the <code>Writable</code> interface,
-     * so that you can have the builder serialize itself the TOML payload to a writer.
+     * so that it can serialize its TOML payload to a writer.
      * <p>
      * Example:
      * <pre><code class="language-groovy groovyTestCase">

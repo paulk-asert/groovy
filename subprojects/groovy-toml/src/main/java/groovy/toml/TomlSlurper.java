@@ -41,6 +41,9 @@ import java.nio.file.Path;
 public class TomlSlurper {
     private final JsonSlurper jsonSlurper;
 
+    /**
+     * Creates a TOML parser that produces standard Groovy data structures.
+     */
     public TomlSlurper() {
         this.jsonSlurper = new JsonSlurper();
     }

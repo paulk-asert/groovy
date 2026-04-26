@@ -29,15 +29,17 @@ import java.io.IOException;
 import java.io.Reader;
 
 /**
- *  A converter for converting TOML to JSON, vice versa
+ * Converts between TOML and JSON text representations.
+ *
  *  @since 4.0.0
  */
 @Incubating
 public final class TomlConverter {
     /**
-     * Convert toml to json
-     * @param tomlReader the reader of toml
-     * @return the text of json
+     * Converts TOML content from the supplied reader into JSON text.
+     *
+     * @param tomlReader the reader that provides TOML content
+     * @return the equivalent JSON text
      */
     public static String convertTomlToJson(Reader tomlReader) {
         try {
@@ -50,9 +52,10 @@ public final class TomlConverter {
     }
 
     /**
-     * Convert json to toml
-     * @param jsonReader the reader of json
-     * @return the text of toml
+     * Converts JSON content from the supplied reader into TOML text.
+     *
+     * @param jsonReader the reader that provides JSON content
+     * @return the equivalent TOML text
      */
     public static String convertJsonToToml(Reader jsonReader) {
         try {
