@@ -60,6 +60,12 @@ public class ModifiesASTTransformation implements ASTTransformation {
     /** Node metadata key for the set of modifiable field/parameter names. */
     public static final String MODIFIES_FIELDS_KEY = "groovy.contracts.modifiesFields";
 
+    /**
+     * Extracts the modifiable targets declared by {@code @Modifies} and stores them as method metadata.
+     *
+     * @param nodes the annotated AST nodes supplied by the compiler
+     * @param source the current source unit
+     */
     @Override
     @SuppressWarnings("unchecked")
     public void visit(final ASTNode[] nodes, final SourceUnit source) {

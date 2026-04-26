@@ -37,5 +37,10 @@ import java.lang.annotation.Target;
 @Target({ElementType.CONSTRUCTOR, ElementType.METHOD})
 @Incubating
 public @interface ModifiesConditions {
+    /**
+     * Returns the repeated frame-condition annotations declared on the target element.
+     *
+     * @return the contained {@link Modifies} annotations
+     */
     Modifies[] value();
 }

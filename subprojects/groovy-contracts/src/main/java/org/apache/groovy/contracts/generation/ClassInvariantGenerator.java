@@ -53,6 +53,11 @@ public class ClassInvariantGenerator extends BaseGenerator {
 
     private static final ClassNode CLASS_INVARIANT_TYPE = ClassHelper.makeWithoutCaching(ClassInvariant.class);
 
+    /**
+     * Creates a generator for class-invariant support code.
+     *
+     * @param source the reader source backing the current source unit
+     */
     public ClassInvariantGenerator(final ReaderSource source) {
         super(source);
     }

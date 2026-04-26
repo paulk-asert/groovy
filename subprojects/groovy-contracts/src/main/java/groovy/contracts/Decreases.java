@@ -61,5 +61,10 @@ import java.lang.annotation.Target;
 @Incubating
 @GroovyASTTransformationClass("org.apache.groovy.contracts.ast.LoopVariantASTTransformation")
 public @interface Decreases {
+    /**
+     * Returns the closure class that computes the loop variant value.
+     *
+     * @return the generated closure class backing the variant expression
+     */
     Class value();
 }

@@ -114,11 +114,28 @@ public final class AssertStatementCreationUtility {
         return returnStatements;
     }
 
+    /**
+     * Rewrites the target return statement so it stores the result value, executes the assertion block,
+     * and then returns the stored result.
+     *
+     * @param statement the surrounding block to rewrite
+     * @param returnType the declared return type
+     * @param returnStatement the return statement to replace
+     * @param assertionCallStatement the assertion block to insert
+     */
     public static void injectResultVariableReturnStatementAndAssertionCallStatement(BlockStatement statement, ClassNode returnType, ReturnStatement returnStatement, BlockStatement assertionCallStatement) {
         final AddResultReturnStatementVisitor addResultReturnStatementVisitor = new AddResultReturnStatementVisitor(returnStatement, returnType, assertionCallStatement);
         addResultReturnStatementVisitor.visitBlockStatement(statement);
     }
 
+    /**
+     * Rewrites the target return statement so it evaluates the return expression once, executes the
+     * assertion call, and finally returns the stored value.
+     *
+     * @param statement the surrounding block to rewrite
+     * @param returnStatement the return statement to replace
+     * @param assertionCallStatement the assertion statement to insert
+     */
     public static void addAssertionCallStatementToReturnStatement(BlockStatement statement, ReturnStatement returnStatement, Statement assertionCallStatement) {
         final AddAssertionCallStatementToReturnStatementVisitor addAssertionCallStatementToReturnStatementVisitor = new AddAssertionCallStatementToReturnStatementVisitor(returnStatement, assertionCallStatement);
         addAssertionCallStatementToReturnStatementVisitor.visitBlockStatement(statement);
@@ -131,21 +148,41 @@ public final class AssertStatementCreationUtility {
 
         private final List<ReturnStatement> returnStatements = new ArrayList<>();
 
+        /**
+         * This visitor is source-independent.
+         *
+         * @return {@code null}
+         */
         @Override
         protected SourceUnit getSourceUnit() {
             return null;
         }
 
+        /**
+         * Records one visited return statement.
+         *
+         * @param statement the return statement to collect
+         */
         @Override
         public void visitReturnStatement(ReturnStatement statement) {
             returnStatements.add(statement);
         }
 
+        /**
+         * Skips nested closures so only returns from the surrounding method are collected.
+         *
+         * @param expression the closure expression to ignore
+         */
         @Override
         public void visitClosureExpression(ClosureExpression expression) {
             // do nothing to prevent getting return statements from closures
         }
 
+        /**
+         * Returns the collected return statements.
+         *
+         * @return the collected return statements
+         */
         public List<ReturnStatement> getReturnStatements() {
             return returnStatements;
         }
@@ -156,6 +193,11 @@ public final class AssertStatementCreationUtility {
      */
     public static class AddResultReturnStatementVisitor extends ClassCodeVisitorSupport {
 
+        /**
+         * This visitor is source-independent.
+         *
+         * @return {@code null}
+         */
         @Override
         protected SourceUnit getSourceUnit() {
             return null;
@@ -165,12 +207,24 @@ public final class AssertStatementCreationUtility {
         private final ClassNode returnType;
         private final BlockStatement assertionCallBlock;
 
+        /**
+         * Creates a visitor that rewrites one return statement to expose the {@code result} variable.
+         *
+         * @param returnStatement the return statement to replace
+         * @param returnType the declared return type
+         * @param assertionCallBlock the assertion block to inject before returning
+         */
         public AddResultReturnStatementVisitor(ReturnStatement returnStatement, ClassNode returnType, BlockStatement assertionCallBlock) {
             this.returnStatement = returnStatement;
             this.returnType = returnType;
             this.assertionCallBlock = assertionCallBlock;
         }
 
+        /**
+         * Rewrites the block containing the target return statement.
+         *
+         * @param block the block being visited
+         */
         @Override
         public void visitBlockStatement(BlockStatement block) {
 
@@ -197,6 +251,11 @@ public final class AssertStatementCreationUtility {
      */
     public static class AddAssertionCallStatementToReturnStatementVisitor extends ClassCodeVisitorSupport {
 
+        /**
+         * This visitor is source-independent.
+         *
+         * @return {@code null}
+         */
         @Override
         protected SourceUnit getSourceUnit() {
             return null;
@@ -205,11 +264,22 @@ public final class AssertStatementCreationUtility {
         private final ReturnStatement returnStatement;
         private final Statement assertionCallStatement;
 
+        /**
+         * Creates a visitor that rewrites one return statement to execute an assertion call before returning.
+         *
+         * @param returnStatement the return statement to replace
+         * @param assertionCallStatement the assertion statement to insert
+         */
         public AddAssertionCallStatementToReturnStatementVisitor(ReturnStatement returnStatement, Statement assertionCallStatement) {
             this.returnStatement = returnStatement;
             this.assertionCallStatement = assertionCallStatement;
         }
 
+        /**
+         * Rewrites the block containing the target return statement.
+         *
+         * @param block the block being visited
+         */
         @Override
         public void visitBlockStatement(BlockStatement block) {
             List<Statement> blockStatementsCopy = new ArrayList<>(block.getStatements());

@@ -94,7 +94,15 @@ import static org.codehaus.groovy.ast.tools.GeneralUtils.constX;
  */
 public class AnnotationClosureVisitor extends BaseVisitor implements ASTNodeMetaData {
 
+    /**
+     * Metadata flag indicating that the rewritten closure performs method calls and therefore
+     * needs execution tracking instead of inline expansion.
+     */
     public static final String META_DATA_USE_EXECUTION_TRACKER = "org.apache.groovy.contracts.META_DATA.USE_EXECUTION_TRACKER";
+
+    /**
+     * Metadata key used to stash the original try/catch wrapped assertion block for later phases.
+     */
     public static final String META_DATA_ORIGINAL_TRY_CATCH_BLOCK = "org.apache.groovy.contracts.META_DATA.ORIGINAL_TRY_CATCH_BLOCK";
 
     private static final String POSTCONDITION_TYPE_NAME = Postcondition.class.getName();
@@ -103,12 +111,24 @@ public class AnnotationClosureVisitor extends BaseVisitor implements ASTNodeMeta
     private ClassNode classNode;
     private final ContractClosureWriter contractClosureWriter = new ContractClosureWriter();
 
+    /**
+     * Creates a visitor that rewrites contract annotation closures into generated closure classes.
+     *
+     * @param sourceUnit the source unit currently being transformed
+     * @param source the reader source backing the source unit
+     */
     public AnnotationClosureVisitor(final SourceUnit sourceUnit, final ReaderSource source) {
         super(sourceUnit, source);
     }
 
     //--------------------------------------------------------------------------
 
+    /**
+     * Rewrites class-level contract closures and then recurses into inherited types that may also
+     * contribute contract annotations.
+     *
+     * @param classNode the class currently being visited
+     */
     @Override
     public void visitClass(ClassNode classNode) {
         if (classNode == null || !(CandidateChecks.isContractsCandidate(classNode) || CandidateChecks.isInterfaceContractsCandidate(classNode))) return;
@@ -170,6 +190,13 @@ public class AnnotationClosureVisitor extends BaseVisitor implements ASTNodeMeta
         markProcessed(classNode);
     }
 
+    /**
+     * Rewrites method- and constructor-level contract closures into generated closure classes and records
+     * auxiliary metadata needed by later transformation phases.
+     *
+     * @param methodNode the method or constructor being visited
+     * @param isConstructor whether the visited executable is a constructor
+     */
     @Override
     public void visitConstructorOrMethod(MethodNode methodNode, boolean isConstructor) {
         if (methodNode.getNodeMetaData(PROCESSED) != null || !(CandidateChecks.couldBeContractElementMethodNode(classNode, methodNode) || CandidateChecks.isPreconditionCandidate(classNode, methodNode))) return;
@@ -380,6 +407,9 @@ public class AnnotationClosureVisitor extends BaseVisitor implements ASTNodeMeta
 
     //--------------------------------------------------------------------------
 
+    /**
+     * Validates contract closure expressions and rewrites selected variable references for safe evaluation.
+     */
     static class ClosureExpressionValidator extends ClassCodeVisitorSupport {
 
         private final ClassNode classNode;
@@ -392,6 +422,14 @@ public class AnnotationClosureVisitor extends BaseVisitor implements ASTNodeMeta
         private boolean secondPass = false;
         private boolean methodCalls = false;
 
+        /**
+         * Creates a validator for one contract closure.
+         *
+         * @param classNode the declaring class
+         * @param methodNode the owning method or constructor, or {@code null} for class-level contracts
+         * @param annotationNode the contract annotation being validated
+         * @param sourceUnit the current source unit
+         */
         ClosureExpressionValidator(ClassNode classNode, MethodNode methodNode, AnnotationNode annotationNode, SourceUnit sourceUnit) {
             this.classNode = classNode;
             this.methodNode = methodNode;
@@ -400,6 +438,11 @@ public class AnnotationClosureVisitor extends BaseVisitor implements ASTNodeMeta
             this.variableExpressions = new HashMap<>();
         }
 
+        /**
+         * Validates the structure and declared parameters of the closure before visiting its contents.
+         *
+         * @param expression the closure being validated
+         */
         @Override
         public void visitClosureExpression(ClosureExpression expression) {
             secondPass = false;
@@ -432,6 +475,11 @@ public class AnnotationClosureVisitor extends BaseVisitor implements ASTNodeMeta
             super.visitClosureExpression(expression);
         }
 
+        /**
+         * Resolves parameter-vs-field access and records reflective replacements for unsupported private-field access.
+         *
+         * @param expression the variable expression being visited
+         */
         @Override
         public void visitVariableExpression(VariableExpression expression) {
 
@@ -457,6 +505,11 @@ public class AnnotationClosureVisitor extends BaseVisitor implements ASTNodeMeta
             super.visitVariableExpression(expression);
         }
 
+        /**
+         * Validates postfix operations and performs second-pass rewrites when needed.
+         *
+         * @param expression the postfix expression being visited
+         */
         @Override
         public void visitPostfixExpression(PostfixExpression expression) {
             checkOperation(expression, expression.getOperation());
@@ -472,6 +525,11 @@ public class AnnotationClosureVisitor extends BaseVisitor implements ASTNodeMeta
             super.visitPostfixExpression(expression);
         }
 
+        /**
+         * Validates prefix operations and performs second-pass rewrites when needed.
+         *
+         * @param expression the prefix expression being visited
+         */
         @Override
         public void visitPrefixExpression(PrefixExpression expression) {
             checkOperation(expression, expression.getOperation());
@@ -487,6 +545,11 @@ public class AnnotationClosureVisitor extends BaseVisitor implements ASTNodeMeta
             super.visitPrefixExpression(expression);
         }
 
+        /**
+         * Validates binary operations and performs second-pass rewrites when needed.
+         *
+         * @param expression the binary expression being visited
+         */
         @Override
         public void visitBinaryExpression(BinaryExpression expression) {
             checkOperation(expression, expression.getOperation());
@@ -507,18 +570,33 @@ public class AnnotationClosureVisitor extends BaseVisitor implements ASTNodeMeta
             super.visitBinaryExpression(expression);
         }
 
+        /**
+         * Marks that the closure performs a static method call.
+         *
+         * @param call the static method call being visited
+         */
         @Override
         public void visitStaticMethodCallExpression(StaticMethodCallExpression call) {
             methodCalls = true;
             super.visitStaticMethodCallExpression(call);
         }
 
+        /**
+         * Marks that the closure performs a method call.
+         *
+         * @param call the method call being visited
+         */
         @Override
         public void visitMethodCallExpression(MethodCallExpression call) {
             methodCalls = true;
             super.visitMethodCallExpression(call);
         }
 
+        /**
+         * Marks that the closure performs a constructor call.
+         *
+         * @param call the constructor call being visited
+         */
         @Override
         public void visitConstructorCallExpression(ConstructorCallExpression call) {
             methodCalls = true;
@@ -546,15 +624,30 @@ public class AnnotationClosureVisitor extends BaseVisitor implements ASTNodeMeta
             return variable;
         }
 
+        /**
+         * Executes the second validation pass that applies the deferred expression rewrites.
+         *
+         * @param closureExpression the closure to revisit
+         */
         public void secondPass(ClosureExpression closureExpression) {
             secondPass = true;
             super.visitClosureExpression(closureExpression);
         }
 
+        /**
+         * Indicates whether the validated closure performs any method or constructor calls.
+         *
+         * @return {@code true} if execution tracking is required
+         */
         public boolean isMethodCalls() {
             return methodCalls;
         }
 
+        /**
+         * Returns the source unit used for validation error reporting.
+         *
+         * @return the current source unit
+         */
         @Override
         protected SourceUnit getSourceUnit() {
             return sourceUnit;
@@ -568,15 +661,32 @@ public class AnnotationClosureVisitor extends BaseVisitor implements ASTNodeMeta
         private final MethodNode methodNode;
         private CastExpression currentCast;
 
+        /**
+         * Creates a transformer that adapts {@code old.property} references for generated postcondition code.
+         *
+         * @param methodNode the method whose postcondition is being rewritten
+         */
         OldPropertyExpressionTransformer(MethodNode methodNode) {
             this.methodNode = methodNode;
         }
 
+        /**
+         * This transformer is source-independent.
+         *
+         * @return {@code null}
+         */
         @Override
         protected SourceUnit getSourceUnit() {
             return null;
         }
 
+        /**
+         * Rewrites {@code old.property} access to preserve field type information and records referenced
+         * field names for {@code @Modifies} validation.
+         *
+         * @param expr the expression to transform
+         * @return the transformed expression
+         */
         @SuppressWarnings("unchecked")
         @Override
         public Expression transform(Expression expr) {

@@ -86,5 +86,10 @@ import java.lang.annotation.Target;
 @Repeatable(EnsuresConditions.class)
 @AnnotationProcessorImplementation(EnsuresAnnotationProcessor.class)
 public @interface Ensures {
+    /**
+     * Returns the closure class that evaluates the postcondition expression.
+     *
+     * @return the generated closure class backing the postcondition
+     */
     Class value();
 }

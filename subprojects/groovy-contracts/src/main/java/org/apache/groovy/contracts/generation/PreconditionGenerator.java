@@ -42,6 +42,11 @@ import static org.codehaus.groovy.ast.tools.GeneralUtils.boolX;
  */
 public class PreconditionGenerator extends BaseGenerator {
 
+    /**
+     * Creates a generator for precondition support code.
+     *
+     * @param source the reader source backing the current source unit
+     */
     public PreconditionGenerator(final ReaderSource source) {
         super(source);
     }

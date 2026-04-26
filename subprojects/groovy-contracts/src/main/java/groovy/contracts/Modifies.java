@@ -70,5 +70,10 @@ import java.lang.annotation.Target;
         "org.apache.groovy.contracts.ast.ModifiesEnsuresValidationTransformation"
 })
 public @interface Modifies {
+    /**
+     * Returns the closure class that lists the locations the annotated member may mutate.
+     *
+     * @return the generated closure class backing the frame-condition expression
+     */
     Class value();
 }

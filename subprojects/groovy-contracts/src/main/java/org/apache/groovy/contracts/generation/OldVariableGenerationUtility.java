@@ -50,6 +50,9 @@ import static org.codehaus.groovy.ast.tools.GeneralUtils.returnS;
  */
 public class OldVariableGenerationUtility {
 
+    /**
+     * Synthetic helper method name used to compute the {@code old} variable map for postconditions.
+     */
     public static final String OLD_VARIABLES_METHOD = "$_gc_computeOldVariables";
 
     /**

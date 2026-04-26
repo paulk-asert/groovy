@@ -64,6 +64,13 @@ import java.util.List;
 @GroovyASTTransformation(phase = CompilePhase.SEMANTIC_ANALYSIS)
 public class LoopInvariantASTTransformation implements ASTTransformation {
 
+    /**
+     * Rewrites a loop-level {@link Invariant} annotation into assertion checks injected at the start
+     * of the loop body.
+     *
+     * @param nodes the annotated AST nodes supplied by the compiler
+     * @param source the current source unit
+     */
     @Override
     public void visit(final ASTNode[] nodes, final SourceUnit source) {
         if (nodes.length != 2) return;
@@ -106,4 +113,3 @@ public class LoopInvariantASTTransformation implements ASTTransformation {
         }
     }
 }
-

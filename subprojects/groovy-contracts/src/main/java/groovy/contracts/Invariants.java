@@ -34,5 +34,10 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Incubating
 public @interface Invariants {
+    /**
+     * Returns the repeated invariant annotations declared on the annotated type.
+     *
+     * @return the contained {@link Invariant} annotations
+     */
     Invariant[] value();
 }

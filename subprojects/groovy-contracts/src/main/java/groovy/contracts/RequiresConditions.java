@@ -34,5 +34,10 @@ import java.lang.annotation.Target;
 @Target({ElementType.CONSTRUCTOR, ElementType.METHOD})
 @Incubating
 public @interface RequiresConditions {
+    /**
+     * Returns the repeated precondition annotations declared on the target element.
+     *
+     * @return the contained {@link Requires} annotations
+     */
     Requires[] value();
 }

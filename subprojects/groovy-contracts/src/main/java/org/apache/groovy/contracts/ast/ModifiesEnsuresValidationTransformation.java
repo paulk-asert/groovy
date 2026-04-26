@@ -47,6 +47,13 @@ import java.util.Set;
 @GroovyASTTransformation(phase = CompilePhase.INSTRUCTION_SELECTION)
 public class ModifiesEnsuresValidationTransformation implements ASTTransformation {
 
+    /**
+     * Validates that {@code old} references used by {@code @Ensures} stay within the state declared by
+     * {@code @Modifies}.
+     *
+     * @param nodes the annotated AST nodes supplied by the compiler
+     * @param source the current source unit
+     */
     @Override
     @SuppressWarnings("unchecked")
     public void visit(final ASTNode[] nodes, final SourceUnit source) {

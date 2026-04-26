@@ -63,5 +63,10 @@ import java.lang.annotation.Target;
 @AnnotationProcessorImplementation(RequiresAnnotationProcessor.class)
 @Repeatable(RequiresConditions.class)
 public @interface Requires {
+    /**
+     * Returns the closure class that evaluates the precondition expression.
+     *
+     * @return the generated closure class backing the precondition
+     */
     Class value();
 }

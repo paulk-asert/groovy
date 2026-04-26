@@ -55,6 +55,11 @@ import static org.codehaus.groovy.ast.ClassHelper.isPrimitiveVoid;
 public class PostconditionGenerator extends BaseGenerator {
     private static final String METHOD_PROCESSED = "org.apache.groovy.contracts.POSTCONDITION_PROCESSED";
 
+    /**
+     * Creates a generator for postcondition support code.
+     *
+     * @param source the reader source backing the current source unit
+     */
     public PostconditionGenerator(final ReaderSource source) {
         super(source);
     }

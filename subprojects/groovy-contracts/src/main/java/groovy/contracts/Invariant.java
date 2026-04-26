@@ -72,5 +72,10 @@ import java.lang.annotation.Target;
 @AnnotationProcessorImplementation(ClassInvariantAnnotationProcessor.class)
 @GroovyASTTransformationClass("org.apache.groovy.contracts.ast.LoopInvariantASTTransformation")
 public @interface Invariant {
+    /**
+     * Returns the closure class that evaluates the invariant expression.
+     *
+     * @return the generated closure class backing the invariant
+     */
     Class value();
 }

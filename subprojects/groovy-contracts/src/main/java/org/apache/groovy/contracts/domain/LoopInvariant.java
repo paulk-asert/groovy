@@ -32,13 +32,24 @@ import static org.codehaus.groovy.ast.tools.GeneralUtils.constX;
  */
 public class LoopInvariant extends Assertion<LoopInvariant> {
 
+    /**
+     * Shared invariant instance representing an unconstrained loop invariant.
+     */
     public static final LoopInvariant DEFAULT = new LoopInvariant(block(), boolX(constX(true)));
 
+    /**
+     * Creates a loop invariant that defaults to {@code true}.
+     */
     public LoopInvariant() {
     }
 
+    /**
+     * Creates a loop invariant from the supplied source block and boolean expression.
+     *
+     * @param blockStatement the original invariant block
+     * @param booleanExpression the normalized invariant expression
+     */
     public LoopInvariant(BlockStatement blockStatement, BooleanExpression booleanExpression) {
         super(blockStatement, booleanExpression);
     }
 }
-

@@ -85,6 +85,12 @@ public class LoopVariantASTTransformation implements ASTTransformation {
 
     private static final AtomicLong COUNTER = new AtomicLong();
 
+    /**
+     * Rewrites a loop-level {@link Decreases} annotation into variant bookkeeping and runtime checks.
+     *
+     * @param nodes the annotated AST nodes supplied by the compiler
+     * @param source the current source unit
+     */
     @Override
     public void visit(final ASTNode[] nodes, final SourceUnit source) {
         if (nodes.length != 2) return;

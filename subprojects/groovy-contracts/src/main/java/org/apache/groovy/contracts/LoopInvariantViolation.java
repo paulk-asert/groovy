@@ -26,35 +26,72 @@ package org.apache.groovy.contracts;
  */
 public class LoopInvariantViolation extends AssertionViolation {
 
+    /**
+     * Creates a loop-invariant violation without an explicit detail message.
+     */
     public LoopInvariantViolation() {
     }
 
+    /**
+     * Creates a loop-invariant violation with an object-valued detail.
+     *
+     * @param o the detail object
+     */
     public LoopInvariantViolation(Object o) {
         super(o);
     }
 
+    /**
+     * Creates a loop-invariant violation with a boolean detail.
+     *
+     * @param b the detail value
+     */
     public LoopInvariantViolation(boolean b) {
         super(b);
     }
 
+    /**
+     * Creates a loop-invariant violation with a character detail.
+     *
+     * @param c the detail value
+     */
     public LoopInvariantViolation(char c) {
         super(c);
     }
 
+    /**
+     * Creates a loop-invariant violation with an integer detail.
+     *
+     * @param i the detail value
+     */
     public LoopInvariantViolation(int i) {
         super(i);
     }
 
+    /**
+     * Creates a loop-invariant violation with a long detail.
+     *
+     * @param l the detail value
+     */
     public LoopInvariantViolation(long l) {
         super(l);
     }
 
+    /**
+     * Creates a loop-invariant violation with a floating-point detail.
+     *
+     * @param f the detail value
+     */
     public LoopInvariantViolation(float f) {
         super(f);
     }
 
+    /**
+     * Creates a loop-invariant violation with a double-precision detail.
+     *
+     * @param d the detail value
+     */
     public LoopInvariantViolation(double d) {
         super(d);
     }
 }
-

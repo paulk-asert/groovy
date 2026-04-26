@@ -58,6 +58,17 @@ public class ContractClosureWriter {
 
     private int closureCount = 1;
 
+    /**
+     * Generates a synthetic closure implementation class for the supplied contract closure.
+     *
+     * @param classNode the declaring class
+     * @param methodNode the owning method or constructor, or {@code null} for class invariants
+     * @param expression the rewritten closure body
+     * @param addOldVariable whether to expose the {@code old} map parameter
+     * @param addResultVariable whether to expose the {@code result} parameter
+     * @param mods the access modifiers to apply to the generated class
+     * @return the generated closure implementation class
+     */
     public ClassNode createClosureClass(ClassNode classNode, MethodNode methodNode, ClosureExpression expression, boolean addOldVariable, boolean addResultVariable, int mods) {
         ClassNode outerClass = getOutermostClass(classNode);
         String name = outerClass.getName() + "$" + getClosureInnerName(outerClass, classNode);

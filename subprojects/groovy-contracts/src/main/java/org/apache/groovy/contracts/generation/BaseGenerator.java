@@ -62,11 +62,26 @@ import static org.codehaus.groovy.ast.tools.GeneralUtils.varX;
  */
 public abstract class BaseGenerator {
 
+    /**
+     * Prefix used for synthetic methods that evaluate class invariants.
+     */
     public static final String INVARIANT_CLOSURE_PREFIX = "invariant";
+
+    /**
+     * Node metadata flag indicating that assertions can be emitted in inline mode.
+     */
     public static final String META_DATA_USE_INLINE_MODE = "org.apache.groovy.contracts.USE_INLINE_MODE";
 
+    /**
+     * Reader source used by generators that need source-aware AST construction.
+     */
     protected final ReaderSource source;
 
+    /**
+     * Creates a generator bound to the supplied reader source.
+     *
+     * @param source the reader source backing the current source unit
+     */
     protected BaseGenerator(final ReaderSource source) {
         this.source = source;
     }
@@ -87,6 +102,12 @@ public abstract class BaseGenerator {
         return classNode.getDeclaredMethod(getInvariantMethodName(classNode), Parameter.EMPTY_ARRAY);
     }
 
+    /**
+     * Extracts the inline-mode assertion block from the supplied wrapper block.
+     *
+     * @param blockStatement the block containing generated assertion statements
+     * @return an inline-mode block guarded by the contracts-enabled flag
+     */
     protected BlockStatement getInlineModeBlockStatement(BlockStatement blockStatement) {
         BooleanExpression combinedBooleanExpression = ExpressionUtils.getBooleanExpression(ExpressionUtils.getBooleanExpressionsFromAssertionStatements(blockStatement));
         return block(ifS(
@@ -94,6 +115,15 @@ public abstract class BaseGenerator {
                 block(ifS(notX(combinedBooleanExpression), blockStatement))));
     }
 
+    /**
+     * Wraps a contract predicate with tracking, violation rethrowing, and execution guards.
+     *
+     * @param type the declaring class
+     * @param methodNode the method whose assertion is being emitted
+     * @param classInvariantExpression the predicate to evaluate
+     * @param assertionType the logical assertion kind
+     * @return the generated wrapper block
+     */
     protected BlockStatement wrapAssertionBooleanExpression(ClassNode type, MethodNode methodNode, BooleanExpression classInvariantExpression, String assertionType) {
         ClassNode violationTrackerClassNode = ClassHelper.makeWithoutCaching(ViolationTracker.class);
         VariableExpression gcResult = varX("$_gc_result", ClassHelper.boolean_TYPE);
@@ -128,6 +158,16 @@ public abstract class BaseGenerator {
     }
 
     // TODO: what about constructor method nodes - does it find a constructor node in the super class?
+    /**
+     * Merges inherited contract closures into the supplied predicate for the given method.
+     *
+     * @param type the declaring class
+     * @param methodNode the method whose inherited contracts should be consulted
+     * @param annotationType the contract meta-annotation to search for
+     * @param booleanExpression the predicate built from the current declaration
+     * @param isPostcondition whether postcondition calling conventions should be used
+     * @return the predicate augmented with inherited contract closures
+     */
     protected BooleanExpression addCallsToSuperMethodNodeAnnotationClosure(final ClassNode type, final MethodNode methodNode, final Class<? extends Annotation> annotationType, BooleanExpression booleanExpression, boolean isPostcondition) {
         List<AnnotationNode> contractElementAnnotations = AnnotationUtils.getAnnotationNodeInHierarchyWithMetaAnnotation(type.getSuperClass(), methodNode, ClassHelper.makeWithoutCaching(annotationType));
         if (contractElementAnnotations.isEmpty()) {
