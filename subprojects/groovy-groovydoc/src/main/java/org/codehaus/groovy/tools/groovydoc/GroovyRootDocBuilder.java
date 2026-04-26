@@ -18,6 +18,7 @@
  */
 package org.codehaus.groovy.tools.groovydoc;
 
+import com.github.javaparser.JavaParser;
 import org.apache.groovy.groovydoc.tools.GroovyDocUtil;
 import org.codehaus.groovy.groovydoc.GroovyClassDoc;
 import org.codehaus.groovy.groovydoc.GroovyRootDoc;
@@ -48,20 +49,26 @@ public class GroovyRootDocBuilder {
     private final String[] sourcepaths;
     private final SimpleGroovyRootDoc rootDoc;
     private final Properties properties;
+    private final JavaParser javaParser;
     private int errorCount;
 
     @Deprecated
     public GroovyRootDocBuilder(GroovyDocTool tool, String[] sourcepaths, List<LinkArgument> links, Properties properties) {
-        this(sourcepaths, links, properties);
+        this(sourcepaths, links, properties, null);
     }
 
     public GroovyRootDocBuilder(String[] sourcepaths, List<LinkArgument> links, Properties properties) {
+        this(sourcepaths, links, properties, null);
+    }
+
+    GroovyRootDocBuilder(String[] sourcepaths, List<LinkArgument> links, Properties properties, JavaParser javaParser) {
         this.sourcepaths = sourcepaths == null ? null : Arrays.copyOf(sourcepaths, sourcepaths.length);
         this.links = links;
         this.rootDoc = new SimpleGroovyRootDoc("root");
         // GROOVY-11938: propagate for render-time snippet-file resolution.
         this.rootDoc.setSourcepaths(this.sourcepaths);
         this.properties = properties;
+        this.javaParser = javaParser != null ? javaParser : new JavaParser();
     }
 
     public void buildTree(List<String> filenames) throws IOException {
@@ -122,7 +129,7 @@ public class GroovyRootDocBuilder {
             return;
         }
         try {
-            GroovyDocParserI docParser = new GroovyDocParser(links, properties);
+            GroovyDocParserI docParser = new GroovyDocParser(javaParser, links, properties);
             Map<String, GroovyClassDoc> classDocs = docParser.getClassDocsFromSingleSource(packagePath, file, src);
             rootDoc.putAllClasses(classDocs);
             if (isAbsolute) {

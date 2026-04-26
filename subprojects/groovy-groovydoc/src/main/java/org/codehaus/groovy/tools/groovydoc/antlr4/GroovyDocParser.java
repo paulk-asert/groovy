@@ -18,7 +18,9 @@
  */
 package org.codehaus.groovy.tools.groovydoc.antlr4;
 
-import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.JavaParser;
+import com.github.javaparser.ParseProblemException;
+import com.github.javaparser.ParseResult;
 import org.apache.groovy.antlr.GroovydocVisitor;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.control.CompilationUnit;
@@ -46,11 +48,17 @@ public class GroovyDocParser implements GroovyDocParserI {
 
     private static final System.Logger LOGGER = System.getLogger(GroovyDocParser.class.getName());
 
+    private final JavaParser javaParser;
     private final List<LinkArgument> links;
     private final Properties properties;
     private final Logger log = Logger.create(GroovyDocParser.class);
 
     public GroovyDocParser(List<LinkArgument> links, Properties properties) {
+        this(new JavaParser(), links, properties);
+    }
+
+    public GroovyDocParser(JavaParser javaParser, List<LinkArgument> links, Properties properties) {
+        this.javaParser = javaParser;
         this.links = links;
         this.properties = properties;
     }
@@ -72,7 +80,11 @@ public class GroovyDocParser implements GroovyDocParserI {
     private Map<String, GroovyClassDoc> parseJava(String packagePath, String file, String src) throws RuntimeException {
         GroovydocJavaVisitor visitor = new GroovydocJavaVisitor(packagePath, links, properties);
         try {
-            visitor.visit(StaticJavaParser.parse(src), null);
+            ParseResult<com.github.javaparser.ast.CompilationUnit> parseResult = javaParser.parse(src);
+            if (!parseResult.isSuccessful() || parseResult.getResult().isEmpty()) {
+                throw new ParseProblemException(parseResult.getProblems());
+            }
+            visitor.visit(parseResult.getResult().get(), null);
         } catch (Throwable t) {
             LOGGER.log(WARNING, "Attempting to ignore error parsing Java source file: {0}/{1}", packagePath, file);
             LOGGER.log(WARNING, "Consider reporting the error to the Groovy project: https://issues.apache.org/jira/browse/GROOVY");

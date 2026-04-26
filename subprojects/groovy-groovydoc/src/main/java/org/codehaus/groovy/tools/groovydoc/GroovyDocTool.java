@@ -18,8 +18,8 @@
  */
 package org.codehaus.groovy.tools.groovydoc;
 
+import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParserConfiguration;
-import com.github.javaparser.StaticJavaParser;
 import org.codehaus.groovy.groovydoc.GroovyRootDoc;
 import org.codehaus.groovy.tools.shell.util.Logger;
 
@@ -35,7 +35,6 @@ public class GroovyDocTool {
     private final Logger log = Logger.create(GroovyDocTool.class);
     private final GroovyRootDocBuilder rootDocBuilder;
     private final GroovyDocTemplateEngine templateEngine;
-    private final ParserConfiguration.LanguageLevel javaLanguageLevel;
     private final String[] sourcepaths;
 
     protected Properties properties;
@@ -67,8 +66,13 @@ public class GroovyDocTool {
      */
     public GroovyDocTool(ResourceManager resourceManager, String[] sourcepaths, String[] docTemplates, String[] packageTemplates, String[] classTemplates, List<LinkArgument> links, String javaVersion, Properties properties) {
         this.sourcepaths = sourcepaths == null ? new String[0] : java.util.Arrays.copyOf(sourcepaths, sourcepaths.length);
-        rootDocBuilder = new GroovyRootDocBuilder(sourcepaths, links, properties);
-        javaLanguageLevel = calculateLanguageLevel(javaVersion);
+        ParserConfiguration.LanguageLevel javaLanguageLevel = calculateLanguageLevel(javaVersion);
+        rootDocBuilder = new GroovyRootDocBuilder(
+                sourcepaths,
+                links,
+                properties,
+                new JavaParser(new ParserConfiguration().setLanguageLevel(javaLanguageLevel))
+        );
 
         String defaultCharset = Charset.defaultCharset().name();
 
@@ -122,19 +126,7 @@ public class GroovyDocTool {
             log.debug("Loading source files for " + filenames);
         }
 
-        // The default language level is POPULAR(i.e. JAVA_11) in JavaParser 3.28.0
-        ParserConfiguration.LanguageLevel previousLanguageLevel = StaticJavaParser.getParserConfiguration().getLanguageLevel();
-        try {
-            if(javaLanguageLevel != null) {
-                StaticJavaParser.getParserConfiguration().setLanguageLevel(javaLanguageLevel);
-            }
-            rootDocBuilder.buildTree(filenames);
-        }
-        finally {
-            if(javaLanguageLevel != null) {
-                StaticJavaParser.getParserConfiguration().setLanguageLevel(previousLanguageLevel);
-            }
-        }
+        rootDocBuilder.buildTree(filenames);
     }
 
     public GroovyRootDoc getRootDoc() {

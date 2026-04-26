@@ -18,6 +18,7 @@
  */
 package org.codehaus.groovy.tools.groovydoc;
 
+import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.StaticJavaParser;
 import groovy.test.GroovyTestCase;
@@ -25,6 +26,7 @@ import org.codehaus.groovy.groovydoc.GroovyClassDoc;
 import org.codehaus.groovy.groovydoc.GroovyMethodDoc;
 import org.codehaus.groovy.groovydoc.GroovyRootDoc;
 import org.codehaus.groovy.runtime.StringGroovyMethods;
+import org.codehaus.groovy.tools.groovydoc.antlr4.GroovyDocParser;
 import org.codehaus.groovy.tools.groovydoc.gstringTemplates.GroovyDocTemplateInfo;
 
 import java.io.IOException;
@@ -37,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -89,9 +92,13 @@ public class GroovyDocToolTest extends GroovyTestCase {
     }
 
     private GroovyDocTool makeHtmltool(ArrayList<LinkArgument> links, String javaVersion, Properties props) {
+        return makeHtmltool(links, javaVersion, props, new String[] {"src/test/groovy", "../../src/test/groovy"});
+    }
+
+    private GroovyDocTool makeHtmltool(ArrayList<LinkArgument> links, String javaVersion, Properties props, String[] sources) {
         return new GroovyDocTool(
                 new FileSystemResourceManager("src/main/resources"), // template storage
-                new String[] {"src/test/groovy", "../../src/test/groovy"}, // source file dirs
+                sources, // source file dirs
                 GroovyDocTemplateInfo.DEFAULT_DOC_TEMPLATES,
                 GroovyDocTemplateInfo.DEFAULT_PACKAGE_TEMPLATES,
                 GroovyDocTemplateInfo.DEFAULT_CLASS_TEMPLATES,
@@ -1193,6 +1200,38 @@ public class GroovyDocToolTest extends GroovyTestCase {
         }
     }
 
+    private static List<String> createSwitchExpressionJavaSources(Path root, int count) throws IOException {
+        String pkg = "org/codehaus/groovy/tools/groovydoc/testfiles/switchexpr";
+        String packageName = pkg.replace('/', '.');
+        Path pkgDir = root.resolve(pkg);
+        Files.createDirectories(pkgDir);
+
+        List<String> sources = new ArrayList<>(count);
+        for (int i = 0; i < count; i++) {
+            String className = "SwitchExpression" + i;
+            Files.writeString(pkgDir.resolve(className + ".java"), switchExpressionJavaSource(packageName, className));
+            sources.add(pkg + "/" + className + ".java");
+        }
+        return sources;
+    }
+
+    private static String switchExpressionJavaSource(String packageName, String className) {
+        return "package " + packageName + ";\n"
+                + "/**\n"
+                + " * Exercise Java switch expressions with yield.\n"
+                + " */\n"
+                + "public class " + className + " {\n"
+                + "    public int number(int value) {\n"
+                + "        return switch (value) {\n"
+                + "            case 0 -> 0;\n"
+                + "            default -> {\n"
+                + "                yield value + 1;\n"
+                + "            }\n"
+                + "        };\n"
+                + "    }\n"
+                + "}\n";
+    }
+
     // GROOVY-9057
     public void testParseErrorIsTrackedInErrorCount() throws Exception {
         assertEquals("Initial error count should be zero", 0, xmlToolForTests.getErrorCount());
@@ -2170,6 +2209,46 @@ public class GroovyDocToolTest extends GroovyTestCase {
 
         final String javadoc = output.getText(MOCK_DIR + "/" + base + "/Java.html");
         assertNotNull("Javadoc should not be null since language level is supported", javadoc);
+    }
+
+    public void testLanguageLevelSupportedForSwitchExpressions() throws Exception {
+        Path tmp = Files.createTempDirectory("groovydoc-switch-expression-");
+        try {
+            List<String> sources = createSwitchExpressionJavaSources(tmp, 1);
+            GroovyDocTool tool = makeHtmltool(new ArrayList<>(), ParserConfiguration.LanguageLevel.JAVA_17.name(), new Properties(), new String[] {tmp.toString()});
+            tool.add(sources);
+
+            MockOutputTool output = new MockOutputTool();
+            tool.renderToOutput(output, MOCK_DIR);
+
+            String base = "org/codehaus/groovy/tools/groovydoc/testfiles/switchexpr";
+            String javadoc = output.getText(MOCK_DIR + "/" + base + "/SwitchExpression0.html");
+            assertNotNull("Javadoc should not be null since Java 17 switch expressions are supported", javadoc);
+            assertEquals("Expected no parse errors for switch expression source", 0, tool.getErrorCount());
+        } finally {
+            deleteRecursively(tmp);
+        }
+    }
+
+    public void testGroovydocParsingUsesExplicitJavaParserLanguageLevel() throws Exception {
+        StaticJavaParser.getParserConfiguration().setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_1_4);
+        JavaParser javaParser = new JavaParser(
+                new ParserConfiguration().setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17)
+        );
+        GroovyDocParser parser = new GroovyDocParser(javaParser, new ArrayList<>(), new Properties());
+
+        Map<String, GroovyClassDoc> classDocs = parser.getClassDocsFromSingleSource(
+                "org/codehaus/groovy/tools/groovydoc/testfiles/switchexpr",
+                "SwitchExpression.java",
+                switchExpressionJavaSource(
+                        "org.codehaus.groovy.tools.groovydoc.testfiles.switchexpr",
+                        "SwitchExpression"
+                )
+        );
+
+        assertFalse("Explicit JavaParser language level should parse switch expressions with yield", classDocs.isEmpty());
+        assertEquals("StaticJavaParser language level should remain unchanged", ParserConfiguration.LanguageLevel.JAVA_1_4,
+                StaticJavaParser.getParserConfiguration().getLanguageLevel());
     }
 
     public void testJavaGenericsTitle() throws Exception {
