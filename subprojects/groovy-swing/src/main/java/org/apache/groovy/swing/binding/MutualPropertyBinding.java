@@ -21,25 +21,68 @@ package org.apache.groovy.swing.binding;
 import groovy.lang.Closure;
 
 /**
+ * Maintains two synchronized {@link PropertyBinding} instances that update each other.
+ *
  * @since Groovy 1.6
  */
 public class MutualPropertyBinding implements FullBinding {
 
+    /**
+     * Indicates whether the mutual binding pair is currently active.
+     */
     boolean bound;
 
+    /**
+     * The forward source-side property binding.
+     */
     PropertyBinding sourceBinding;
+    /**
+     * The forward target-side property binding.
+     */
     PropertyBinding targetBinding;
+    /**
+     * Optional validator applied to forward updates.
+     */
     Closure validator;
+    /**
+     * Optional converter applied from source to target.
+     */
     Closure converter;
+    /**
+     * Optional converter applied from target to source.
+     */
     Closure reverseConverter;
 
+    /**
+     * Factory used to create trigger bindings for each property side.
+     */
     Closure triggerFactory;
 
+    /**
+     * Trigger binding for forward updates.
+     */
     TriggerBinding forwardTriggerBinding;
+    /**
+     * Full binding used for forward propagation.
+     */
     FullBinding forwardBinding;
+    /**
+     * Trigger binding for reverse updates.
+     */
     TriggerBinding reverseTriggerBinding;
+    /**
+     * Full binding used for reverse propagation.
+     */
     FullBinding reverseBinding;
 
+    /**
+     * Creates a mutual binding between two property bindings.
+     *
+     * @param forwardTrigger the trigger binding for the initial source side
+     * @param source the source property binding
+     * @param target the target property binding
+     * @param triggerFactory factory used to create trigger bindings for each side
+     */
     MutualPropertyBinding(TriggerBinding forwardTrigger, PropertyBinding source, PropertyBinding target, Closure triggerFactory) {
         // order matters here!
         this.triggerFactory = triggerFactory;
@@ -122,6 +165,9 @@ public class MutualPropertyBinding implements FullBinding {
         return reverseConverter;
     }
 
+    /**
+     * Rebuilds the internal forward and reverse bindings to match the current configuration.
+     */
     protected void rebuildBindings() {
         // tear stuff down, even if we are half built
         if (bound) {
@@ -209,4 +255,3 @@ public class MutualPropertyBinding implements FullBinding {
         reverseBinding.update();
     }
 }
-

@@ -28,17 +28,33 @@ import java.util.Set;
  */
 public class AggregateBinding implements BindingUpdatable {
 
+    /**
+     * Indicates whether the aggregate is currently bound.
+     */
     protected  boolean bound;
 
     // use linked hash set so order is preserved
+    /**
+     * The member bindings managed by this aggregate.
+     */
     protected Set<BindingUpdatable> bindings = new LinkedHashSet<BindingUpdatable>();
 
+    /**
+     * Adds a binding to the aggregate.
+     *
+     * @param binding the binding to add
+     */
     public void addBinding(BindingUpdatable binding) {
         if (binding == null || bindings.contains(binding)) return;
         if (bound) binding.bind(); // bind is idempotent, so no state checking
         bindings.add(binding);
     }
 
+    /**
+     * Removes a binding from the aggregate.
+     *
+     * @param binding the binding to remove
+     */
     public void removeBinding(BindingUpdatable binding) {
         bindings.remove(binding);
     }

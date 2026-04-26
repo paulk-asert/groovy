@@ -24,7 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * A property path full binding
+ * A full binding that watches an entire property path rather than a single observable bean property.
  */
 public class PropertyPathFullBinding extends AbstractFullBinding implements PropertyChangeListener {
 

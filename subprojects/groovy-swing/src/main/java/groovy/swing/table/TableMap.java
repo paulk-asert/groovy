@@ -33,12 +33,25 @@ import javax.swing.table.TableModel;
  * should have no effect.
  */
 public class TableMap extends AbstractTableModel implements TableModelListener {
+    /**
+     * The wrapped table model.
+     */
     protected TableModel model;
 
+    /**
+     * Returns the wrapped table model.
+     *
+     * @return the delegate model
+     */
     public TableModel getModel() {
         return model;
     }
 
+    /**
+     * Replaces the wrapped table model and starts listening for its change events.
+     *
+     * @param model the delegate model
+     */
     public void setModel(TableModel model) {
         this.model = model;
         model.addTableModelListener(this);
@@ -87,9 +100,13 @@ public class TableMap extends AbstractTableModel implements TableModelListener {
 //
 
     // By default forward all events to all the listeners.
+    /**
+     * Forwards model change notifications to this table model's listeners.
+     *
+     * @param e the model change event
+     */
     @Override
     public void tableChanged(TableModelEvent e) {
         fireTableChanged(e);
     }
 }
-

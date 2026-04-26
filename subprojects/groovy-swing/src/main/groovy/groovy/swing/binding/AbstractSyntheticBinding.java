@@ -23,11 +23,31 @@ import org.apache.groovy.swing.binding.PropertyBinding;
 import org.apache.groovy.swing.binding.SourceBinding;
 import org.apache.groovy.swing.binding.TargetBinding;
 
+/**
+ * Base class for bindings that observe synthetic Swing properties.
+ */
 public abstract class AbstractSyntheticBinding extends AbstractFullBinding {
+    /**
+     * Indicates whether the synthetic binding is currently active.
+     */
     boolean bound;
+    /**
+     * The synthetic property name handled by this binding.
+     */
     String propertyName;
+    /**
+     * The Swing component type supported by this binding.
+     */
     Class<?> klass;
 
+    /**
+     * Creates a synthetic binding for the supplied property and component type.
+     *
+     * @param source the source property binding
+     * @param target the target binding
+     * @param klass the supported component type
+     * @param propertyName the synthetic property name
+     */
     @SuppressWarnings("rawtypes")
     public AbstractSyntheticBinding(PropertyBinding source, TargetBinding target, Class klass, String propertyName) {
         this.propertyName = propertyName;
@@ -63,7 +83,13 @@ public abstract class AbstractSyntheticBinding extends AbstractFullBinding {
         }
     }
 
+    /**
+     * Hooks the synthetic listeners required by this binding.
+     */
     protected abstract void syntheticBind();
+    /**
+     * Removes any synthetic listeners installed by this binding.
+     */
     protected abstract void syntheticUnbind();
 
     @Override

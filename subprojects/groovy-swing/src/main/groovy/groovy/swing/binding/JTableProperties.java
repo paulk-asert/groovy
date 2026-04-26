@@ -33,7 +33,15 @@ import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Supplies synthetic binding definitions for {@link JTable}.
+ */
 public class JTableProperties {
+    /**
+     * Returns the synthetic trigger bindings exposed for {@link JTable}.
+     *
+     * @return the synthetic trigger binding map
+     */
     public static Map<String, TriggerBinding> getSyntheticProperties() {
         Map<String, TriggerBinding> result = new HashMap<String, TriggerBinding>();
         result.put(JTable.class.getName() + "#elements",
@@ -46,9 +54,21 @@ public class JTableProperties {
     }
 }
 
+/**
+ * Tracks the synthetic {@code elements} property on a {@link JTable}.
+ */
 class JTableElementsBinding extends AbstractSyntheticBinding implements TableModelListener, PropertyChangeListener {
+    /**
+     * The currently bound table instance.
+     */
     JTable boundTable;
 
+    /**
+     * Creates an elements binding for a table.
+     *
+     * @param propertyBinding the source property binding
+     * @param target the target binding
+     */
     JTableElementsBinding(PropertyBinding propertyBinding, TargetBinding target) {
         super(propertyBinding, target, JTable.class, "elements");
     }
@@ -79,9 +99,22 @@ class JTableElementsBinding extends AbstractSyntheticBinding implements TableMod
     }
 }
 
+/**
+ * Tracks the synthetic selected-element properties on a {@link JTable}.
+ */
 class JTableSelectedElementBinding extends AbstractSyntheticBinding implements PropertyChangeListener, ListSelectionListener {
+    /**
+     * The currently bound table instance.
+     */
     JTable boundTable;
 
+    /**
+     * Creates a selected-element binding for a table.
+     *
+     * @param source the source property binding
+     * @param target the target binding
+     * @param propertyName the synthetic property name to observe
+     */
     protected JTableSelectedElementBinding(PropertyBinding source, TargetBinding target, String propertyName) {
         super(source, target, JTable.class, propertyName);
     }

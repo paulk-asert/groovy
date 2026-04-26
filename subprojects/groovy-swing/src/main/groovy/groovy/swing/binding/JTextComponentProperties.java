@@ -32,10 +32,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Supplies synthetic binding definitions for {@link JTextComponent}.
+ *
  * @since Groovy 1.1
  */
 public class JTextComponentProperties {
 
+    /**
+     * Returns the synthetic trigger bindings exposed for {@link JTextComponent}.
+     *
+     * @return the synthetic trigger binding map
+     */
     public static Map<String, TriggerBinding> getSyntheticProperties() {
         Map<String, TriggerBinding> result = new HashMap<String, TriggerBinding>();
         result.put(JTextComponent.class.getName() + "#text",
@@ -45,9 +52,21 @@ public class JTextComponentProperties {
 }
 
 
+/**
+ * Tracks the synthetic {@code text} property on a {@link JTextComponent}.
+ */
 class JTextComponentTextBinding extends AbstractSyntheticBinding implements PropertyChangeListener, DocumentListener {
+    /**
+     * The currently bound text component instance.
+     */
     JTextComponent boundTextComponent;
 
+    /**
+     * Creates a text binding for a text component.
+     *
+     * @param source the source property binding
+     * @param target the target binding
+     */
     JTextComponentTextBinding(PropertyBinding source, TargetBinding target) {
         super(source, target, JTextComponent.class, "text");
         source.setNonChangeCheck(true);

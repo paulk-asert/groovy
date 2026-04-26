@@ -33,9 +33,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Supplies synthetic binding definitions for {@link JComboBox}.
+ *
  * @since Groovy 1.1
  */
 public class JComboBoxProperties {
+    /**
+     * Returns the synthetic trigger bindings exposed for {@link JComboBox}.
+     *
+     * @return the synthetic trigger binding map
+     */
     public static Map<String, TriggerBinding> getSyntheticProperties() {
         Map<String, TriggerBinding> result = new HashMap<String, TriggerBinding>();
 
@@ -56,9 +63,22 @@ public class JComboBoxProperties {
 
 
 @SuppressWarnings("rawtypes")
+/**
+ * Tracks the synthetic selected-element properties on a {@link JComboBox}.
+ */
 class JComboBoxSelectedElementBinding extends AbstractSyntheticBinding implements PropertyChangeListener, ItemListener {
+    /**
+     * The currently bound combo box instance.
+     */
     JComboBox boundComboBox;
 
+    /**
+     * Creates a selected-element binding for a combo box.
+     *
+     * @param source the source property binding
+     * @param target the target binding
+     * @param propertyName the synthetic property name to observe
+     */
     JComboBoxSelectedElementBinding(PropertyBinding source, TargetBinding target, String propertyName) {
         super(source, target, JComboBox.class, propertyName);
     }
@@ -95,9 +115,21 @@ class JComboBoxSelectedElementBinding extends AbstractSyntheticBinding implement
 }
 
 @SuppressWarnings("rawtypes")
+/**
+ * Tracks the synthetic {@code selectedIndex} property on a {@link JComboBox}.
+ */
 class JComboBoxSelectedIndexBinding extends AbstractSyntheticBinding implements PropertyChangeListener, ItemListener {
+    /**
+     * The currently bound combo box instance.
+     */
     JComboBox boundComboBox;
 
+    /**
+     * Creates a selected-index binding for a combo box.
+     *
+     * @param source the source property binding
+     * @param target the target binding
+     */
     JComboBoxSelectedIndexBinding(PropertyBinding source, TargetBinding target) {
         super(source, target, JComboBox.class, "selectedIndex");
     }
@@ -134,9 +166,21 @@ class JComboBoxSelectedIndexBinding extends AbstractSyntheticBinding implements 
 }
 
 @SuppressWarnings({"rawtypes", "unchecked"})
+/**
+ * Tracks the synthetic {@code elements} property on a {@link JComboBox}.
+ */
 class JComboBoxElementsBinding extends AbstractSyntheticBinding implements ListDataListener, PropertyChangeListener {
+    /**
+     * The currently bound combo box instance.
+     */
     JComboBox boundComboBox;
 
+    /**
+     * Creates an elements binding for a combo box.
+     *
+     * @param propertyBinding the source property binding
+     * @param target the target binding
+     */
     JComboBoxElementsBinding(PropertyBinding propertyBinding, TargetBinding target) {
         super(propertyBinding, target, JComboBox.class, "elements");
     }
@@ -176,4 +220,3 @@ class JComboBoxElementsBinding extends AbstractSyntheticBinding implements ListD
         update();
     }
 }
-

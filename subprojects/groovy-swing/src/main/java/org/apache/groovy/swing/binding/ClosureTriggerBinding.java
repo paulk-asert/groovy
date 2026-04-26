@@ -31,19 +31,43 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Creates bindings that track the property path referenced by a closure expression.
+ */
 public class ClosureTriggerBinding implements TriggerBinding, SourceBinding {
     private static final BindPath[] EMPTY_BINDPATH_ARRAY = new BindPath[0];
+    /**
+     * Synthetic trigger bindings available while resolving closure paths.
+     */
     Map<String, TriggerBinding> syntheticBindings;
+    /**
+     * The closure used to evaluate the source value and discover observed properties.
+     */
     Closure closure;
 
+    /**
+     * Creates a closure trigger binding with the supplied synthetic trigger registry.
+     *
+     * @param syntheticBindings synthetic trigger bindings keyed by class and property
+     */
     public ClosureTriggerBinding(Map<String, TriggerBinding> syntheticBindings) {
         this.syntheticBindings = syntheticBindings;
     }
 
+    /**
+     * Returns the closure evaluated by this trigger binding.
+     *
+     * @return the source closure
+     */
     public Closure getClosure() {
         return closure;
     }
 
+    /**
+     * Replaces the closure evaluated by this trigger binding.
+     *
+     * @param closure the new source closure
+     */
     public void setClosure(Closure closure) {
         this.closure = closure;
     }
@@ -60,6 +84,13 @@ public class ClosureTriggerBinding implements TriggerBinding, SourceBinding {
         return bp;
     }
 
+    /**
+     * Creates a property-path-aware binding by snooping the closure's property accesses.
+     *
+     * @param source the source binding, which must be this trigger binding
+     * @param target the target binding
+     * @return a property-path-aware full binding
+     */
     @Override
     public FullBinding createBinding(SourceBinding source, TargetBinding target) {
         if (source != this) {
@@ -120,30 +151,75 @@ public class ClosureTriggerBinding implements TriggerBinding, SourceBinding {
         return fb;
     }
 
+    /**
+     * Evaluates the configured closure to obtain the current source value.
+     *
+     * @return the current source value
+     */
     @Override
     public Object getSourceValue() {
         return closure.call();
     }
 }
 
+/**
+ * Signals that closure snooping reached a method-return boundary that cannot be traversed.
+ */
 class DeadEndException extends RuntimeException {
+    /**
+     * Creates an exception with the supplied message.
+     *
+     * @param message the detail message
+     */
     DeadEndException(String message) { super(message); }
 }
 
+/**
+ * Placeholder object returned from snooped method calls to prevent deeper property traversal.
+ */
 class DeadEndObject {
+    /**
+     * Rejects attempts to continue binding through a method return value.
+     *
+     * @param property the requested property
+     * @return never returns normally
+     */
     public Object getProperty(String property) {
         throw new DeadEndException("Cannot bind to a property on the return value of a method call");
     }
+
+    /**
+     * Treats further method calls as additional dead-end placeholders.
+     *
+     * @param name the method name
+     * @param args the method arguments
+     * @return this placeholder
+     */
     public Object invokeMethod(String name, Object args) {
         return this;
     }
 }
 
+/**
+ * Records the property graph visited while snooping a binding closure.
+ */
 class BindPathSnooper extends GroovyObjectSupport {
+    /**
+     * Shared placeholder returned when a snooped method call terminates traversal.
+     */
     static final DeadEndObject DEAD_END = new DeadEndObject();
 
+    /**
+     * Child property snoopers keyed by property name.
+     */
     Map<String, BindPathSnooper> fields = new LinkedHashMap<>();
 
+    /**
+     * Returns or creates a child snooper for the requested property.
+     *
+     * @param property the property being observed
+     * @return the child snooper for that property
+     */
     @Override
     public Object getProperty(String property) {
         if (fields.containsKey(property)) {
@@ -155,6 +231,13 @@ class BindPathSnooper extends GroovyObjectSupport {
         }
     }
 
+    /**
+     * Treats any method call as a traversal dead end.
+     *
+     * @param name the method name
+     * @param args the method arguments
+     * @return the shared dead-end placeholder
+     */
     @Override
     public Object invokeMethod(String name, Object args) {
         return DEAD_END;

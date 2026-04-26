@@ -31,9 +31,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Supplies synthetic binding definitions for {@link JSpinner}.
+ *
  * @since Groovy 1.6.4
  */
 public class JSpinnerProperties {
+    /**
+     * Returns the synthetic trigger bindings exposed for {@link JSpinner}.
+     *
+     * @return the synthetic trigger binding map
+     */
     public static Map<String, TriggerBinding> getSyntheticProperties() {
         Map<String, TriggerBinding> result = new HashMap<String, TriggerBinding>();
         result.put(JSpinner.class.getName() + "#value",
@@ -42,10 +49,22 @@ public class JSpinnerProperties {
     }
 }
 
+/**
+ * Tracks the synthetic {@code value} property on a {@link JSpinner}.
+ */
 class JSpinnerValueBinding extends AbstractSyntheticBinding implements PropertyChangeListener, ChangeListener {
+    /**
+     * The currently bound spinner instance.
+     */
     JSpinner boundSlider;
 
 
+    /**
+     * Creates a value binding for a spinner.
+     *
+     * @param source the source property binding
+     * @param target the target binding
+     */
     JSpinnerValueBinding(PropertyBinding source, TargetBinding target) {
         super(source, target, JSpinner.class, "value");
     }

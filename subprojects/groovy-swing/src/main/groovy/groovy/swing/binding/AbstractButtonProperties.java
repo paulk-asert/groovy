@@ -31,9 +31,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Supplies synthetic binding definitions for {@link AbstractButton}.
+ *
  * @since Groovy 1.1
  */
 public class AbstractButtonProperties {
+    /**
+     * Returns the synthetic trigger bindings exposed for {@link AbstractButton}.
+     *
+     * @return the synthetic trigger binding map
+     */
     public static Map<String, TriggerBinding> getSyntheticProperties() {
         Map<String, TriggerBinding> result = new HashMap<String, TriggerBinding>();
         result.put(AbstractButton.class.getName() + "#selected",
@@ -43,9 +50,21 @@ public class AbstractButtonProperties {
 }
 
 
+/**
+ * Tracks the synthetic {@code selected} property on an {@link AbstractButton}.
+ */
 class AbstractButtonSelectedBinding extends AbstractSyntheticBinding implements PropertyChangeListener, ItemListener {
+    /**
+     * The currently bound button instance.
+     */
     AbstractButton boundButton;
 
+    /**
+     * Creates a selected-property binding for an abstract button.
+     *
+     * @param source the source property binding
+     * @param target the target binding
+     */
     AbstractButtonSelectedBinding(PropertyBinding source, TargetBinding target) {
         super(source, target, AbstractButton.class, "selected");
     }

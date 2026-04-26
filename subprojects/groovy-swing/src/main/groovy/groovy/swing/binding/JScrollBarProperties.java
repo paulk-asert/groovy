@@ -31,9 +31,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Supplies synthetic binding definitions for {@link JScrollBar}.
+ *
  * @since Groovy 1.1
  */
 public class JScrollBarProperties {
+    /**
+     * Returns the synthetic trigger bindings exposed for {@link JScrollBar}.
+     *
+     * @return the synthetic trigger binding map
+     */
     public static Map<String, TriggerBinding> getSyntheticProperties() {
         Map<String, TriggerBinding> result = new HashMap<String, TriggerBinding>();
         result.put(JScrollBar.class.getName() + "#value",
@@ -43,10 +50,22 @@ public class JScrollBarProperties {
 }
 
 
+/**
+ * Tracks the synthetic {@code value} property on a {@link JScrollBar}.
+ */
 class JScrollBarValueBinding extends AbstractSyntheticBinding implements PropertyChangeListener, ChangeListener {
+    /**
+     * The currently bound scroll bar instance.
+     */
     JScrollBar boundScrollBar;
 
 
+    /**
+     * Creates a value binding for a scroll bar.
+     *
+     * @param source the source property binding
+     * @param target the target binding
+     */
     JScrollBarValueBinding(PropertyBinding source, TargetBinding target) {
         super(source, target, JScrollBar.class, "value");
     }

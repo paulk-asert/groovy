@@ -49,15 +49,35 @@ import static java.lang.System.Logger.Level.WARNING;
 public class TableSorter extends TableMap {
     private static final System.Logger LOGGER = System.getLogger(TableSorter.class.getName());
     private static final int[] EMPTY_INT_ARRAY = new int[0];
+    /**
+     * Maps sorted row indexes back to the underlying model row indexes.
+     */
     int[] indexes;
+    /**
+     * The model columns currently used to sort rows.
+     */
     Vector<Integer> sortingColumns = new Vector<>();
+    /**
+     * Controls whether the current sort order is ascending.
+     */
     boolean ascending = true;
+    /**
+     * Remembers the last column sorted through the table header listener.
+     */
     int lastSortedColumn = -1;
 
+    /**
+     * Creates an empty sorter with no delegate model.
+     */
     public TableSorter() {
         indexes = EMPTY_INT_ARRAY; // For consistency.
     }
 
+    /**
+     * Creates a sorter for the supplied table model.
+     *
+     * @param model the model to wrap
+     */
     public TableSorter(TableModel model) {
         setModel(model);
     }
@@ -68,6 +88,14 @@ public class TableSorter extends TableMap {
         reallocateIndexes();
     }
 
+    /**
+     * Compares two source rows using the values from the supplied column.
+     *
+     * @param row1 the first source row index
+     * @param row2 the second source row index
+     * @param column the model column index to compare
+     * @return a negative value, zero, or a positive value depending on sort order
+     */
     public int compareRowsByColumn(int row1, int row2, int column) {
         Class<?> type = model.getColumnClass(column);
         TableModel data = model;
@@ -157,6 +185,13 @@ public class TableSorter extends TableMap {
         return Double.compare(d1, d2);
     }
 
+    /**
+     * Compares two source rows using the active sort columns.
+     *
+     * @param row1 the first source row index
+     * @param row2 the second source row index
+     * @return the comparison result in the currently configured direction
+     */
     @SuppressWarnings("unchecked")
     public int compare(int row1, int row2) {
         for (int level = 0; level < sortingColumns.size(); level++) {
@@ -168,6 +203,9 @@ public class TableSorter extends TableMap {
         return 0;
     }
 
+    /**
+     * Rebuilds the row index mapping to match the current delegate row count.
+     */
     public void reallocateIndexes() {
         int rowCount = model.getRowCount();
 
@@ -187,17 +225,28 @@ public class TableSorter extends TableMap {
         super.tableChanged(e);
     }
 
+    /**
+     * Verifies that the cached index mapping still matches the delegate model.
+     */
     public void checkModel() {
         if (indexes.length != model.getRowCount()) {
             LOGGER.log(WARNING, "Sorter not informed of a change in model");
         }
     }
 
+    /**
+     * Sorts the cached row mapping using the currently configured sort columns.
+     *
+     * @param sender the caller requesting the sort
+     */
     public void sort(Object sender) {
         checkModel();
         shuttlesort((int[]) indexes.clone(), indexes, 0, indexes.length);
     }
 
+    /**
+     * Sorts the row mapping using a simple quadratic algorithm.
+     */
     public void n2sort() {
         for (int i = 0; i < getRowCount(); i++) {
             for (int j = i + 1; j < getRowCount(); j++) {
@@ -215,6 +264,14 @@ public class TableSorter extends TableMap {
     // arrays. The number of compares appears to vary between N-1 and
     // NlogN depending on the initial order but the main reason for
     // using it here is that, unlike qsort, it is stable.
+    /**
+     * Performs a stable merge sort over the cached row mapping.
+     *
+     * @param from the source index array
+     * @param to the target index array
+     * @param low the inclusive lower bound
+     * @param high the exclusive upper bound
+     */
     public void shuttlesort(int[] from, int[] to, int low, int high) {
         if (high - low < 2) {
             return;
@@ -257,6 +314,12 @@ public class TableSorter extends TableMap {
         }
     }
 
+    /**
+     * Swaps two entries in the cached row mapping.
+     *
+     * @param i the first mapped row index
+     * @param j the second mapped row index
+     */
     public void swap(int i, int j) {
         int tmp = indexes[i];
         indexes[i] = indexes[j];
@@ -278,10 +341,21 @@ public class TableSorter extends TableMap {
         model.setValueAt(aValue, indexes[aRow], aColumn);
     }
 
+    /**
+     * Sorts the table by the supplied model column in ascending order.
+     *
+     * @param column the model column index to sort by
+     */
     public void sortByColumn(int column) {
         sortByColumn(column, true);
     }
 
+    /**
+     * Sorts the table by the supplied model column and direction.
+     *
+     * @param column the model column index to sort by
+     * @param ascending {@code true} for ascending order, {@code false} for descending order
+     */
     public void sortByColumn(int column, boolean ascending) {
         this.ascending = ascending;
         sortingColumns.removeAllElements();
@@ -293,6 +367,11 @@ public class TableSorter extends TableMap {
     // There is nowhere else to put this.
     // Add a mouse listener to the Table to trigger a table sort
     // when a column heading is clicked in the JTable.
+    /**
+     * Installs a header listener that resorts the table when a column header is clicked.
+     *
+     * @param table the table whose header should trigger sorting
+     */
     public void addMouseListenerToHeaderInTable(JTable table) {
         final TableSorter sorter = this;
         final JTable tableView = table;
