@@ -38,6 +38,8 @@ import java.io.IOException;
 import java.io.Serial;
 import java.io.Serializable;
 import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -225,6 +227,14 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
             "directive", (closure, value) -> closure.setDirective((Integer) value),
             "resolveStrategy", (closure, value) -> closure.setResolveStrategy((Integer) value)
     );
+
+    private static final ClassValue<CallOverride> CALL_OVERRIDES = new ClassValue<CallOverride>() {
+        @Override
+        protected CallOverride computeValue(Class<?> type) {
+            return CallOverride.lookup(type);
+        }
+    };
+    private static final ThreadLocal<Boolean> IN_CALL_FALLBACK = ThreadLocal.withInitial(() -> Boolean.FALSE);
 
     private Object delegate;
     private Object owner;
@@ -468,6 +478,31 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
      */
     @SuppressWarnings("unchecked")
     public V call(final Object... arguments) {
+        Class<?> myClass = getClass();
+        if (myClass != Closure.class && arguments != null && !IN_CALL_FALLBACK.get()) {
+            CallOverride override = CALL_OVERRIDES.get(myClass);
+            Method target = null;
+            if (arguments.length == 1 && override.oneArg != null) {
+                target = override.oneArg;
+            } else if (arguments.length == 0 && override.zeroArg != null) {
+                target = override.zeroArg;
+            }
+            if (target != null) {
+                IN_CALL_FALLBACK.set(Boolean.TRUE);
+                try {
+                    return (V) (arguments.length == 0
+                            ? target.invoke(this)
+                            : target.invoke(this, arguments[0]));
+                } catch (InvocationTargetException ite) {
+                    UncheckedThrow.rethrow(ite.getCause());
+                    return null; // unreachable statement
+                } catch (IllegalAccessException iae) {
+                    throw new GroovyRuntimeException(iae);
+                } finally {
+                    IN_CALL_FALLBACK.set(Boolean.FALSE);
+                }
+            }
+        }
         try {
             return (V) getMetaClass().invokeMethod(this, "doCall", arguments);
         } catch (InvokerInvocationException e) {
@@ -1179,5 +1214,40 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
         result.owner = owner;
         result.thisObject = thisObject;
         return result;
+    }
+
+    private static final class CallOverride {
+        static final CallOverride NONE = new CallOverride(null, null);
+        final Method zeroArg;
+        final Method oneArg;
+
+        private CallOverride(Method zeroArg, Method oneArg) {
+            this.zeroArg = zeroArg;
+            this.oneArg = oneArg;
+        }
+
+        static CallOverride lookup(Class<?> type) {
+            if (type == Closure.class) return NONE;
+            Method zero = findOverride(type);
+            Method one = findOverride(type, Object.class);
+            if (zero == null && one == null) return NONE;
+            return new CallOverride(zero, one);
+        }
+
+        private static Method findOverride(Class<?> type, Class<?>... params) {
+            try {
+                Method m = type.getMethod("call", params);
+                if (m.getDeclaringClass() == Closure.class) return null;
+                try {
+                    m.setAccessible(true);
+                } catch (RuntimeException ignored) {
+                    // module/package access denied; fall through to MOP doCall
+                    return null;
+                }
+                return m;
+            } catch (NoSuchMethodException ignored) {
+                return null;
+            }
+        }
     }
 }
