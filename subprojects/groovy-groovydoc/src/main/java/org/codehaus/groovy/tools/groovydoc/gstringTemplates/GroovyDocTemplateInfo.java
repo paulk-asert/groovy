@@ -18,9 +18,16 @@
  */
 package org.codehaus.groovy.tools.groovydoc.gstringTemplates;
 
+/**
+ * Defines the default GString template paths used by GroovyDoc for generating HTML documentation.
+ */
 public class GroovyDocTemplateInfo {
     private static final String TEMPLATE_BASEDIR = "org/codehaus/groovy/tools/groovydoc/gstringTemplates/";
     private static final String DOCGEN_BASEDIR = "org/apache/groovy/docgenerator/";
+    /**
+     * Template paths for top-level (root) documentation pages such as the index, all-classes
+     * frame, and deprecated list.
+     */
     public static final String[] DEFAULT_DOC_TEMPLATES = new String[]{ // top level templates
             TEMPLATE_BASEDIR + "topLevel/index.html",
             TEMPLATE_BASEDIR + "topLevel/overview-frame.html", // needs all package names
@@ -55,11 +62,17 @@ public class GroovyDocTemplateInfo {
             TEMPLATE_BASEDIR + "topLevel/prism-xml-doc.min.js",
             TEMPLATE_BASEDIR + "topLevel/prism-yaml.min.js",
     };
+    /**
+     * Template paths for package-level documentation pages.
+     */
     public static final String[] DEFAULT_PACKAGE_TEMPLATES = new String[]{ // package level templates
             TEMPLATE_BASEDIR + "packageLevel/package-frame.html",
             TEMPLATE_BASEDIR + "packageLevel/package-summary.html",
             TEMPLATE_BASEDIR + "packageLevel/package-tree.html"
     };
+    /**
+     * Template paths for class-level documentation pages.
+     */
     public static final String[] DEFAULT_CLASS_TEMPLATES = new String[]{ // class level templates
             TEMPLATE_BASEDIR + "classLevel/classDocName.html"
     };

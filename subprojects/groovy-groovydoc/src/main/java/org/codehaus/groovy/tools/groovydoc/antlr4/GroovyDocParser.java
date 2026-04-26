@@ -44,6 +44,11 @@ import java.util.Properties;
 
 import static java.lang.System.Logger.Level.WARNING;
 
+/**
+ * Parses Groovy and Java source files and builds {@link GroovyClassDoc} maps. Groovy sources
+ * are processed via the Groovy compiler AST ({@link GroovydocVisitor}); Java sources via
+ * JavaParser ({@link GroovydocJavaVisitor}).
+ */
 public class GroovyDocParser implements GroovyDocParserI {
 
     private static final System.Logger LOGGER = System.getLogger(GroovyDocParser.class.getName());
@@ -53,16 +58,25 @@ public class GroovyDocParser implements GroovyDocParserI {
     private final Properties properties;
     private final Logger log = Logger.create(GroovyDocParser.class);
 
+    /**
+     * Creates a parser with a default {@link JavaParser} instance.
+     */
     public GroovyDocParser(List<LinkArgument> links, Properties properties) {
         this(new JavaParser(), links, properties);
     }
 
+    /**
+     * Creates a parser with the supplied {@link JavaParser} instance.
+     */
     public GroovyDocParser(JavaParser javaParser, List<LinkArgument> links, Properties properties) {
         this.javaParser = javaParser;
         this.links = links;
         this.properties = properties;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, GroovyClassDoc> getClassDocsFromSingleSource(String packagePath, String file, String src)
             throws RuntimeException {

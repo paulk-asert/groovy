@@ -68,6 +68,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
+/**
+ * JavaParser AST visitor that extracts Groovydoc information from Java source files, producing
+ * a map of {@link GroovyClassDoc} instances keyed by full path.
+ */
 public class GroovydocJavaVisitor
     extends VoidVisitorAdapter<Object> {
     private final List<LinkArgument> links;
@@ -79,16 +83,25 @@ public class GroovydocJavaVisitor
     private final Properties properties;
     private static final String FS = "/";
 
+    /**
+     * Creates a visitor for the given package path and link arguments with default properties.
+     */
     public GroovydocJavaVisitor(String packagePath, List<LinkArgument> links) {
         this(packagePath, links, new Properties());
     }
 
+    /**
+     * Creates a visitor for the given package path, link arguments, and generation properties.
+     */
     public GroovydocJavaVisitor(String packagePath, List<LinkArgument> links, Properties properties) {
         this.packagePath = packagePath;
         this.links = links;
         this.properties = properties;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void visit(ImportDeclaration n, Object arg) {
         Optional<Name> qualPath = n.getName().getQualifier();
@@ -110,6 +123,9 @@ public class GroovydocJavaVisitor
         return imports;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void visit(EnumDeclaration n, Object arg) {
         SimpleGroovyClassDoc parent = visit(n);
@@ -120,6 +136,9 @@ public class GroovydocJavaVisitor
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void visit(EnumConstantDeclaration n, Object arg) {
         if (!currentClassDoc.isEnum()) {
@@ -137,6 +156,9 @@ public class GroovydocJavaVisitor
         super.visit(n, arg);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void visit(AnnotationDeclaration n, Object arg) {
         SimpleGroovyClassDoc parent = visit(n);
@@ -148,6 +170,9 @@ public class GroovydocJavaVisitor
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void visit(AnnotationMemberDeclaration n, Object arg) {
         if (!currentClassDoc.isAnnotationType()) {
@@ -171,6 +196,9 @@ public class GroovydocJavaVisitor
         super.visit(n, arg);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void visit(ClassOrInterfaceDeclaration n, Object arg) {
         SimpleGroovyClassDoc parent = visit(n);
@@ -198,6 +226,9 @@ public class GroovydocJavaVisitor
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void visit(final RecordDeclaration n, final Object arg) {
         SimpleGroovyClassDoc parent = visit(n);
@@ -210,6 +241,9 @@ public class GroovydocJavaVisitor
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void visit(final CompactConstructorDeclaration c, Object arg) {
         SimpleGroovyConstructorDoc meth = new SimpleGroovyConstructorDoc(c.getNameAsString(), currentClassDoc);
@@ -372,6 +406,9 @@ public class GroovydocJavaVisitor
         return s.replace('.', '/').replace('$', '.');
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void visit(MethodDeclaration m, Object arg) {
         if (isInternal(m)) return;
@@ -387,6 +424,9 @@ public class GroovydocJavaVisitor
         return new SimpleGroovyType(withSlashes(t.asString()));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void visit(ConstructorDeclaration c, Object arg) {
         if (isInternal(c)) return;
@@ -429,6 +469,9 @@ public class GroovydocJavaVisitor
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void visit(FieldDeclaration f, Object arg) {
         if (isInternal(f)) return;
@@ -442,6 +485,9 @@ public class GroovydocJavaVisitor
         super.visit(f, arg);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void visit(ObjectCreationExpr n, Object arg) {
         // Anonymous class bodies must not contribute members to the enclosing type doc.
@@ -449,6 +495,9 @@ public class GroovydocJavaVisitor
         super.visit(n, arg);
     }
 
+    /**
+     * Returns the collected class documentation, keyed by full path name.
+     */
     public Map<String, GroovyClassDoc> getGroovyClassDocs() {
         return classDocs;
     }

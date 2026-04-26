@@ -59,10 +59,16 @@ public class GroovyDocTemplateEngine {
     private final Map<String, Template> classTemplates; // cache
     private final List<String> classTemplatePaths; // once per class
 
+    /**
+     * Creates a template engine with a resource manager, a single class-level template, and default properties.
+     */
     public GroovyDocTemplateEngine(GroovyDocTool tool, ResourceManager resourceManager, String classTemplate) {
         this(tool, resourceManager, new String[]{}, new String[]{}, new String[]{classTemplate}, new Properties());
     }
 
+    /**
+     * Creates a template engine with separate sets of documentation, package, and class templates.
+     */
     public GroovyDocTemplateEngine(GroovyDocTool tool, ResourceManager resourceManager,
                                    String[] docTemplates,
                                    String[] packageTemplates,
@@ -154,6 +160,9 @@ public class GroovyDocTemplateEngine {
         return docTemplatePaths.iterator();
     }
 
+    /**
+     * Copies a binary resource (image or Prism.js bundle) from the classpath to the given destination file path.
+     */
     public void copyBinaryResource(String template, String destFileName) {
         if (resourceManager instanceof ClasspathResourceManager) {
             OutputStream outputStream = null;

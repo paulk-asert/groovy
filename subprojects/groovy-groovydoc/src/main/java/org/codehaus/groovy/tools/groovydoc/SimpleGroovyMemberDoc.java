@@ -21,19 +21,33 @@ package org.codehaus.groovy.tools.groovydoc;
 import org.codehaus.groovy.groovydoc.GroovyClassDoc;
 import org.codehaus.groovy.groovydoc.GroovyMemberDoc;
 
+/**
+ * Base implementation for documented members declared within a class.
+ */
 public class SimpleGroovyMemberDoc extends SimpleGroovyAbstractableElementDoc implements GroovyMemberDoc {
+    /**
+     * The class that declares this member.
+     */
     protected GroovyClassDoc belongsToClass;
 
+    /**
+     * Creates a member owned by the supplied class.
+     *
+     * @param name the member name
+     * @param belongsToClass the declaring class
+     */
     public SimpleGroovyMemberDoc(String name, GroovyClassDoc belongsToClass) {
         super(name);
         this.belongsToClass = belongsToClass;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean isSynthetic() {/*todo*/
         return false;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String firstSentenceCommentText() {
         if (super.firstSentenceCommentText() == null) {
@@ -43,6 +57,7 @@ public class SimpleGroovyMemberDoc extends SimpleGroovyAbstractableElementDoc im
         return super.firstSentenceCommentText();
     }
 
+    /** {@inheritDoc} */
     @Override
     public String commentText() {
         if (super.commentText() == null) {

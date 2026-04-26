@@ -60,8 +60,17 @@ public final class MarkdownRenderer {
     // not expand inline tags (e.g. {@link}) that are meant to be literal
     // code samples. We substitute them back for the real braces after the
     // TagRenderer pass; see {@link #unmaskBracesInCode(String)}.
-    static final char LBRACE_MASK = '\u0001';
-    static final char RBRACE_MASK = '\u0002';
+    /**
+     * Placeholder character substituted for {@code '{'} inside code spans and code blocks to
+     * prevent inline-tag expansion by {@link TagRenderer}. Translated back to {@code &#123;}
+     * after {@code TagRenderer} runs.
+     */
+    static final char LBRACE_MASK = '';
+    /**
+     * Placeholder character substituted for {@code '}'} inside code spans and code blocks.
+     * Translated back to {@code &#125;} after {@code TagRenderer} runs.
+     */
+    static final char RBRACE_MASK = '';
 
     private MarkdownRenderer() {}
 

@@ -31,6 +31,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+/**
+ * Coordinates source parsing and template-driven rendering for GroovyDoc generation.
+ */
 public class GroovyDocTool {
     private final Logger log = Logger.create(GroovyDocTool.class);
     private final GroovyRootDocBuilder rootDocBuilder;
@@ -48,6 +51,9 @@ public class GroovyDocTool {
         this(null, sourcepaths, null);
     }
 
+    /**
+     * Creates a GroovyDocTool with a resource manager, source paths, and a single class-level template.
+     */
     public GroovyDocTool(ResourceManager resourceManager, String[] sourcepaths, String classTemplate) {
         this(resourceManager, sourcepaths, new String[]{}, new String[]{}, new String[]{classTemplate}, new ArrayList<LinkArgument>(), null, new Properties());
     }
@@ -120,6 +126,12 @@ public class GroovyDocTool {
         }
     }
 
+    /**
+     * Adds source files to the documentation set.
+     *
+     * @param filenames relative source file paths to process
+     * @throws IOException if a file cannot be read
+     */
     public void add(List<String> filenames) throws IOException {
         if (templateEngine != null) {
             // only print out if we are being used for template generation
@@ -129,6 +141,9 @@ public class GroovyDocTool {
         rootDocBuilder.buildTree(filenames);
     }
 
+    /**
+     * Returns the root documentation object built from all added source files.
+     */
     public GroovyRootDoc getRootDoc() {
         return rootDocBuilder.getRootDoc();
     }
@@ -140,6 +155,13 @@ public class GroovyDocTool {
         return rootDocBuilder.getErrorCount();
     }
 
+    /**
+     * Renders the collected documentation to the given output using the configured templates.
+     *
+     * @param output the output destination
+     * @param destdir the destination directory path
+     * @throws Exception if rendering fails
+     */
     public void renderToOutput(OutputTool output, String destdir) throws Exception {
         // expect just one scope to be set on the way in but now also set higher levels of visibility
         if ("true".equals(properties.getProperty("privateScope"))) properties.setProperty("packageScope", "true");
@@ -156,6 +178,11 @@ public class GroovyDocTool {
         }
     }
 
+    /**
+     * Returns the directory component of the given filename, or {@code "DefaultPackage"} if the file is in the default package.
+     *
+     * @deprecated use {@link org.apache.groovy.groovydoc.tools.GroovyDocUtil#getPath}
+     */
     @Deprecated
     static String getPath(String filename) {
         String path = new File(filename).getParent();
@@ -166,6 +193,11 @@ public class GroovyDocTool {
         return path;
     }
 
+    /**
+     * Returns the filename component (basename) of the given path.
+     *
+     * @deprecated use {@link org.apache.groovy.groovydoc.tools.GroovyDocUtil#getFile}
+     */
     @Deprecated
     static String getFile(String filename) {
         return new File(filename).getName();

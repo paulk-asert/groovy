@@ -41,6 +41,10 @@ import static java.lang.System.Logger.Level.WARNING;
 /*
  *  todo: order methods alphabetically (implement compareTo enough?)
  */
+/**
+ * Builds a {@link SimpleGroovyRootDoc} from source files by dispatching each file to either the
+ * Groovy AST visitor or the Java parser.
+ */
 public class GroovyRootDocBuilder {
     private static final System.Logger LOGGER = System.getLogger(GroovyRootDocBuilder.class.getName());
     private final Logger log = Logger.create(GroovyRootDocBuilder.class);
@@ -52,15 +56,24 @@ public class GroovyRootDocBuilder {
     private final JavaParser javaParser;
     private int errorCount;
 
+    /**
+     * @deprecated The {@code tool} parameter is unused; use {@link #GroovyRootDocBuilder(String[], List, Properties)} instead.
+     */
     @Deprecated
     public GroovyRootDocBuilder(GroovyDocTool tool, String[] sourcepaths, List<LinkArgument> links, Properties properties) {
         this(sourcepaths, links, properties, null);
     }
 
+    /**
+     * Creates a builder for the given source paths, link arguments, and generation properties.
+     */
     public GroovyRootDocBuilder(String[] sourcepaths, List<LinkArgument> links, Properties properties) {
         this(sourcepaths, links, properties, null);
     }
 
+    /**
+     * Creates a builder with an explicit {@link JavaParser} instance; used internally to share the parser configuration set by {@link GroovyDocTool}.
+     */
     GroovyRootDocBuilder(String[] sourcepaths, List<LinkArgument> links, Properties properties, JavaParser javaParser) {
         this.sourcepaths = sourcepaths == null ? null : Arrays.copyOf(sourcepaths, sourcepaths.length);
         this.links = links;
@@ -71,6 +84,12 @@ public class GroovyRootDocBuilder {
         this.javaParser = javaParser != null ? javaParser : new JavaParser();
     }
 
+    /**
+     * Parses all given source files and populates the root doc.
+     *
+     * @param filenames source file paths to process
+     * @throws IOException if a file cannot be read
+     */
     public void buildTree(List<String> filenames) throws IOException {
         setOverview();
 
@@ -155,11 +174,17 @@ public class GroovyRootDocBuilder {
         }
     }
 
+    /**
+     * Returns the number of source files that failed to parse.
+     */
     public int getErrorCount() {
         return errorCount;
     }
 
-    /* package private */ void processPackageInfo(String src, String filename, SimpleGroovyPackageDoc packageDoc) {
+    /**
+     * Extracts the package description from a {@code package.html}, {@code package-info.java}, or {@code package-info.groovy} file and stores it in the given package doc.
+     */
+    void processPackageInfo(String src, String filename, SimpleGroovyPackageDoc packageDoc) {
         String relPath = packageDoc.getRelativeRootPath();
         String description = calcThenSetPackageDescription(src, filename, relPath);
         packageDoc.setDescription(description);
@@ -230,6 +255,9 @@ public class GroovyRootDocBuilder {
         return pos;
     }
 
+    /**
+     * Resolves inter-class references and returns the completed root doc.
+     */
     public GroovyRootDoc getRootDoc() {
         rootDoc.resolve();
         return rootDoc;

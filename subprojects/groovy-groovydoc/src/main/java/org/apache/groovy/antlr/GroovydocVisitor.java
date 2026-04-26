@@ -87,10 +87,16 @@ public class GroovydocVisitor extends ClassCodeVisitorSupport {
     private String cachedSource;
     private String[] cachedSourceLines;
 
+    /**
+     * Creates a visitor that collects Groovydoc for classes in the given package.
+     */
     public GroovydocVisitor(final SourceUnit unit, String packagePath, List<LinkArgument> links) {
         this(unit, packagePath, links, new Properties());
     }
 
+    /**
+     * Creates a visitor that collects Groovydoc for classes in the given package, using the supplied generation {@code properties}.
+     */
     public GroovydocVisitor(final SourceUnit unit, String packagePath, List<LinkArgument> links, Properties properties) {
         this.unit = unit;
         this.packagePath = packagePath;
@@ -98,11 +104,17 @@ public class GroovydocVisitor extends ClassCodeVisitorSupport {
         this.properties = properties;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected SourceUnit getSourceUnit() {
         return unit;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void visitClass(ClassNode node) {
         // GROOVY-10162: anonymous inner classes (e.g. those generated for each
@@ -504,6 +516,9 @@ public class GroovydocVisitor extends ClassCodeVisitorSupport {
         return deemedInternal(node);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void visitConstructor(ConstructorNode node) {
         if (node.isSynthetic()) return;
@@ -514,6 +529,9 @@ public class GroovydocVisitor extends ClassCodeVisitorSupport {
         super.visitConstructor(node);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void visitMethod(MethodNode node) {
         if (currentClassDoc.isEnum() && "$INIT".equals(node.getName()))
@@ -604,6 +622,9 @@ public class GroovydocVisitor extends ClassCodeVisitorSupport {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void visitProperty(PropertyNode node) {
         if (isInternal(node.getField())) return;
@@ -633,6 +654,9 @@ public class GroovydocVisitor extends ClassCodeVisitorSupport {
             + (node.isArray() ? "[]" : "");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void visitDeclarationExpression(DeclarationExpression expression) {
         if (currentClassDoc.isScript()) {
@@ -675,6 +699,9 @@ public class GroovydocVisitor extends ClassCodeVisitorSupport {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void visitField(FieldNode node) {
         if (node.isSynthetic()) return;
@@ -750,6 +777,9 @@ public class GroovydocVisitor extends ClassCodeVisitorSupport {
         return false;
     }
 
+    /**
+     * Returns the collected class documentation, keyed by full path name.
+     */
     public Map<String, GroovyClassDoc> getGroovyClassDocs() {
         return classDocs;
     }

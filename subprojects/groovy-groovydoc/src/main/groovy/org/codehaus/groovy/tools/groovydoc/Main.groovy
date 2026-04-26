@@ -237,6 +237,10 @@ class Main {
         }
     }
 
+    /**
+     * Builds and runs the GroovyDocTool using the static configuration set by {@link #main},
+     * writes output to {@link #destDir}, and returns the number of parse errors.
+     */
     static int execute() {
         Properties properties = new Properties()
         properties.put("windowTitle", windowTitle)
@@ -307,6 +311,11 @@ class Main {
         return htmlTool.errorCount
     }
 
+    /**
+     * Populates {@link #sourceFilesToDoc} by resolving each entry in {@code remainingArgs}
+     * against the given {@code sourceDirs}, collecting {@code .groovy} and {@code .java}
+     * files. Entries in {@code exclusions} are skipped.
+     */
     static collectSourceFileNames(List<String> remainingArgs, String[] sourceDirs, List<String> exclusions) {
         sourceFilesToDoc = []
         remainingArgs.each { String pkgOrFile ->

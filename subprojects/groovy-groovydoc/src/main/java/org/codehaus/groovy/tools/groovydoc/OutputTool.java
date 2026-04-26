@@ -18,8 +18,24 @@
  */
 package org.codehaus.groovy.tools.groovydoc;
 
+/**
+ * Receives rendered documentation output and supporting resource copies.
+ */
 public interface OutputTool {
+    /**
+     * Ensures that the supplied output location exists.
+     *
+     * @param filename the output directory or root path to prepare
+     */
     void makeOutputArea(String filename);
+    /**
+     * Writes rendered text to the supplied output file.
+     *
+     * @param fileName the file to write
+     * @param text the rendered content
+     * @param charset the character set to use when writing
+     * @throws Exception if the output cannot be written
+     */
     void writeToOutput(String fileName, String text, String charset) throws Exception;
 
     /**

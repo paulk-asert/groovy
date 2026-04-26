@@ -53,15 +53,24 @@ public class GroovyDocWriter {
     private final Properties properties;
     private final String[] sourcepaths;
 
+    /**
+     * @deprecated Use {@link #GroovyDocWriter(OutputTool, GroovyDocTemplateEngine, Properties)}
+     */
     @Deprecated
     public GroovyDocWriter(GroovyDocTool tool, OutputTool output, GroovyDocTemplateEngine templateEngine, Properties properties) {
         this(output, templateEngine, properties);
     }
 
+    /**
+     * Creates a writer with no source-path information (resource files will not be copied).
+     */
     public GroovyDocWriter(OutputTool output, GroovyDocTemplateEngine templateEngine, Properties properties) {
         this(output, templateEngine, properties, null);
     }
 
+    /**
+     * Creates a writer with source-path information used to locate and mirror resource directories.
+     */
     public GroovyDocWriter(OutputTool output, GroovyDocTemplateEngine templateEngine, Properties properties, String[] sourcepaths) {
         this.output = output;
         this.templateEngine = templateEngine;
@@ -69,12 +78,18 @@ public class GroovyDocWriter {
         this.sourcepaths = sourcepaths == null ? new String[0] : Arrays.copyOf(sourcepaths, sourcepaths.length);
     }
 
+    /**
+     * Writes HTML for every class in the root doc to the destination directory.
+     */
     public void writeClasses(GroovyRootDoc rootDoc, String destdir) throws Exception {
         for (GroovyClassDoc classDoc : rootDoc.classes()) {
             writeClassToOutput(classDoc, destdir);
         }
     }
 
+    /**
+     * Writes the HTML page for a single class doc if its visibility matches the configured scope.
+     */
     public void writeClassToOutput(GroovyClassDoc classDoc, String destdir) throws Exception {
         if (classDoc.isPublic() || classDoc.isProtected() && "true".equals(properties.getProperty("protectedScope")) ||
                 classDoc.isPackagePrivate() && "true".equals(properties.getProperty("packageScope")) || "true".equals(properties.getProperty("privateScope"))) {
@@ -85,6 +100,9 @@ public class GroovyDocWriter {
         }
     }
 
+    /**
+     * Writes package-level HTML pages and the {@code package-list} file to the destination directory.
+     */
     public void writePackages(GroovyRootDoc rootDoc, String destdir) throws Exception {
         for (GroovyPackageDoc packageDoc : rootDoc.specifiedPackages()) {
             if (new File(packageDoc.name()).isAbsolute()) continue;
@@ -139,6 +157,9 @@ public class GroovyDocWriter {
         }
     }
 
+    /**
+     * Writes all package-level template output for a single package doc to the destination directory.
+     */
     public void writePackageToOutput(GroovyPackageDoc packageDoc, String destdir) throws Exception {
         Iterator<String> templates = templateEngine.packageTemplatesIterator();
         while (templates.hasNext()) {
@@ -150,11 +171,17 @@ public class GroovyDocWriter {
         }
     }
 
+    /**
+     * Creates the output area and writes the root-level documentation pages.
+     */
     public void writeRoot(GroovyRootDoc rootDoc, String destdir) throws Exception {
         output.makeOutputArea(destdir);
         writeRootDocToOutput(rootDoc, destdir);
     }
 
+    /**
+     * Writes each root-level template to the destination directory, skipping disabled pages and copying binary resources verbatim.
+     */
     public void writeRootDocToOutput(GroovyRootDoc rootDoc, String destdir) throws Exception {
         Iterator<String> templates = templateEngine.docTemplatesIterator();
         while (templates.hasNext()) {

@@ -53,6 +53,9 @@ public class MockOutputTool implements OutputTool {
     private final Map<String, String> output = new LinkedHashMap<>();
     private final String dumpDir = System.getProperty(DUMP_DIR_PROP);
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void makeOutputArea(String filename) {
         outputAreas.add(filename);
@@ -65,6 +68,9 @@ public class MockOutputTool implements OutputTool {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void writeToOutput(String fileName, String text, String charset) throws Exception {
         output.put(fileName, text);
@@ -78,6 +84,9 @@ public class MockOutputTool implements OutputTool {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void copyResource(String srcPath, String dstPath) throws IOException {
         // Read the source file's contents into the in-memory map so tests
@@ -91,14 +100,23 @@ public class MockOutputTool implements OutputTool {
         }
     }
 
+    /**
+     * Returns {@code true} if {@link #makeOutputArea} was previously called with the given filename.
+     */
     public boolean isValidOutputArea(String fileName) {
         return outputAreas.contains(fileName);
     }
 
+    /**
+     * Returns the content written to the given filename by {@link #writeToOutput}, or {@code null} if no content has been written.
+     */
     public String getText(String fileName) {
         return output.get(fileName);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return "dirs:" + outputAreas + ", files:" + output.keySet();

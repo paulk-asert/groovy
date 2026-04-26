@@ -66,12 +66,21 @@ public final class ClassTree {
         private final GroovyClassDoc classDoc;
         private final Map<String, Node> children = new LinkedHashMap<>();
 
+        /**
+         * Creates a node with the given qualified name and optional class doc.
+         */
         Node(String qualifiedName, GroovyClassDoc classDoc) {
             this.qualifiedName = qualifiedName;
             this.classDoc = classDoc;
         }
 
+        /**
+         * Returns the fully qualified name of this node's type.
+         */
         public String getQualifiedName() { return qualifiedName; }
+        /**
+         * Returns the class doc for this node, or {@code null} if this is an external (non-link) node.
+         */
         public GroovyClassDoc getClassDoc() { return classDoc; }
 
         /** Children in insertion order; callers typically sort before rendering. */

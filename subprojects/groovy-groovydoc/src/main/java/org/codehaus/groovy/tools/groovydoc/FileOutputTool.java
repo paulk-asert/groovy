@@ -29,9 +29,13 @@ import java.nio.file.StandardCopyOption;
 
 import static java.lang.System.Logger.Level.WARNING;
 
+/**
+ * Writes generated documentation and copied resources to the file system.
+ */
 public class FileOutputTool implements OutputTool {
 
     private static final System.Logger LOGGER = System.getLogger(FileOutputTool.class.getName());
+    /** {@inheritDoc} */
     @Override
     public void makeOutputArea(String filename) {
         Path path = Paths.get(filename);
@@ -45,6 +49,7 @@ public class FileOutputTool implements OutputTool {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public void writeToOutput(String fileName, String text, String charset) throws Exception {
         File file = new File(fileName);
@@ -59,6 +64,7 @@ public class FileOutputTool implements OutputTool {
         ResourceGroovyMethods.write(file, text, charset, true);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void copyResource(String srcPath, String dstPath) throws IOException {
         Path dst = Paths.get(dstPath);
