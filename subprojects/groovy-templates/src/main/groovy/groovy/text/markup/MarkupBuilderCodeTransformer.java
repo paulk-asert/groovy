@@ -61,23 +61,39 @@ import java.util.Map;
  */
 class MarkupBuilderCodeTransformer extends ClassCodeExpressionTransformer {
 
+    /**
+     * Node metadata key used to remember the original model variable behind an escaped expression.
+     */
     static final String TARGET_VARIABLE = "target.variable";
 
     private final SourceUnit unit;
     private final boolean autoEscape;
     private final ClassNode classNode;
 
+    /**
+     * Creates a transformer for a generated markup template class.
+     *
+     * @param unit source unit being transformed
+     * @param classNode generated template class
+     * @param autoEscape whether dynamic model values should be wrapped in {@code tryEscape}
+     */
     MarkupBuilderCodeTransformer(final SourceUnit unit, final ClassNode classNode, final boolean autoEscape) {
         this.unit = unit;
         this.autoEscape = autoEscape;
         this.classNode = classNode;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected SourceUnit getSourceUnit() {
         return unit;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Expression transform(final Expression exp) {
         if (exp instanceof BinaryExpression) {

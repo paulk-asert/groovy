@@ -97,23 +97,40 @@ public class GStringTemplateEngine extends TemplateEngine {
     private static AtomicInteger counter = new AtomicInteger();
     private static final boolean REUSE_CLASS_LOADER = SystemUtil.getBooleanSafe("groovy.GStringTemplateEngine.reuseClassLoader");
 
+    /**
+     * Creates an engine that parses template scripts with the default template class loader.
+     */
     public GStringTemplateEngine() {
         this(GStringTemplate.class.getClassLoader());
     }
 
+    /**
+     * Creates an engine that parses template scripts with the supplied parent loader.
+     *
+     * @param parentLoader class loader used to compile generated template scripts
+     */
     public GStringTemplateEngine(ClassLoader parentLoader) {
         this.parentLoader = parentLoader;
     }
 
-    /* (non-Javadoc)
-    * @see groovy.text.TemplateEngine#createTemplate(java.io.Reader)
-    */
+    /**
+     * Creates a template backed by writable closures generated from the supplied reader.
+     *
+     * @param reader template source
+     * @return a compiled template instance
+     * @throws CompilationFailedException if Groovy fails to compile the generated template script
+     * @throws ClassNotFoundException if the generated template class cannot be instantiated
+     * @throws IOException if reading the template source fails
+     */
     @Override
     public Template createTemplate(final Reader reader) throws CompilationFailedException, ClassNotFoundException, IOException {
         return new GStringTemplate(reader, parentLoader);
     }
 
     private static class GStringTemplate implements Template {
+        /**
+         * Writable closure generated from the template source.
+         */
         final Closure template;
 
         /**
@@ -301,11 +318,22 @@ public class GStringTemplateEngine extends TemplateEngine {
             templateExpressions.append('}');
         }
 
+        /**
+         * Creates a writable template view using an empty binding.
+         *
+         * @return a writable closure for this template
+         */
         @Override
         public Writable make() {
             return make(null);
         }
 
+        /**
+         * Creates a writable template view using the supplied binding.
+         *
+         * @param map binding values made available to the template
+         * @return a writable closure for this template
+         */
         @Override
         public Writable make(final Map map) {
             final Closure templateClosure = ((Closure) this.template.clone()).asWritable();

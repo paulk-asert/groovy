@@ -28,10 +28,20 @@ enum IncludeType {
 
     private final String methodName;
 
+    /**
+     * Creates an include type that maps to the specified {@link BaseTemplate} helper method.
+     *
+     * @param methodName helper method used to realize the include
+     */
     IncludeType(final String methodName) {
         this.methodName = methodName;
     }
 
+    /**
+     * Returns the helper method name corresponding to this include type.
+     *
+     * @return the {@link BaseTemplate} method invoked for this include type
+     */
     public String getMethodName() {
         return methodName;
     }
