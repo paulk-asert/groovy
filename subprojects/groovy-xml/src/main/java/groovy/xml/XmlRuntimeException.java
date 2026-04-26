@@ -30,14 +30,30 @@ import org.apache.groovy.lang.annotation.Incubating;
 public class XmlRuntimeException extends GroovyRuntimeException {
     private static final long serialVersionUID = 7858720024082487492L;
 
+    /**
+     * Creates a new exception with a detail message.
+     *
+     * @param msg the detail message
+     */
     public XmlRuntimeException(String msg) {
         super(msg);
     }
 
+    /**
+     * Creates a new exception wrapping the supplied cause.
+     *
+     * @param cause the underlying parsing or building failure
+     */
     public XmlRuntimeException(Throwable cause) {
         super(cause);
     }
 
+    /**
+     * Creates a new exception with a detail message and cause.
+     *
+     * @param msg the detail message
+     * @param cause the underlying parsing or building failure
+     */
     public XmlRuntimeException(String msg, Throwable cause) {
         super(msg, cause);
     }

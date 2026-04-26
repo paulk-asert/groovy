@@ -27,6 +27,13 @@ import java.security.PrivilegedExceptionAction;
  * Support class for creating XML Factories
  */
 public class FactorySupport {
+    /**
+     * Runs the supplied factory creation action and normalizes checked failures.
+     *
+     * @param action the action creating the factory instance
+     * @return the created factory
+     * @throws ParserConfigurationException if the factory cannot be configured
+     */
     static Object createFactory(PrivilegedExceptionAction action) throws ParserConfigurationException {
         try {
             return action.run();
@@ -37,10 +44,22 @@ public class FactorySupport {
         }
     }
 
+    /**
+     * Creates a new {@link DocumentBuilderFactory}.
+     *
+     * @return a newly created document builder factory
+     * @throws ParserConfigurationException if the factory cannot be created
+     */
     public static DocumentBuilderFactory createDocumentBuilderFactory() throws ParserConfigurationException {
         return (DocumentBuilderFactory) createFactory(DocumentBuilderFactory::newInstance);
     }
 
+    /**
+     * Creates a new {@link SAXParserFactory}.
+     *
+     * @return a newly created SAX parser factory
+     * @throws ParserConfigurationException if the factory cannot be created
+     */
     public static SAXParserFactory createSaxParserFactory() throws ParserConfigurationException {
         return (SAXParserFactory) createFactory(SAXParserFactory::newInstance);
     }

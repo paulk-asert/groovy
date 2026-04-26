@@ -59,6 +59,8 @@ import static groovy.xml.XmlUtil.setFeatureQuietly;
  * the XML into a Node for each element in the XML with attributes
  * and child Nodes and Strings. This simple model is sufficient for
  * most simple use cases of processing XML.
+ * Parsing is eager: each parse operation consumes the SAX event stream and
+ * builds a complete {@link Node} tree before returning.
  * <p>
  * Example usage:
  * <pre class="language-groovy groovyTestCase">
@@ -127,10 +129,21 @@ public class XmlParser implements ContentHandler {
         this.allowDocTypeDeclaration = allowDocTypeDeclaration;
     }
 
+    /**
+     * Creates a parser backed by the supplied SAX reader.
+     *
+     * @param reader the XML reader whose features, properties, and handlers will be used
+     */
     public XmlParser(XMLReader reader) {
         this.reader = reader;
     }
 
+    /**
+     * Creates a parser backed by the supplied SAX parser.
+     *
+     * @param parser the SAX parser providing the {@link XMLReader} used for parsing
+     * @throws SAXException if the parser cannot provide an XML reader
+     */
     public XmlParser(SAXParser parser) throws SAXException {
         reader = parser.getXMLReader();
     }
@@ -495,71 +508,103 @@ public class XmlParser implements ContentHandler {
     // Delegated XMLReader methods
     //------------------------------------------------------------------------
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.XMLReader#getDTDHandler()
+    /**
+     * Returns the SAX DTD handler configured on the underlying reader.
+     *
+     * @return the configured DTD handler, or {@code null} if none has been set
      */
     public DTDHandler getDTDHandler() {
         return ensureReader().getDTDHandler();
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.XMLReader#getEntityResolver()
+    /**
+     * Returns the SAX entity resolver configured on the underlying reader.
+     *
+     * @return the configured entity resolver, or {@code null} if none has been set
      */
     public EntityResolver getEntityResolver() {
         return ensureReader().getEntityResolver();
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.XMLReader#getErrorHandler()
+    /**
+     * Returns the SAX error handler configured on the underlying reader.
+     *
+     * @return the configured error handler, or {@code null} if none has been set
      */
     public ErrorHandler getErrorHandler() {
         return ensureReader().getErrorHandler();
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.XMLReader#getFeature(java.lang.String)
+    /**
+     * Looks up a SAX feature on the underlying reader.
+     *
+     * @param uri the fully qualified SAX feature URI
+     * @return {@code true} if the feature is enabled
+     * @throws SAXNotRecognizedException if the feature name is not recognized
+     * @throws SAXNotSupportedException if the feature is recognized but not supported
      */
     public boolean getFeature(final String uri) throws SAXNotRecognizedException, SAXNotSupportedException {
         return ensureReader().getFeature(uri);
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.XMLReader#getProperty(java.lang.String)
+    /**
+     * Looks up a SAX property on the underlying reader.
+     *
+     * @param uri the fully qualified SAX property URI
+     * @return the current value of the property
+     * @throws SAXNotRecognizedException if the property name is not recognized
+     * @throws SAXNotSupportedException if the property is recognized but not supported
      */
     public Object getProperty(final String uri) throws SAXNotRecognizedException, SAXNotSupportedException {
         return ensureReader().getProperty(uri);
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.XMLReader#setDTDHandler(org.xml.sax.DTDHandler)
+    /**
+     * Sets the SAX DTD handler on the underlying reader.
+     *
+     * @param dtdHandler the DTD handler to receive notation and unparsed entity callbacks
      */
     public void setDTDHandler(final DTDHandler dtdHandler) {
         ensureReader().setDTDHandler(dtdHandler);
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.XMLReader#setEntityResolver(org.xml.sax.EntityResolver)
+    /**
+     * Sets the SAX entity resolver on the underlying reader.
+     *
+     * @param entityResolver the resolver to use for external entities
      */
     public void setEntityResolver(final EntityResolver entityResolver) {
         ensureReader().setEntityResolver(entityResolver);
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.XMLReader#setErrorHandler(org.xml.sax.ErrorHandler)
+    /**
+     * Sets the SAX error handler on the underlying reader.
+     *
+     * @param errorHandler the handler to receive parser warnings and errors
      */
     public void setErrorHandler(final ErrorHandler errorHandler) {
         ensureReader().setErrorHandler(errorHandler);
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.XMLReader#setFeature(java.lang.String, boolean)
+    /**
+     * Enables or disables a SAX feature on the underlying reader.
+     *
+     * @param uri the fully qualified SAX feature URI
+     * @param value the value to apply
+     * @throws SAXNotRecognizedException if the feature name is not recognized
+     * @throws SAXNotSupportedException if the feature is recognized but not supported
      */
     public void setFeature(final String uri, final boolean value) throws SAXNotRecognizedException, SAXNotSupportedException {
         ensureReader().setFeature(uri, value);
     }
 
-    /* (non-Javadoc)
-     * @see org.xml.sax.XMLReader#setProperty(java.lang.String, java.lang.Object)
+    /**
+     * Sets a SAX property on the underlying reader.
+     *
+     * @param uri the fully qualified SAX property URI
+     * @param value the value to apply
+     * @throws SAXNotRecognizedException if the property name is not recognized
+     * @throws SAXNotSupportedException if the property is recognized but not supported
      */
     public void setProperty(final String uri, final Object value) throws SAXNotRecognizedException, SAXNotSupportedException {
         ensureReader().setProperty(uri, value);
@@ -567,16 +612,35 @@ public class XmlParser implements ContentHandler {
 
     // ContentHandler interface
     //-------------------------------------------------------------------------
+    /**
+     * Resets the current root node before SAX events for a new document begin.
+     *
+     * @throws SAXException if the SAX pipeline reports an error
+     */
     @Override
     public void startDocument() throws SAXException {
         parent = null;
     }
 
+    /**
+     * Completes the current parse and clears the internal element stack.
+     *
+     * @throws SAXException if the SAX pipeline reports an error
+     */
     @Override
     public void endDocument() throws SAXException {
         stack.clear();
     }
 
+    /**
+     * Creates a new {@link Node} for the current element and pushes it onto the parse stack.
+     *
+     * @param namespaceURI the namespace URI, or an empty string if namespaces are unavailable
+     * @param localName the local element name
+     * @param qName the qualified element name as reported by SAX
+     * @param list the element attributes
+     * @throws SAXException if node creation fails
+     */
     @Override
     public void startElement(String namespaceURI, String localName, String qName, Attributes list)
             throws SAXException {
@@ -595,6 +659,14 @@ public class XmlParser implements ContentHandler {
         stack.add(parent);
     }
 
+    /**
+     * Flushes buffered text and pops the current element when its end tag is seen.
+     *
+     * @param namespaceURI the namespace URI, or an empty string if namespaces are unavailable
+     * @param localName the local element name
+     * @param qName the qualified element name as reported by SAX
+     * @throws SAXException if text handling fails
+     */
     @Override
     public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
         addTextToNode();
@@ -607,49 +679,115 @@ public class XmlParser implements ContentHandler {
         }
     }
 
+    /**
+     * Buffers character data until the enclosing element boundary is reached.
+     *
+     * @param buffer the character buffer supplied by SAX
+     * @param start the start offset in the buffer
+     * @param length the number of characters to read
+     * @throws SAXException if the SAX pipeline reports an error
+     */
     @Override
     public void characters(char[] buffer, int start, int length) throws SAXException {
         bodyText.append(buffer, start, length);
     }
 
+    /**
+     * Receives namespace prefix mapping notifications.
+     * The default implementation does not retain separate prefix state.
+     *
+     * @param prefix the declared prefix
+     * @param namespaceURI the namespace URI bound to the prefix
+     * @throws SAXException if the SAX pipeline reports an error
+     */
     @Override
     public void startPrefixMapping(String prefix, String namespaceURI) throws SAXException {
     }
 
+    /**
+     * Receives namespace prefix scope end notifications.
+     * The default implementation performs no action.
+     *
+     * @param prefix the prefix leaving scope
+     * @throws SAXException if the SAX pipeline reports an error
+     */
     @Override
     public void endPrefixMapping(String prefix) throws SAXException {
     }
 
+    /**
+     * Receives ignorable whitespace and optionally preserves it as text content.
+     *
+     * @param buffer the character buffer supplied by SAX
+     * @param start the start offset in the buffer
+     * @param len the number of characters to read
+     * @throws SAXException if the SAX pipeline reports an error
+     */
     @Override
     public void ignorableWhitespace(char[] buffer, int start, int len) throws SAXException {
         if (keepIgnorableWhitespace) characters(buffer, start, len);
     }
 
+    /**
+     * Receives processing instruction callbacks.
+     * The default implementation ignores processing instructions.
+     *
+     * @param target the processing instruction target
+     * @param data the processing instruction data
+     * @throws SAXException if the SAX pipeline reports an error
+     */
     @Override
     public void processingInstruction(String target, String data) throws SAXException {
     }
 
+    /**
+     * Returns the document locator last provided by SAX.
+     *
+     * @return the current locator, or {@code null} if parsing has not started
+     */
     public Locator getDocumentLocator() {
         return locator;
     }
 
+    /**
+     * Stores the locator supplied by SAX for later diagnostics or subclass use.
+     *
+     * @param locator the document locator for the current parse
+     */
     @Override
     public void setDocumentLocator(Locator locator) {
         this.locator = locator;
     }
 
+    /**
+     * Receives skipped entity notifications.
+     * The default implementation performs no action.
+     *
+     * @param name the skipped entity name
+     * @throws SAXException if the SAX pipeline reports an error
+     */
     @Override
     public void skippedEntity(String name) throws SAXException {
     }
 
     // Implementation methods
     //-------------------------------------------------------------------------
+    /**
+     * Returns the configured XML reader after registering this parser as its content handler.
+     * Subclasses may override to customize reader preparation before parsing begins.
+     *
+     * @return the XML reader used for subsequent parse operations
+     */
     protected XMLReader getXMLReader() {
         XMLReader r = ensureReader();
         r.setContentHandler(this);
         return r;
     }
 
+    /**
+     * Transfers buffered character data into the current node when an element boundary is reached.
+     * Subclasses may override to customize text normalization or whitespace preservation during parsing.
+     */
     protected void addTextToNode() {
         if (parent == null) {
             // TODO store this on root node? reset bodyText?

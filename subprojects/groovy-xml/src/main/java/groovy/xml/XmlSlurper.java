@@ -108,6 +108,9 @@ import static groovy.xml.XmlUtil.setFeatureQuietly;
  * }
  * }
  *
+ * Navigation through the returned {@link GPathResult} is lazy, so selectors are
+ * evaluated on demand rather than exposing an eager {@code groovy.util.Node} tree.
+ *
  * @see GPathResult
  */
 public class XmlSlurper extends DefaultHandler {
@@ -165,10 +168,21 @@ public class XmlSlurper extends DefaultHandler {
         this.allowDocTypeDeclaration = allowDocTypeDeclaration;
     }
 
+    /**
+     * Creates a slurper backed by the supplied SAX reader.
+     *
+     * @param reader the XML reader whose features, properties, and handlers will be used
+     */
     public XmlSlurper(final XMLReader reader) {
         this.reader = reader;
     }
 
+    /**
+     * Creates a slurper backed by the supplied SAX parser.
+     *
+     * @param parser the SAX parser providing the {@link XMLReader} used for parsing
+     * @throws SAXException if the parser cannot provide an XML reader
+     */
     public XmlSlurper(final SAXParser parser) throws SAXException {
         this(parser.getXMLReader());
     }
@@ -428,51 +442,71 @@ public class XmlSlurper extends DefaultHandler {
     // Delegated XMLReader methods
     //------------------------------------------------------------------------
 
-    /* (non-Javadoc)
-    * @see org.xml.sax.XMLReader#getDTDHandler()
-    */
+    /**
+     * Returns the SAX DTD handler configured on the underlying reader.
+     *
+     * @return the configured DTD handler, or {@code null} if none has been set
+     */
     public DTDHandler getDTDHandler() {
         return ensureReader().getDTDHandler();
     }
 
-    /* (non-Javadoc)
-    * @see org.xml.sax.XMLReader#getEntityResolver()
-    */
+    /**
+     * Returns the SAX entity resolver configured on the underlying reader.
+     *
+     * @return the configured entity resolver, or {@code null} if none has been set
+     */
     public EntityResolver getEntityResolver() {
         return ensureReader().getEntityResolver();
     }
 
-    /* (non-Javadoc)
-    * @see org.xml.sax.XMLReader#getErrorHandler()
-    */
+    /**
+     * Returns the SAX error handler configured on the underlying reader.
+     *
+     * @return the configured error handler, or {@code null} if none has been set
+     */
     public ErrorHandler getErrorHandler() {
         return ensureReader().getErrorHandler();
     }
 
-    /* (non-Javadoc)
-    * @see org.xml.sax.XMLReader#getFeature(java.lang.String)
-    */
+    /**
+     * Looks up a SAX feature on the underlying reader.
+     *
+     * @param uri the fully qualified SAX feature URI
+     * @return {@code true} if the feature is enabled
+     * @throws SAXNotRecognizedException if the feature name is not recognized
+     * @throws SAXNotSupportedException if the feature is recognized but not supported
+     */
     public boolean getFeature(final String uri) throws SAXNotRecognizedException, SAXNotSupportedException {
         return ensureReader().getFeature(uri);
     }
 
-    /* (non-Javadoc)
-    * @see org.xml.sax.XMLReader#getProperty(java.lang.String)
-    */
+    /**
+     * Looks up a SAX property on the underlying reader.
+     *
+     * @param uri the fully qualified SAX property URI
+     * @return the current value of the property
+     * @throws SAXNotRecognizedException if the property name is not recognized
+     * @throws SAXNotSupportedException if the property is recognized but not supported
+     */
     public Object getProperty(final String uri) throws SAXNotRecognizedException, SAXNotSupportedException {
         return ensureReader().getProperty(uri);
     }
 
-    /* (non-Javadoc)
-    * @see org.xml.sax.XMLReader#setDTDHandler(org.xml.sax.DTDHandler)
-    */
+    /**
+     * Sets the SAX DTD handler on the underlying reader.
+     *
+     * @param dtdHandler the DTD handler to receive notation and unparsed entity callbacks
+     */
     public void setDTDHandler(final DTDHandler dtdHandler) {
         ensureReader().setDTDHandler(dtdHandler);
     }
 
-    /* (non-Javadoc)
-    * @see org.xml.sax.XMLReader#setEntityResolver(org.xml.sax.EntityResolver)
-    */
+    /**
+     * Sets the SAX entity resolver on the underlying reader.
+     *
+     * @param entityResolver the resolver to use for external entities
+     */
     public void setEntityResolver(final EntityResolver entityResolver) {
         ensureReader().setEntityResolver(entityResolver);
     }
@@ -492,23 +526,35 @@ public class XmlSlurper extends DefaultHandler {
         });
     }
 
-    /* (non-Javadoc)
-    * @see org.xml.sax.XMLReader#setErrorHandler(org.xml.sax.ErrorHandler)
-    */
+    /**
+     * Sets the SAX error handler on the underlying reader.
+     *
+     * @param errorHandler the handler to receive parser warnings and errors
+     */
     public void setErrorHandler(final ErrorHandler errorHandler) {
         ensureReader().setErrorHandler(errorHandler);
     }
 
-    /* (non-Javadoc)
-    * @see org.xml.sax.XMLReader#setFeature(java.lang.String, boolean)
-    */
+    /**
+     * Enables or disables a SAX feature on the underlying reader.
+     *
+     * @param uri the fully qualified SAX feature URI
+     * @param value the value to apply
+     * @throws SAXNotRecognizedException if the feature name is not recognized
+     * @throws SAXNotSupportedException if the feature is recognized but not supported
+     */
     public void setFeature(final String uri, final boolean value) throws SAXNotRecognizedException, SAXNotSupportedException {
         ensureReader().setFeature(uri, value);
     }
 
-    /* (non-Javadoc)
-    * @see org.xml.sax.XMLReader#setProperty(java.lang.String, java.lang.Object)
-    */
+    /**
+     * Sets a SAX property on the underlying reader.
+     *
+     * @param uri the fully qualified SAX property URI
+     * @param value the value to apply
+     * @throws SAXNotRecognizedException if the property name is not recognized
+     * @throws SAXNotSupportedException if the property is recognized but not supported
+     */
     public void setProperty(final String uri, final Object value) throws SAXNotRecognizedException, SAXNotSupportedException {
         ensureReader().setProperty(uri, value);
     }
@@ -516,26 +562,38 @@ public class XmlSlurper extends DefaultHandler {
     // ContentHandler interface
     //-------------------------------------------------------------------------
 
-    /* (non-Javadoc)
-    * @see org.xml.sax.ContentHandler#startDocument()
-    */
+    /**
+     * Resets the current slurped document before SAX events for a new parse begin.
+     *
+     * @throws SAXException if the SAX pipeline reports an error
+     */
     @Override
     public void startDocument() throws SAXException {
         currentNode = null;
         charBuffer.setLength(0);
     }
 
-    /* (non-Javadoc)
-    * @see org.xml.sax.helpers.DefaultHandler#startPrefixMapping(java.lang.String, java.lang.String)
-    */
+    /**
+     * Records namespace prefix hints for later {@link GPathResult} navigation.
+     *
+     * @param tag the declared prefix
+     * @param uri the namespace URI bound to the prefix
+     * @throws SAXException if the SAX pipeline reports an error
+     */
     @Override
     public void startPrefixMapping(final String tag, final String uri) throws SAXException {
         if (namespaceAware) namespaceTagHints.put(tag, uri);
     }
 
-    /* (non-Javadoc)
-    * @see org.xml.sax.ContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
-    */
+    /**
+     * Creates a slurper node for the current element and pushes it onto the parse stack.
+     *
+     * @param namespaceURI the namespace URI, or an empty string if namespaces are unavailable
+     * @param localName the local element name
+     * @param qName the qualified element name as reported by SAX
+     * @param atts the element attributes
+     * @throws SAXException if node creation fails
+     */
     @Override
     public void startElement(final String namespaceURI, final String localName, final String qName, final Attributes atts) throws SAXException {
         addCdata();
@@ -569,22 +627,40 @@ public class XmlSlurper extends DefaultHandler {
         currentNode = newElement;
     }
 
+    /**
+     * Receives ignorable whitespace and optionally preserves it as text content.
+     *
+     * @param buffer the character buffer supplied by SAX
+     * @param start the start offset in the buffer
+     * @param len the number of characters to read
+     * @throws SAXException if the SAX pipeline reports an error
+     */
     @Override
     public void ignorableWhitespace(char[] buffer, int start, int len) throws SAXException {
         if (keepIgnorableWhitespace) characters(buffer, start, len);
     }
 
-    /* (non-Javadoc)
-    * @see org.xml.sax.ContentHandler#characters(char[], int, int)
-    */
+    /**
+     * Buffers character data until the surrounding element boundary is reached.
+     *
+     * @param ch the character buffer supplied by SAX
+     * @param start the start offset in the buffer
+     * @param length the number of characters to read
+     * @throws SAXException if the SAX pipeline reports an error
+     */
     @Override
     public void characters(final char[] ch, final int start, final int length) throws SAXException {
         charBuffer.append(ch, start, length);
     }
 
-    /* (non-Javadoc)
-    * @see org.xml.sax.ContentHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
-    */
+    /**
+     * Flushes buffered text and restores the parent node when an end tag is reached.
+     *
+     * @param namespaceURI the namespace URI, or an empty string if namespaces are unavailable
+     * @param localName the local element name
+     * @param qName the qualified element name as reported by SAX
+     * @throws SAXException if text handling fails
+     */
     @Override
     public void endElement(final String namespaceURI, final String localName, final String qName) throws SAXException {
         addCdata();
@@ -594,9 +670,12 @@ public class XmlSlurper extends DefaultHandler {
         }
     }
 
-    /* (non-Javadoc)
-    * @see org.xml.sax.ContentHandler#endDocument()
-    */
+    /**
+     * Receives the end-of-document callback.
+     * The built tree remains available through the one-shot {@link #getDocument()} result.
+     *
+     * @throws SAXException if the SAX pipeline reports an error
+     */
     @Override
     public void endDocument() throws SAXException {
     }

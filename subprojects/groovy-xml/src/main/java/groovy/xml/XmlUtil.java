@@ -58,6 +58,8 @@ import java.net.URL;
 
 /**
  * Used for pretty printing XML content and other XML related utilities.
+ * The serialization helpers accept DOM nodes, Groovy XML trees, {@link GPathResult},
+ * {@link Writable}, and raw XML text.
  */
 public class XmlUtil {
     /**
@@ -572,6 +574,12 @@ public class XmlUtil {
      */
     public static String escapeXml(String orig) {
         return StringGroovyMethods.collectReplacements(orig, new Closure<String>(null) {
+            /**
+             * Maps a single character to its predefined XML entity.
+             *
+             * @param arg the character to examine
+             * @return the replacement entity, or {@code null} if no escaping is required
+             */
             public String doCall(Character arg) {
                 return switch (arg) {
                     case '&' -> "&amp;";
@@ -601,6 +609,12 @@ public class XmlUtil {
      */
     public static String escapeControlCharacters(String orig) {
         return StringGroovyMethods.collectReplacements(orig, new Closure<String>(null) {
+            /**
+             * Maps a control character to its numeric XML character reference.
+             *
+             * @param arg the character to examine
+             * @return the replacement reference, or {@code null} if no escaping is required
+             */
             public String doCall(Character arg) {
                 if (arg < 0x20) {
                         return "&#" + (int) arg + ";";
@@ -706,6 +720,13 @@ public class XmlUtil {
         }
     }
 
+    /**
+     * Attempts to set a feature on the transformer factory and ignores unsupported features.
+     *
+     * @param factory the transformer factory to configure
+     * @param feature the fully qualified JAXP feature URI
+     * @param value the value to apply
+     */
     public static void setFeatureQuietly(TransformerFactory factory, String feature, boolean value) {
         try {
             factory.setFeature(feature, value);
@@ -715,6 +736,13 @@ public class XmlUtil {
         }
     }
 
+    /**
+     * Attempts to set a feature on the document builder factory and ignores unsupported features.
+     *
+     * @param factory the document builder factory to configure
+     * @param feature the fully qualified JAXP feature URI
+     * @param value the value to apply
+     */
     public static void setFeatureQuietly(DocumentBuilderFactory factory, String feature, boolean value) {
         try {
             factory.setFeature(feature, value);
@@ -724,6 +752,13 @@ public class XmlUtil {
         }
     }
 
+    /**
+     * Attempts to set a feature on the SAX parser factory and ignores unsupported features.
+     *
+     * @param factory the SAX parser factory to configure
+     * @param feature the fully qualified JAXP feature URI
+     * @param value the value to apply
+     */
     public static void setFeatureQuietly(SAXParserFactory factory, String feature, boolean value) {
         try {
             factory.setFeature(feature, value);

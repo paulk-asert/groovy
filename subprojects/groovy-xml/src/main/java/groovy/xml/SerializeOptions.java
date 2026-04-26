@@ -39,6 +39,9 @@ public class SerializeOptions {
     private int indent = 2;
     private boolean allowDocTypeDeclaration = false;
 
+    /**
+     * Creates a new options instance using the default serialization settings.
+     */
     public SerializeOptions() {
     }
 
@@ -52,6 +55,11 @@ public class SerializeOptions {
         return encoding;
     }
 
+    /**
+     * Sets the character encoding for the XML output.
+     *
+     * @param encoding the encoding name to use
+     */
     public void setEncoding(String encoding) {
         this.encoding = encoding;
     }
@@ -75,6 +83,11 @@ public class SerializeOptions {
         return indent;
     }
 
+    /**
+     * Sets the number of spaces to use for indentation.
+     *
+     * @param indent the indent amount
+     */
     public void setIndent(int indent) {
         this.indent = indent;
     }
@@ -89,9 +102,17 @@ public class SerializeOptions {
         return allowDocTypeDeclaration;
     }
 
+    /**
+     * Sets whether DOCTYPE declarations are allowed during serialization.
+     *
+     * @param allowDocTypeDeclaration {@code true} to allow DOCTYPE declarations
+     */
     public void setAllowDocTypeDeclaration(boolean allowDocTypeDeclaration) {
         this.allowDocTypeDeclaration = allowDocTypeDeclaration;
     }
 
+    /**
+     * Shared default serialization options.
+     */
     static final SerializeOptions DEFAULT = new SerializeOptions();
 }
