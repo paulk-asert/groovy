@@ -42,6 +42,9 @@ import java.util.Map;
 public class YamlBuilder extends GroovyObjectSupport implements Writable {
     private final JsonBuilder jsonBuilder;
 
+    /**
+     * Creates an empty builder ready to assemble a YAML document.
+     */
     public YamlBuilder() {
         this.jsonBuilder = new JsonBuilder();
     }
@@ -64,6 +67,11 @@ public class YamlBuilder extends GroovyObjectSupport implements Writable {
         }
     }
 
+    /**
+     * Returns the current root structure managed by this builder.
+     *
+     * @return the current YAML object, array, or scalar content
+     */
     public Object getContent() {
         return jsonBuilder.getContent();
     }
@@ -166,9 +174,11 @@ public class YamlBuilder extends GroovyObjectSupport implements Writable {
     }
 
     /**
-     * Delegates to {@link #call(Iterable, Closure)}
-     * @param coll
-     * @param c
+     * Delegates to {@link #call(Iterable, Closure)} for collection inputs.
+     *
+     * @param coll the collection whose elements are converted into YAML content
+     * @param c the closure that maps each collection element to YAML content
+     * @return a list of values
      */
     public Object call(Collection coll, Closure c) {
         return jsonBuilder.call(coll, c);

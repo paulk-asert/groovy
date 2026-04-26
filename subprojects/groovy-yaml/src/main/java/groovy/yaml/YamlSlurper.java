@@ -40,6 +40,9 @@ import java.nio.file.Path;
 public class YamlSlurper {
     private final JsonSlurper jsonSlurper;
 
+    /**
+     * Creates a YAML parser that produces standard Groovy data structures.
+     */
     public YamlSlurper() {
         this.jsonSlurper = new JsonSlurper();
     }
