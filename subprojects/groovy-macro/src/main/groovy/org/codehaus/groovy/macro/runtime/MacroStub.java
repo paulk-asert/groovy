@@ -26,6 +26,13 @@ package org.codehaus.groovy.macro.runtime;
 public enum MacroStub {
     INSTANCE;
 
+    /**
+     * Returns the transformed macro value at runtime.
+     *
+     * @param obj the macro result
+     * @param <T> the macro result type
+     * @return {@code obj}
+     */
     public <T> T macroMethod(T obj) {
         return obj;
     }

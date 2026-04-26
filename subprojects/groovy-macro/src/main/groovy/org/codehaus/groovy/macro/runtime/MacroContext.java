@@ -38,6 +38,13 @@ public class MacroContext {
 
     private final CompilationUnit compilationUnit;
 
+    /**
+     * Creates a macro context for the current macro method invocation.
+     *
+     * @param compilationUnit the current compilation unit
+     * @param sourceUnit the current source unit
+     * @param call the original macro call expression
+     */
     public MacroContext(CompilationUnit compilationUnit, SourceUnit sourceUnit, MethodCallExpression call) {
         this.compilationUnit = compilationUnit;
         this.sourceUnit = sourceUnit;

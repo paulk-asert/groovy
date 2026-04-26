@@ -21,10 +21,10 @@ package org.codehaus.groovy.macro.transform;
 import org.apache.groovy.lang.annotation.Incubating;
 
 /**
+ * Marker base class for anonymous classes expanded into {@link org.codehaus.groovy.ast.ClassNode} instances.
  *
- * since 2.5.0
+ * @since 2.5.0
  */
-
 @Incubating
 public abstract class MacroClass {
 }

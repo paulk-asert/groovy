@@ -99,22 +99,45 @@ public abstract class ContextualClassCodeVisitor extends ClassCodeVisitorSupport
     private final Deque<TreeContext> treeContextStack = new ArrayDeque<TreeContext>();
     private TreeContext lastContext;
 
+    /**
+     * Creates a visitor with an initial root context.
+     */
     public ContextualClassCodeVisitor() {
         pushContext(new TreeContext(null, null));
     }
 
+    /**
+     * Returns the current traversal context.
+     *
+     * @return the current context, or {@code null}
+     */
     public TreeContext getTreeContext() {
         return treeContextStack.isEmpty()?null:treeContextStack.peek();
     }
 
+    /**
+     * Returns the most recently popped traversal context.
+     *
+     * @return the last completed context
+     */
     public TreeContext getLastContext() {
         return lastContext;
     }
 
+    /**
+     * Pushes an explicit traversal context.
+     *
+     * @param ctx the context to push
+     */
     protected void pushContext(TreeContext ctx) {
         treeContextStack.push(ctx);
     }
 
+    /**
+     * Pops the current traversal context.
+     *
+     * @return the popped context
+     */
     protected TreeContext popContext() {
         final TreeContext treeContext = treeContextStack.pop();
         List<TreeContextAction> actions = treeContext.getOnPopHandlers();
@@ -147,6 +170,11 @@ public abstract class ContextualClassCodeVisitor extends ClassCodeVisitorSupport
         return treeContext;
     }
 
+    /**
+     * Pushes a child context for the supplied AST node.
+     *
+     * @param node the node to enter
+     */
     protected void pushContext(ASTNode node) {
         pushContext(getTreeContext().fork(node));
     }
@@ -551,6 +579,11 @@ public abstract class ContextualClassCodeVisitor extends ClassCodeVisitorSupport
         popContext();
     }
 
+    /**
+     * Returns the current traversal path, starting with the last completed context.
+     *
+     * @return the current tree path
+     */
     public List<TreeContext> getTreePath() {
         List<TreeContext> path = new LinkedList<TreeContext>();
         path.add(lastContext);
@@ -558,6 +591,12 @@ public abstract class ContextualClassCodeVisitor extends ClassCodeVisitorSupport
         return path;
     }
 
+    /**
+     * Returns the current path when all supplied predicates match successive parents.
+     *
+     * @param predicates the predicates to match against the path
+     * @return the matching path, or an empty list
+     */
     public List<TreeContext> pathMatches(List<ASTNodePredicate> predicates) {
         List<TreeContext> path = new LinkedList<TreeContext>();
         TreeContext current = lastContext.parent;
@@ -574,14 +613,33 @@ public abstract class ContextualClassCodeVisitor extends ClassCodeVisitorSupport
         return path;
     }
 
+    /**
+     * Returns the path up to the first node matching the supplied predicate.
+     *
+     * @param predicate the predicate that terminates the path
+     * @return the matching path, or an empty list
+     */
     public List<TreeContext> pathUpTo(ASTNodePredicate predicate) {
         return pathUpTo(null, predicate);
     }
 
+    /**
+     * Returns the path up to the first node whose class matches {@code node}.
+     *
+     * @param node the node class that terminates the path
+     * @return the matching path, or an empty list
+     */
     public List<TreeContext> pathUpTo(Class<ASTNode> node) {
         return pathUpTo(node, null);
     }
 
+    /**
+     * Returns the path up to the first node that matches the supplied class and predicate.
+     *
+     * @param node the node class that terminates the path, or {@code null}
+     * @param predicate the predicate that terminates the path, or {@code null}
+     * @return the matching path, or an empty list
+     */
     public List<TreeContext> pathUpTo(Class<ASTNode> node, ASTNodePredicate predicate) {
         List<TreeContext> path = new LinkedList<TreeContext>();
         TreeContext current = lastContext;
@@ -613,6 +671,12 @@ public abstract class ContextualClassCodeVisitor extends ClassCodeVisitorSupport
 
     // ----------------------------- inner classes --------------------------------------
 
+    /**
+     * Creates class-based predicates for the supplied AST node classes.
+     *
+     * @param classes the classes to match
+     * @return the corresponding predicates
+     */
     @SuppressWarnings("unchecked")
     public static List<ASTNodePredicate> matchByClass(Class<ASTNode>... classes) {
         List<ASTNodePredicate> result = new ArrayList<>(classes.length);

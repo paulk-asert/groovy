@@ -53,6 +53,12 @@ class HttpBuilderClientTransform extends AbstractASTTransformation {
         'groovy.http.Patch' : 'PATCH',
     ]
 
+    /**
+     * Validates {@link HttpBuilderClient} usage and synthesizes the corresponding client implementation.
+     *
+     * @param nodes the annotation and annotated interface nodes
+     * @param source the source unit being transformed
+     */
     @Override
     void visit(ASTNode[] nodes, SourceUnit source) {
         init(nodes, source)

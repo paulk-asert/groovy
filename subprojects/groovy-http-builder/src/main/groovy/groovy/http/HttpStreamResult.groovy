@@ -41,6 +41,9 @@ import java.util.concurrent.atomic.AtomicReference
  * once the {@code groovy-concurrent-java} {@code FlowPublisherAdapter} is on
  * the classpath.
  *
+ * @param status the HTTP status code
+ * @param headers the response headers
+ * @param raw the underlying JDK streaming response
  * @since 6.0.0
  */
 @Incubating
@@ -49,6 +52,11 @@ record HttpStreamResult(
         HttpHeaders headers,
         HttpResponse<Flow.Publisher<List<ByteBuffer>>> raw) {
 
+    /**
+     * Creates a streaming result wrapper from a JDK HTTP response.
+     *
+     * @param response the response to wrap
+     */
     HttpStreamResult(HttpResponse<Flow.Publisher<List<ByteBuffer>>> response) {
         this(response.statusCode(), response.headers(), response)
     }
@@ -102,17 +110,31 @@ record HttpStreamResult(
         private final Flow.Publisher source
         private final Closure mapper
 
+        /**
+         * Creates a publisher that maps each upstream item before emission.
+         *
+         * @param source the upstream publisher
+         * @param mapper the mapping closure
+         */
         MappedPublisher(Flow.Publisher source, Closure mapper) {
             this.source = source
             this.mapper = mapper
         }
 
+        /**
+         * Subscribes downstream and inserts a mapping subscriber between both ends.
+         *
+         * @param downstream the subscriber receiving mapped items
+         */
         @Override
         void subscribe(Flow.Subscriber<? super Object> downstream) {
             source.subscribe(new MappingSubscriber(downstream, mapper))
         }
     }
 
+    /**
+     * Subscriber that applies a mapping closure before forwarding items downstream.
+     */
     // package-private for same-package unit testing
     static final class MappingSubscriber implements Flow.Subscriber<Object> {
         private final Flow.Subscriber<? super Object> downstream
@@ -120,17 +142,33 @@ record HttpStreamResult(
         private volatile Flow.Subscription subscription
         private volatile boolean done
 
+        /**
+         * Creates a subscriber that maps upstream items before forwarding them.
+         *
+         * @param downstream the subscriber receiving mapped items
+         * @param mapper the mapping closure
+         */
         MappingSubscriber(Flow.Subscriber<? super Object> downstream, Closure mapper) {
             this.downstream = downstream
             this.mapper = mapper
         }
 
+        /**
+         * Stores the upstream subscription and forwards it downstream unchanged.
+         *
+         * @param s the upstream subscription
+         */
         @Override
         void onSubscribe(Flow.Subscription s) {
             this.subscription = s
             downstream.onSubscribe(s)
         }
 
+        /**
+         * Maps the upstream item before emitting it downstream.
+         *
+         * @param item the upstream item
+         */
         @Override
         void onNext(Object item) {
             if (done) return
@@ -147,6 +185,11 @@ record HttpStreamResult(
             downstream.onNext(mapped)
         }
 
+        /**
+         * Forwards the terminal error unless this subscriber has already completed.
+         *
+         * @param t the terminal failure
+         */
         @Override
         void onError(Throwable t) {
             if (done) return
@@ -154,6 +197,9 @@ record HttpStreamResult(
             downstream.onError(t)
         }
 
+        /**
+         * Completes downstream once the upstream publisher completes.
+         */
         @Override
         void onComplete() {
             if (done) return
@@ -173,11 +219,22 @@ record HttpStreamResult(
         private final Flow.Publisher<List<ByteBuffer>> source
         private final Charset charset
 
+        /**
+         * Creates a publisher that emits complete lines decoded from byte chunks.
+         *
+         * @param source the upstream byte-chunk publisher
+         * @param charset the charset used for decoding bytes
+         */
         LinePublisher(Flow.Publisher<List<ByteBuffer>> source, Charset charset) {
             this.source = source
             this.charset = charset
         }
 
+        /**
+         * Subscribes downstream and mediates demand through a line-aware subscription.
+         *
+         * @param downstream the subscriber receiving decoded lines
+         */
         @Override
         void subscribe(Flow.Subscriber<? super String> downstream) {
             source.subscribe(new LineSubscription(downstream, charset))

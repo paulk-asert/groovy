@@ -21,6 +21,14 @@ package org.codehaus.groovy.macro.matcher;
 import groovy.lang.Closure;
 
 class MatcherUtils {
+    /**
+     * Clones a closure and sets its delegate for matcher evaluation.
+     *
+     * @param predicate the predicate closure to clone
+     * @param delegate the delegate to assign
+     * @param <T> the closure result type
+     * @return the cloned closure
+     */
     @SuppressWarnings("unchecked")
     static <T> Closure<T> cloneWithDelegate(final Closure<T> predicate, final Object delegate) {
         Closure<T> clone = (Closure<T>) predicate.clone();

@@ -29,23 +29,47 @@ import java.util.Locale
 /**
  * Simple response wrapper for the {@link HttpBuilder} DSL.
  *
+ * @param status the HTTP status code
+ * @param body the buffered response body
+ * @param headers the response headers
+ * @param raw the underlying JDK response
  * @since 6.0.0
  */
 @Incubating
 record HttpResult(int status, String body, HttpHeaders headers, HttpResponse<String> raw) {
 
+    /**
+     * Creates a result wrapper from a JDK HTTP response.
+     *
+     * @param response the response to wrap
+     */
     HttpResult(final HttpResponse<String> response) {
         this(response.statusCode(), response.body(), response.headers(), response)
     }
 
+    /**
+     * Parses the buffered body as JSON.
+     *
+     * @return the parsed JSON value
+     */
     Object getJson() {
         return new JsonSlurper().parseText(body)
     }
 
+    /**
+     * Parses the buffered body as XML.
+     *
+     * @return the parsed XML value
+     */
     Object getXml() {
         return new XmlSlurper().parseText(body)
     }
 
+    /**
+     * Parses the buffered body as HTML using jsoup when available.
+     *
+     * @return the parsed HTML document
+     */
     Object getHtml() {
         try {
             Class<?> jsoup = loadOptionalClass('org.jsoup.Jsoup')
@@ -77,6 +101,11 @@ record HttpResult(int status, String body, HttpHeaders headers, HttpResponse<Str
         return null
     }
 
+    /**
+     * Parses the buffered body according to the {@code Content-Type} header when possible.
+     *
+     * @return parsed JSON, XML, HTML, or the raw body text
+     */
     Object getParsed() {
         String contentType = headers.firstValue('Content-Type').orElse('')
         String mediaType = contentType.split(';', 2)[0].trim().toLowerCase(Locale.ROOT)

@@ -64,6 +64,12 @@ final class HttpBuilder {
         defaultRequestTimeout = config.requestTimeout
     }
 
+    /**
+     * Creates an {@code HttpBuilder} from the supplied configuration closure.
+     *
+     * @param spec configures the builder defaults
+     * @return a configured HTTP builder
+     */
     static HttpBuilder http(
             @DelegatesTo(value = Config, strategy = Closure.DELEGATE_FIRST)
             final Closure<?> spec
@@ -76,42 +82,91 @@ final class HttpBuilder {
         return new HttpBuilder(config)
     }
 
+    /**
+     * Creates an {@code HttpBuilder} with only a base URI configured.
+     *
+     * @param baseUri the absolute base URI used to resolve relative requests
+     * @return a configured HTTP builder
+     */
     static HttpBuilder http(final String baseUri) {
         Config config = new Config()
         config.baseUri(baseUri)
         return new HttpBuilder(config)
     }
 
+    /**
+     * Executes a synchronous {@code GET} request.
+     *
+     * @param uri the absolute or base-relative request URI
+     * @param spec optionally customizes the request
+     * @return the buffered response wrapper
+     */
     HttpResult get(final Object uri = null,
                    @DelegatesTo(value = RequestSpec, strategy = Closure.DELEGATE_FIRST)
                    final Closure<?> spec = null) {
         return request('GET', uri, spec)
     }
 
+    /**
+     * Executes a synchronous {@code POST} request.
+     *
+     * @param uri the absolute or base-relative request URI
+     * @param spec optionally customizes the request
+     * @return the buffered response wrapper
+     */
     HttpResult post(final Object uri = null,
                     @DelegatesTo(value = RequestSpec, strategy = Closure.DELEGATE_FIRST)
                     final Closure<?> spec = null) {
         return request('POST', uri, spec)
     }
 
+    /**
+     * Executes a synchronous {@code PUT} request.
+     *
+     * @param uri the absolute or base-relative request URI
+     * @param spec optionally customizes the request
+     * @return the buffered response wrapper
+     */
     HttpResult put(final Object uri = null,
                    @DelegatesTo(value = RequestSpec, strategy = Closure.DELEGATE_FIRST)
                    final Closure<?> spec = null) {
         return request('PUT', uri, spec)
     }
 
+    /**
+     * Executes a synchronous {@code DELETE} request.
+     *
+     * @param uri the absolute or base-relative request URI
+     * @param spec optionally customizes the request
+     * @return the buffered response wrapper
+     */
     HttpResult delete(final Object uri = null,
                       @DelegatesTo(value = RequestSpec, strategy = Closure.DELEGATE_FIRST)
                       final Closure<?> spec = null) {
         return request('DELETE', uri, spec)
     }
 
+    /**
+     * Executes a synchronous {@code PATCH} request.
+     *
+     * @param uri the absolute or base-relative request URI
+     * @param spec optionally customizes the request
+     * @return the buffered response wrapper
+     */
     HttpResult patch(final Object uri = null,
                      @DelegatesTo(value = RequestSpec, strategy = Closure.DELEGATE_FIRST)
                      final Closure<?> spec = null) {
         return request('PATCH', uri, spec)
     }
 
+    /**
+     * Executes a synchronous request with the supplied HTTP method.
+     *
+     * @param method the HTTP method to use
+     * @param uri the absolute or base-relative request URI
+     * @param spec optionally customizes the request
+     * @return the buffered response wrapper
+     */
     HttpResult request(final String method,
                        final Object uri,
                        @DelegatesTo(value = RequestSpec, strategy = Closure.DELEGATE_FIRST)
@@ -129,6 +184,14 @@ final class HttpBuilder {
         return new HttpResult(response)
     }
 
+    /**
+     * Executes an asynchronous request with the supplied HTTP method.
+     *
+     * @param method the HTTP method to use
+     * @param uri the absolute or base-relative request URI
+     * @param spec optionally customizes the request
+     * @return a future that completes with the buffered response
+     */
     CompletableFuture<HttpResult> requestAsync(final String method,
                                                 final Object uri,
                                                 @DelegatesTo(value = RequestSpec, strategy = Closure.DELEGATE_FIRST)
@@ -138,30 +201,65 @@ final class HttpBuilder {
                 .thenApply { HttpResponse<String> response -> new HttpResult(response) }
     }
 
+    /**
+     * Executes an asynchronous {@code GET} request.
+     *
+     * @param uri the absolute or base-relative request URI
+     * @param spec optionally customizes the request
+     * @return a future that completes with the buffered response
+     */
     CompletableFuture<HttpResult> getAsync(final Object uri = null,
                                             @DelegatesTo(value = RequestSpec, strategy = Closure.DELEGATE_FIRST)
                                             final Closure<?> spec = null) {
         return requestAsync('GET', uri, spec)
     }
 
+    /**
+     * Executes an asynchronous {@code POST} request.
+     *
+     * @param uri the absolute or base-relative request URI
+     * @param spec optionally customizes the request
+     * @return a future that completes with the buffered response
+     */
     CompletableFuture<HttpResult> postAsync(final Object uri = null,
                                              @DelegatesTo(value = RequestSpec, strategy = Closure.DELEGATE_FIRST)
                                              final Closure<?> spec = null) {
         return requestAsync('POST', uri, spec)
     }
 
+    /**
+     * Executes an asynchronous {@code PUT} request.
+     *
+     * @param uri the absolute or base-relative request URI
+     * @param spec optionally customizes the request
+     * @return a future that completes with the buffered response
+     */
     CompletableFuture<HttpResult> putAsync(final Object uri = null,
                                             @DelegatesTo(value = RequestSpec, strategy = Closure.DELEGATE_FIRST)
                                             final Closure<?> spec = null) {
         return requestAsync('PUT', uri, spec)
     }
 
+    /**
+     * Executes an asynchronous {@code DELETE} request.
+     *
+     * @param uri the absolute or base-relative request URI
+     * @param spec optionally customizes the request
+     * @return a future that completes with the buffered response
+     */
     CompletableFuture<HttpResult> deleteAsync(final Object uri = null,
                                                @DelegatesTo(value = RequestSpec, strategy = Closure.DELEGATE_FIRST)
                                                final Closure<?> spec = null) {
         return requestAsync('DELETE', uri, spec)
     }
 
+    /**
+     * Executes an asynchronous {@code PATCH} request.
+     *
+     * @param uri the absolute or base-relative request URI
+     * @param spec optionally customizes the request
+     * @return a future that completes with the buffered response
+     */
     CompletableFuture<HttpResult> patchAsync(final Object uri = null,
                                               @DelegatesTo(value = RequestSpec, strategy = Closure.DELEGATE_FIRST)
                                               final Closure<?> spec = null) {
@@ -177,6 +275,11 @@ final class HttpBuilder {
      * <p>
      * Streaming always uses {@code HttpResponse.BodyHandlers.ofPublisher()};
      * any {@code bodyHandler} configured on the {@code RequestSpec} is ignored.
+     *
+     * @param method the HTTP method to use
+     * @param uri the absolute or base-relative request URI
+     * @param spec optionally customizes the request
+     * @return a future that completes with the streaming response wrapper
      */
     CompletableFuture<HttpStreamResult> streamAsync(final String method,
                                                     final Object uri,
@@ -187,12 +290,26 @@ final class HttpBuilder {
                 .thenApply { HttpResponse response -> new HttpStreamResult(response) }
     }
 
+    /**
+     * Executes an asynchronous streaming {@code GET} request.
+     *
+     * @param uri the absolute or base-relative request URI
+     * @param spec optionally customizes the request
+     * @return a future that completes with the streaming response wrapper
+     */
     CompletableFuture<HttpStreamResult> getStreamAsync(final Object uri = null,
                                                        @DelegatesTo(value = RequestSpec, strategy = Closure.DELEGATE_FIRST)
                                                        final Closure<?> spec = null) {
         return streamAsync('GET', uri, spec)
     }
 
+    /**
+     * Executes an asynchronous streaming {@code POST} request.
+     *
+     * @param uri the absolute or base-relative request URI
+     * @param spec optionally customizes the request
+     * @return a future that completes with the streaming response wrapper
+     */
     CompletableFuture<HttpStreamResult> postStreamAsync(final Object uri = null,
                                                         @DelegatesTo(value = RequestSpec, strategy = Closure.DELEGATE_FIRST)
                                                         final Closure<?> spec = null) {
@@ -327,35 +444,87 @@ final class HttpBuilder {
         return HttpRequest.BodyPublishers.ofString(body.toString())
     }
 
+    /**
+     * Configuration DSL used to create an {@link HttpBuilder}.
+     */
     static final class Config {
+        /**
+         * Absolute base URI used to resolve relative request URIs.
+         */
         URI baseUri
+        /**
+         * Timeout applied when opening connections.
+         */
         Duration connectTimeout
+        /**
+         * Timeout applied to each request when not overridden.
+         */
         Duration requestTimeout
+        /**
+         * Whether redirects should be followed automatically.
+         */
         boolean followRedirects
+        /**
+         * Headers added to every request created by the builder.
+         */
         final Map<String, String> headers = [:]
+        /**
+         * Optional hook for advanced {@link HttpClient.Builder} customization.
+         */
         Closure<?> clientConfigurer
 
+        /**
+         * Sets the absolute base URI used for relative requests.
+         *
+         * @param value the base URI as a {@link URI} or coercible string
+         */
         void baseUri(final Object value) {
             URI candidate = value instanceof URI ? (URI) value : URI.create(value.toString())
             baseUri = requireAbsoluteUriWithHost(candidate, 'baseUri')
         }
 
+        /**
+         * Sets the client connect timeout.
+         *
+         * @param value the connection timeout
+         */
         void connectTimeout(final Duration value) {
             connectTimeout = value
         }
 
+        /**
+         * Sets the default request timeout.
+         *
+         * @param value the request timeout
+         */
         void requestTimeout(final Duration value) {
             requestTimeout = value
         }
 
+        /**
+         * Enables or disables automatic redirect following.
+         *
+         * @param value {@code true} to follow redirects
+         */
         void followRedirects(final boolean value) {
             followRedirects = value
         }
 
+        /**
+         * Adds a default header to every request.
+         *
+         * @param name the header name
+         * @param value the header value
+         */
         void header(final String name, final Object value) {
             headers.put(name, String.valueOf(value))
         }
 
+        /**
+         * Adds multiple default headers to every request.
+         *
+         * @param values the headers to add
+         */
         void headers(final Map<String, ?> values) {
             values.each { String name, Object value -> header(name, value) }
         }
@@ -373,47 +542,109 @@ final class HttpBuilder {
         }
     }
 
+    /**
+     * Per-request configuration DSL used by the request methods.
+     */
     static final class RequestSpec {
+        /**
+         * Request-specific timeout overriding the builder default.
+         */
         Duration timeout
+        /**
+         * Request body value after any DSL serialization step.
+         */
         Object body
+        /**
+         * Body handler used for buffered requests.
+         */
         HttpResponse.BodyHandler<String> bodyHandler = HttpResponse.BodyHandlers.ofString()
+        /**
+         * Headers added only to the current request.
+         */
         final Map<String, String> headers = new LinkedHashMap<>()
+        /**
+         * Query parameters appended to the current request URI.
+         */
         final Map<String, Object> queryParameters = new LinkedHashMap<>()
 
+        /**
+         * Sets the timeout for the current request.
+         *
+         * @param value the request timeout
+         */
         void timeout(final Duration value) {
             timeout = value
         }
 
+        /**
+         * Adds a header to the current request.
+         *
+         * @param name the header name
+         * @param value the header value
+         */
         void header(final String name, final Object value) {
             headers.put(name, String.valueOf(value))
         }
 
+        /**
+         * Adds multiple headers to the current request.
+         *
+         * @param values the headers to add
+         */
         void headers(final Map<String, ?> values) {
             values.each { String name, Object value -> header(name, value) }
         }
 
+        /**
+         * Adds a query parameter to the current request.
+         *
+         * @param name the query parameter name
+         * @param value the query parameter value
+         */
         void query(final String name, final Object value) {
             queryParameters.put(name, value)
         }
 
+        /**
+         * Adds multiple query parameters to the current request.
+         *
+         * @param values the query parameters to add
+         */
         void query(final Map<String, ?> values) {
             values.each { String name, Object value -> query(name, value) }
         }
 
+        /**
+         * Sets the request body to the string form of the supplied value.
+         *
+         * @param value the text body value
+         */
         void text(final Object value) {
             body = value == null ? null : value.toString()
         }
 
+        /**
+         * Sets the request body to raw bytes.
+         *
+         * @param value the binary payload
+         */
         void bytes(final byte[] value) {
             body = value
         }
 
+        /**
+         * Sets the request body without further serialization.
+         *
+         * @param value the body value
+         */
         void body(final Object value) {
             body = value
         }
 
         /**
          * Encodes map entries as application/x-www-form-urlencoded and sets a default content type.
+         *
+         * @param values the form fields to encode
          */
         void form(final Map<String, ?> values) {
             if (!headers.find{ it.key.equalsIgnoreCase('Content-Type') }) {
@@ -428,6 +659,8 @@ final class HttpBuilder {
 
         /**
          * Serializes the given value as JSON and sets a default content type.
+         *
+         * @param value the value to serialize
          */
         void json(final Object value) {
             if (!headers.find{ it.key.equalsIgnoreCase('Content-Type') }) {
@@ -436,6 +669,9 @@ final class HttpBuilder {
             body = JsonOutput.toJson(value)
         }
 
+        /**
+         * Uses the default string body handler for buffered requests.
+         */
         void asString() {
             bodyHandler = HttpResponse.BodyHandlers.ofString()
         }

@@ -73,9 +73,17 @@ import org.codehaus.groovy.ast.stmt.WhileStatement
 import org.codehaus.groovy.control.SourceUnit
 import org.codehaus.groovy.macro.matcher.internal.MatchingConstraintsBuilder
 
+/**
+ * Matches AST nodes against pattern ASTs.
+ *
+ * @since 2.5.0
+ */
 @AutoFinal @CompileStatic
 class ASTMatcher extends ContextualClassCodeVisitor {
 
+    /**
+     * Wildcard marker used in matcher patterns.
+     */
     public static final String WILDCARD = '_'
 
     private boolean match = true
@@ -142,6 +150,13 @@ class ASTMatcher extends ContextualClassCodeVisitor {
         }
     }
 
+    /**
+     * Executes the supplied closure with the current matching constraints as delegate.
+     *
+     * @param defaultValue the value to return when no constraints are available
+     * @param code the code to execute with the current constraints
+     * @return the closure result, or {@code defaultValue} when no constraints are present
+     */
     def <T> T ifConstraint(T defaultValue, @DelegatesTo(value=MatchingConstraints, strategy=Closure.DELEGATE_FIRST) Closure<T> code) {
         def constraints = (List<MatchingConstraints>) treeContext.getUserdata(MatchingConstraints, true)
         if (constraints) {

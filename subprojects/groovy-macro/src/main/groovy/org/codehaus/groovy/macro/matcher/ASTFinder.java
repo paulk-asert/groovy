@@ -82,11 +82,21 @@ import org.codehaus.groovy.control.SourceUnit;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * Searches an AST for subtrees matching a given pattern.
+ *
+ * @since 2.5.0
+ */
 class ASTFinder extends ContextualClassCodeVisitor {
 
     private final ASTNode initial;
     private final List<TreeContext> matches = new LinkedList<TreeContext>();
 
+    /**
+     * Creates a finder for the supplied pattern node.
+     *
+     * @param initial the pattern to locate
+     */
     ASTFinder(final ASTNode initial) {
         this.initial = initial;
     }
@@ -96,6 +106,11 @@ class ASTFinder extends ContextualClassCodeVisitor {
         return null;
     }
 
+    /**
+     * Returns the contexts of all matches found so far.
+     *
+     * @return the matching tree contexts
+     */
     public List<TreeContext> getMatches() {
         return matches;
     }

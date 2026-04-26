@@ -59,6 +59,13 @@ public class MacroClassTransformation extends MethodCallTransformation {
     private static final ClassNode MACROCLASS_TYPE = ClassHelper.make(MacroClass.class);
     private static final Logger LOGGER = Logger.getLogger(MacroClassTransformation.class.getName());
 
+    /**
+     * Creates the visitor that rewrites {@link MacroClass} constructor calls.
+     *
+     * @param nodes the visited nodes
+     * @param sourceUnit the current source unit
+     * @return the macro-class-transforming visitor
+     */
     @Override
     protected GroovyCodeVisitor getTransformer(final ASTNode[] nodes, final SourceUnit sourceUnit) {
         ClassCodeExpressionTransformer transformer = new MacroClassTransformer(sourceUnit);

@@ -34,10 +34,25 @@ final class HttpClientHelper {
     private final HttpBuilder http
     private final Map<String, String> defaultHeaders
 
+    /**
+     * Creates a helper with default timeout and redirect settings.
+     *
+     * @param baseUrl the base URL used by generated clients
+     * @param defaultHeaders the headers applied to every request
+     */
     HttpClientHelper(String baseUrl, Map<String, String> defaultHeaders) {
         this(baseUrl, defaultHeaders, 0, 0, false)
     }
 
+    /**
+     * Creates a helper backed by a new {@link HttpBuilder}.
+     *
+     * @param baseUrl the base URL used by generated clients
+     * @param defaultHeaders the headers applied to every request
+     * @param connectTimeoutSeconds the connect timeout in seconds, or {@code 0} for none
+     * @param requestTimeoutSeconds the request timeout in seconds, or {@code 0} for none
+     * @param followRedirects whether redirects should be followed automatically
+     */
     HttpClientHelper(String baseUrl, Map<String, String> defaultHeaders,
                      int connectTimeoutSeconds, int requestTimeoutSeconds,
                      boolean followRedirects) {
@@ -53,6 +68,9 @@ final class HttpClientHelper {
     /**
      * Constructor accepting a pre-configured HttpBuilder instance.
      * Used by the create(Closure) factory for advanced configuration.
+     *
+     * @param http the pre-configured HTTP builder to reuse
+     * @param defaultHeaders the headers applied to every request
      */
     HttpClientHelper(HttpBuilder http, Map<String, String> defaultHeaders) {
         this.http = http
@@ -66,9 +84,12 @@ final class HttpClientHelper {
      * @param urlTemplate URL template with {param} placeholders
      * @param returnTypeName the method's return type name for response conversion
      * @param pathParams map of path parameter names to values
-     * @param queryParams map of query parameter names to values
+     * @param queryOrFormParams map of query parameter names or form fields to values
      * @param headers map of additional headers for this request
      * @param body request body (serialized as JSON if non-null)
+     * @param timeoutSeconds per-request timeout in seconds, or {@code 0} for none
+     * @param bodyMode serialization mode for the request body
+     * @param errorTypeName fully qualified exception type used for HTTP error responses
      * @return the converted response
      */
     Object execute(String method, String urlTemplate, String returnTypeName,
@@ -100,6 +121,16 @@ final class HttpClientHelper {
     /**
      * Execute an HTTP request asynchronously.
      *
+     * @param method HTTP method (GET, POST, PUT, DELETE, PATCH)
+     * @param urlTemplate URL template with {param} placeholders
+     * @param returnTypeName the method's return type name for response conversion
+     * @param pathParams map of path parameter names to values
+     * @param queryOrFormParams map of query parameter names or form fields to values
+     * @param headers map of additional headers for this request
+     * @param body request body before serialization
+     * @param timeoutSeconds per-request timeout in seconds, or {@code 0} for none
+     * @param bodyMode serialization mode for the request body
+     * @param errorTypeName fully qualified exception type used for HTTP error responses
      * @return a CompletableFuture containing the converted response
      */
     CompletableFuture<Object> executeAsync(String method, String urlTemplate, String returnTypeName,

@@ -32,6 +32,9 @@ import org.codehaus.groovy.syntax.Token
 @CompileStatic
 @Immutable(knownImmutableClasses = [ConstraintPredicate])
 class MatchingConstraints {
+    /**
+     * Predicate that matches any token.
+     */
     public final static ConstraintPredicate<Token> ANY_TOKEN = AnyTokenMatch.INSTANCE
 
     final Set<String> placeholders

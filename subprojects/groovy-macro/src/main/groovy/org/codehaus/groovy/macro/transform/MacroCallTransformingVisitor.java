@@ -65,6 +65,12 @@ class MacroCallTransformingVisitor extends ClassCodeVisitorSupport {
     private final CompilationUnit unit;
     private final ClassLoader classLoader;
 
+    /**
+     * Creates a visitor that rewrites macro method calls in a source unit.
+     *
+     * @param sourceUnit the current source unit
+     * @param unit the current compilation unit
+     */
     public MacroCallTransformingVisitor(SourceUnit sourceUnit, CompilationUnit unit) {
         this.sourceUnit = sourceUnit;
         this.unit = unit;
@@ -76,6 +82,11 @@ class MacroCallTransformingVisitor extends ClassCodeVisitorSupport {
         return sourceUnit;
     }
 
+    /**
+     * Rewrites matching method calls to their macro-expanded form.
+     *
+     * @param call the method call to inspect
+     */
     @Override
     public void visitMethodCallExpression(MethodCallExpression call) {
         super.visitMethodCallExpression(call);
