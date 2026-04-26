@@ -77,15 +77,19 @@ import java.util.function.Supplier
 import static org.jline.jansi.AnsiRenderer.render
 
 /**
- * Groovy Repo modelled on JLine3 Groovy Repl demo
+ * Boots and runs the interactive {@code groovysh} console.
  */
 @SuppressWarnings('deprecation')
 class Main {
     private static final MessageSource messages = new MessageSource(Main)
+    /** Preference key that controls whether groovysh starts in interpreter mode. */
     public static final String INTERPRETER_MODE_PREFERENCE_KEY = 'interpreterMode'
 //    private static POSIX_CMDS = []
     private static GROOVY_POSIX_CMDS = ['/ls', '/wc', '/sort', '/head', '/tail', '/cat', '/grep']
 
+    /**
+     * Registers the extra console commands that augment the interactive shell.
+     */
     @SuppressWarnings("resource")
     protected static class ExtraConsoleCommands extends JlineCommandRegistry implements CommandRegistry {
         private final LineReader reader
@@ -93,6 +97,13 @@ class Main {
         private PosixCommandsRegistry posix
         private final Map<String, String[]> usage = [:]
 
+        /**
+         * Creates the auxiliary console command registry used by the shell.
+         *
+         * @param workDir initial working directory
+         * @param scriptEngine script engine backing the shell session
+         * @param reader active line reader
+         */
         ExtraConsoleCommands(Path workDir, GroovyEngine scriptEngine, LineReader reader) {
             super()
             this.scriptEngine = scriptEngine
@@ -134,6 +145,11 @@ class Main {
             registerCommands(cmds)
         }
 
+        /**
+         * Returns the current working directory tracked by the POSIX command context.
+         *
+         * @return the active working directory
+         */
         Path currentDir() {
             posix.context.currentDir
         }
@@ -146,6 +162,11 @@ class Main {
             }
         }
 
+        /**
+         * Returns the help-group name used for the extra console commands.
+         *
+         * @return the console command group name
+         */
         @Override
         String name() {
             'Console Commands'
@@ -281,12 +302,23 @@ class Main {
             }
         }
 
+        /**
+         * Returns summary text for the specified command.
+         *
+         * @param command command name to describe
+         * @return help lines for the command
+         */
         @Override
         List<String> commandInfo(String command) {
             posix.commandNames.toList()
         }
     }
 
+    /**
+     * Returns the user state directory used by groovysh for persisted files.
+     *
+     * @return the user-specific state directory
+     */
     static Path getUserStateDirectory() {
         Path.of(System.getProperty('user.home'), '.groovy').tap { groovyHome ->
             if (!groovyHome) {
@@ -542,6 +574,11 @@ class Main {
         start([:], args)
     }
 
+    /**
+     * Launches groovysh as a standalone JVM process.
+     *
+     * @param args command-line arguments
+     */
     static void main(String[] args) {
         System.exit(start(args))
     }

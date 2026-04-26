@@ -57,6 +57,9 @@ import java.util.function.Function
 import java.util.function.Supplier
 import java.util.stream.Stream
 
+/**
+ * Registers the Groovy-specific commands exposed by the groovysh JLine console.
+ */
 class GroovyCommands extends JlineCommandRegistry implements CommandRegistry {
     private static final String DEFAULT_NANORC_VALUE = 'gron'
     private final GroovyEngine engine

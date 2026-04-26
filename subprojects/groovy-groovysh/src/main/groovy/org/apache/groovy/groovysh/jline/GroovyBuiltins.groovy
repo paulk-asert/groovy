@@ -33,11 +33,23 @@ import java.nio.file.Path
 import java.util.function.Function
 import java.util.function.Supplier
 
+/**
+ * Registers console built-ins that integrate JLine commands with the Groovy shell buffer.
+ */
 class GroovyBuiltins extends Builtins {
     private final ConfigurationPath configPath
     private final Supplier<Path> workDir
     private final GroovyEngine engine
 
+    /**
+     * Creates the built-in command registry used by groovysh.
+     *
+     * @param engine shell engine that owns the current buffer
+     * @param workDir supplier for the current working directory
+     * @param configPath configuration lookup path
+     * @param reader active line reader
+     * @param widgetCreator widget factory used by the parent built-ins
+     */
     GroovyBuiltins(GroovyEngine engine, Supplier<Path> workDir, ConfigurationPath configPath, LineReader reader, Function<String, Widget> widgetCreator) {
         super(workDir, configPath, widgetCreator)
         this.workDir = workDir
@@ -96,6 +108,11 @@ class GroovyBuiltins extends Builtins {
         }
     }
 
+    /**
+     * Returns the help-group name used for the built-in commands.
+     *
+     * @return the console command group name
+     */
     @Override
     String name() {
         'Console Commands'

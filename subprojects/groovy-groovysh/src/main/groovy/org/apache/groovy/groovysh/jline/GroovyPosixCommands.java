@@ -82,6 +82,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Groovy-aware implementations of groovysh POSIX-style commands.
+ */
 public class GroovyPosixCommands {
 
     private static Options parseOptions(Context context, String[] usage, Object[] argv) {
@@ -90,6 +93,13 @@ public class GroovyPosixCommands {
         return Options.compile(usage).parse(args);
     }
 
+    /**
+     * Writes the supplied files, variables, or standard input to the current output stream.
+     *
+     * @param context command execution context
+     * @param argv command name and arguments
+     * @throws Exception if an input cannot be resolved or read
+     */
     public static void cat(Context context, Object[] argv) throws Exception {
         final String[] usage = {
             "/cat - concatenate and print FILES or VARIABLES",
@@ -126,6 +136,13 @@ public class GroovyPosixCommands {
         }
     }
 
+    /**
+     * Counts lines, words, characters, or bytes for the selected inputs.
+     *
+     * @param context command execution context
+     * @param argv command name and arguments
+     * @throws Exception if an input cannot be processed
+     */
     public static void wc(Context context, Object[] argv) throws Exception {
         final String[] usage = {
             "/wc - word, line, character, and byte count",
@@ -232,6 +249,13 @@ public class GroovyPosixCommands {
         }
     }
 
+    /**
+     * Prints the beginning of each requested input.
+     *
+     * @param context command execution context
+     * @param argv command name and arguments
+     * @throws Exception if an input cannot be read
+     */
     public static void head(Context context, Object[] argv) throws Exception {
         final String[] usage = {
             "/head - display first lines of files or variables",
@@ -307,6 +331,13 @@ public class GroovyPosixCommands {
         }
     }
 
+    /**
+     * Prints the end of each requested input.
+     *
+     * @param context command execution context
+     * @param argv command name and arguments
+     * @throws Exception if an input cannot be read
+     */
     public static void tail(Context context, Object[] argv) throws Exception {
         final String[] usage = {
             "/tail - display last lines of files or variables",
@@ -379,6 +410,13 @@ public class GroovyPosixCommands {
     }
 
     // from jline master (v4), remove once it is released, and we move to that version, and jline PR#1436 is merged
+    /**
+     * Lists directory entries using the current groovysh working directory.
+     *
+     * @param context command execution context
+     * @param argv command name and arguments
+     * @throws Exception if the listing cannot be produced
+     */
     public static void ls(Context context, Object[] argv) throws Exception {
         final String[] usage = {
             "/ls - list files",
@@ -418,6 +456,12 @@ public class GroovyPosixCommands {
             final Path path;
             final Map<String, Object> attributes;
 
+            /**
+             * Creates a display entry for a resolved path.
+             *
+             * @param abs absolute path to inspect
+             * @param root root path used to compute relative display names
+             */
             public PathEntry(Path abs, Path root) {
                 this.abs = abs;
                 try {
@@ -543,6 +587,12 @@ public class GroovyPosixCommands {
                 }
             }
 
+            /**
+             * Formats a file timestamp for long listings.
+             *
+             * @param time file timestamp
+             * @return formatted timestamp text
+             */
             protected String toString(FileTime time) {
                 long millis = (time != null) ? time.toMillis() : -1L;
                 if (millis < 0L) {
@@ -559,6 +609,12 @@ public class GroovyPosixCommands {
                 }
             }
 
+            /**
+             * Reads the available file attributes for the supplied path.
+             *
+             * @param path the path whose attributes should be collected
+             * @return a case-insensitive map containing the discovered attributes
+             */
             protected Map<String, Object> readAttributes(Path path) {
                 Map<String, Object> attrs = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
                 for (String view : path.getFileSystem().supportedFileAttributeViews()) {
@@ -698,6 +754,13 @@ public class GroovyPosixCommands {
     private static final String[] SIZE_UNITS = {"B", "K", "M", "G", "T", "P"};
     private static final long SIZE_THRESHOLD = 1000L;
 
+    /**
+     * Searches the selected inputs for lines matching the supplied pattern.
+     *
+     * @param context command execution context
+     * @param argv command name and arguments
+     * @throws Exception if the search cannot be completed
+     */
     public static void grep(Context context, Object[] argv) throws Exception {
         final String[] usage = {
             "/grep -  search for PATTERN in each FILE or VARIABLE or standard input.",
@@ -944,6 +1007,13 @@ public class GroovyPosixCommands {
         }
     }
 
+    /**
+     * Sorts the requested inputs and writes the ordered lines to the current output.
+     *
+     * @param context command execution context
+     * @param argv command name and arguments
+     * @throws Exception if an input cannot be read or sorted
+     */
     public static void sort(Context context, Object[] argv) throws Exception {
         final String[] usage = {
             "/sort -  writes sorted standard input to standard output.",
@@ -991,6 +1061,13 @@ public class GroovyPosixCommands {
         }
     }
 
+    /**
+     * Displays the requested inputs in the less viewer, or streams them when not interactive.
+     *
+     * @param context command execution context
+     * @param argv command name and arguments
+     * @throws Exception if the viewer cannot be initialized or an input cannot be opened
+     */
     public static void less(Context context, String[] argv) throws Exception {
         Options opt = parseOptions(context, Less.usage(), argv);
 

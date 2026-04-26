@@ -48,25 +48,38 @@ import org.jline.utils.*;
  */
 @SuppressWarnings("deprecation")
 public class SystemRegistryImpl implements SystemRegistry {
-    // NOTE: This file can be deleted if the following PRs are merged:
+    // TODO NOTE: This file can be deleted if the following PRs are merged:
     // https://github.com/jline/jline3/pull/1392
     // https://github.com/jline/jline3/pull/1394
 
+    /**
+     * Pipe operators used to connect commands in a pipeline.
+     */
     public enum Pipe {
+        /** Sequential execution, next command runs regardless of previous result */
         FLIP,
+        /** Named pipe */
         NAMED,
+        /** Logical AND, next command runs only if previous succeeds */
         AND,
+        /** Logical OR, next command runs only if previous fails */
         OR,
+        /** Output redirection to file */
         REDIRECT,
+        /** Output redirection to file with append */
         APPEND,
+        /** Pipe to external process */
         PIPE
     }
 
     private static final Class<?>[] BUILTIN_REGISTRIES = {Builtins.class, ConsoleEngineImpl.class};
     private CommandRegistry[] commandRegistries;
     private Integer consoleId;
+    /** The parser used for command line parsing */
     protected final Parser parser;
+    /** Configuration path for storing user-specific settings */
     protected final ConfigurationPath configPath;
+    /** Supplier for the working directory */
     protected final Supplier<Path> workDir;
     private final Map<String, CommandRegistry> subcommands = new HashMap<>();
     private final Map<Pipe, String> pipeName = new HashMap<>();
@@ -81,6 +94,14 @@ public class SystemRegistryImpl implements SystemRegistry {
     private boolean commandGroups = true;
     private Function<CmdLine, CmdDesc> scriptDescription;
 
+    /**
+     * Constructs a new SystemRegistryImpl.
+     *
+     * @param parser the parser for command line parsing
+     * @param terminal the terminal to use for input/output
+     * @param workDir supplier for the working directory
+     * @param configPath configuration path for user-specific settings
+     */
     @SuppressWarnings("this-escape")
     public SystemRegistryImpl(Parser parser, Terminal terminal, Supplier<Path> workDir, ConfigurationPath configPath) {
         this.parser = parser;
@@ -98,6 +119,13 @@ public class SystemRegistryImpl implements SystemRegistry {
         commandExecute.put("help", new CommandMethods(this::help, this::helpCompleter));
     }
 
+    /**
+     * Renames a pipe operator.
+     *
+     * @param pipe the pipe to rename
+     * @param name the new name
+     * @throws IllegalArgumentException if the name is invalid or already in use
+     */
     public void rename(Pipe pipe, String name) {
         if (name.matches("/w+") || pipeName.containsValue(name)) {
             throw new IllegalArgumentException();
@@ -105,6 +133,12 @@ public class SystemRegistryImpl implements SystemRegistry {
         pipeName.put(pipe, name);
     }
 
+    /**
+     * Renames a local command.
+     *
+     * @param command the command to rename
+     * @param newName the new name for the command
+     */
     public void renameLocal(String command, String newName) {
         CommandMethods old = commandExecute.remove(command);
         if (old != null) {
@@ -112,11 +146,21 @@ public class SystemRegistryImpl implements SystemRegistry {
         }
     }
 
+    /**
+     * Returns the names of all pipe operators.
+     *
+     * @return collection of pipe names
+     */
     @Override
     public Collection<String> getPipeNames() {
         return pipeName.values();
     }
 
+    /**
+     * Sets the command registries managed by this system registry.
+     *
+     * @param commandRegistries the command registries to set
+     */
     @Override
     public void setCommandRegistries(CommandRegistry... commandRegistries) {
         this.commandRegistries = commandRegistries;
@@ -137,6 +181,11 @@ public class SystemRegistryImpl implements SystemRegistry {
         SystemRegistry.add(this);
     }
 
+    /**
+     * Initializes the system by executing a startup script.
+     *
+     * @param script the script file to execute
+     */
     @Override
     public void initialize(File script) {
         if (consoleId != null) {
@@ -148,6 +197,11 @@ public class SystemRegistryImpl implements SystemRegistry {
         }
     }
 
+    /**
+     * Returns the names of all registered commands.
+     *
+     * @return set of command names
+     */
     @Override
     public Set<String> commandNames() {
         Set<String> out = new HashSet<>();
@@ -162,6 +216,11 @@ public class SystemRegistryImpl implements SystemRegistry {
         return commandExecute.keySet();
     }
 
+    /**
+     * Returns all command aliases.
+     *
+     * @return map of aliases to command names
+     */
     @Override
     public Map<String, String> commandAliases() {
         Map<String, String> out = new HashMap<>();
@@ -171,11 +230,25 @@ public class SystemRegistryImpl implements SystemRegistry {
         return out;
     }
 
+    /**
+     * Retrieves a console option value.
+     *
+     * @param name the option name
+     * @return the option value, or {@code null} if not found
+     */
     @Override
     public Object consoleOption(String name) {
         return consoleOption(name, null);
     }
 
+    /**
+     * Retrieves a console option value with a default.
+     *
+     * @param <T> the option value type
+     * @param name the option name
+     * @param defVal the default value
+     * @return the option value, or the default if not found
+     */
     @Override
     public <T> T consoleOption(String name, T defVal) {
         T out = defVal;
@@ -185,6 +258,12 @@ public class SystemRegistryImpl implements SystemRegistry {
         return out;
     }
 
+    /**
+     * Sets a console option value.
+     *
+     * @param name the option name
+     * @param value the option value
+     */
     @Override
     public void setConsoleOption(String name, Object value) {
         if (consoleId != null) {
@@ -220,6 +299,12 @@ public class SystemRegistryImpl implements SystemRegistry {
         return new ArrayList<>();
     }
 
+    /**
+     * Returns the help information for a command.
+     *
+     * @param command the command name
+     * @return list of help text lines
+     */
     @Override
     public List<String> commandInfo(String command) {
         int id = registryId(command);
@@ -237,15 +322,32 @@ public class SystemRegistryImpl implements SystemRegistry {
         return out;
     }
 
+    /**
+     * Checks if a command exists.
+     *
+     * @param command the command name
+     * @return {@code true} if the command exists, {@code false} otherwise
+     */
     @Override
     public boolean hasCommand(String command) {
         return registryId(command) > -1 || isLocalCommand(command);
     }
 
+    /**
+     * Sets whether commands should be grouped by registry in help output.
+     *
+     * @param commandGroups true to group commands, false otherwise
+     */
     public void setGroupCommandsInHelp(boolean commandGroups) {
         this.commandGroups = commandGroups;
     }
 
+    /**
+     * Sets whether commands should be grouped by registry in help output.
+     *
+     * @param commandGroups true to group commands, false otherwise
+     * @return this instance for method chaining
+     */
     public SystemRegistryImpl groupCommandsInHelp(boolean commandGroups) {
         this.commandGroups = commandGroups;
         return this;
@@ -255,11 +357,23 @@ public class SystemRegistryImpl implements SystemRegistry {
         return commandExecute.containsKey(command);
     }
 
+    /**
+     * Checks if the parsed line represents a command or script.
+     *
+     * @param line the parsed line to check
+     * @return {@code true} if the line is a command or script, {@code false} otherwise
+     */
     @Override
     public boolean isCommandOrScript(ParsedLine line) {
         return isCommandOrScript(parser.getCommand(line.words().get(0)));
     }
 
+    /**
+     * Checks if the given string represents a command or script.
+     *
+     * @param command the command name to check
+     * @return {@code true} if the command or script exists, {@code false} otherwise
+     */
     @Override
     public boolean isCommandOrScript(String command) {
         if (hasCommand(command)) {
@@ -268,6 +382,11 @@ public class SystemRegistryImpl implements SystemRegistry {
         return scriptStore.hasScript(command);
     }
 
+    /**
+     * Adds a completer to the registry.
+     *
+     * @param completer the completer to add
+     */
     public void addCompleter(Completer completer) {
         if (completer instanceof SystemCompleter sc) {
             if (sc.isCompiled()) {
@@ -280,6 +399,12 @@ public class SystemRegistryImpl implements SystemRegistry {
         }
     }
 
+    /**
+     * Compiles all registered completers into a system completer.
+     *
+     * @return the system completer
+     * @throws IllegalStateException always; use {@link #completer()} instead
+     */
     @Override
     public SystemCompleter compileCompleters() {
         throw new IllegalStateException("Use method completer() to retrieve Completer!");
@@ -319,6 +444,11 @@ public class SystemRegistryImpl implements SystemRegistry {
         return out;
     }
 
+    /**
+     * Returns the completer for all registered commands and scripts.
+     *
+     * @return the completer instance
+     */
     @Override
     public Completer completer() {
         List<Completer> completers = new ArrayList<>();
@@ -346,6 +476,12 @@ public class SystemRegistryImpl implements SystemRegistry {
         return null;
     }
 
+    /**
+     * Returns the description for a command given its arguments.
+     *
+     * @param args the command arguments
+     * @return the command description
+     */
     @Override
     public CmdDesc commandDescription(List<String> args) {
         CmdDesc out = new CmdDesc(false);
@@ -374,10 +510,21 @@ public class SystemRegistryImpl implements SystemRegistry {
         return new CmdDesc(main, ArgDesc.doArgNames(Collections.singletonList("")), options);
     }
 
+    /**
+     * Sets the function used to describe scripts for tab completion.
+     *
+     * @param scriptDescription the script description function
+     */
     public void setScriptDescription(Function<CmdLine, CmdDesc> scriptDescription) {
         this.scriptDescription = scriptDescription;
     }
 
+    /**
+     * Returns the description for a command line.
+     *
+     * @param line the command line
+     * @return the command description
+     */
     @Override
     public CmdDesc commandDescription(CmdLine line) {
         CmdDesc out = null;
@@ -419,6 +566,14 @@ public class SystemRegistryImpl implements SystemRegistry {
         return out;
     }
 
+    /**
+     * Invokes a command with the given arguments.
+     *
+     * @param command the command name
+     * @param args the command arguments
+     * @return the result of command execution
+     * @throws Exception if command execution fails
+     */
     @Override
     public Object invoke(String command, Object... args) throws Exception {
         Object out = null;
@@ -446,6 +601,11 @@ public class SystemRegistryImpl implements SystemRegistry {
         return out;
     }
 
+    /**
+     * Returns the terminal associated with this registry.
+     *
+     * @return the terminal
+     */
     public Terminal terminal() {
         return commandSession().terminal();
     }
@@ -464,6 +624,11 @@ public class SystemRegistryImpl implements SystemRegistry {
         private CommandSession commandSession;
         private boolean redirecting = false;
 
+        /**
+         * Constructs a new CommandOutputStream.
+         *
+         * @param terminal the terminal to use
+         */
         public CommandOutputStream(Terminal terminal) {
             this.origOut = System.out;
             this.origErr = System.err;
@@ -473,10 +638,20 @@ public class SystemRegistryImpl implements SystemRegistry {
             this.commandSession = new CommandSession(terminal, terminal.input(), ps, ps);
         }
 
+        /**
+         * Redirects output to a byte array stream.
+         */
         public void redirect() {
             outputStream = new ByteArrayOutputStream();
         }
 
+        /**
+         * Redirects output to a file.
+         *
+         * @param file the file to redirect output to
+         * @param append whether to append to the file
+         * @throws IOException if an I/O error occurs
+         */
         public void redirect(File file, boolean append) throws IOException {
             if (!file.exists()) {
                 try {
@@ -489,6 +664,12 @@ public class SystemRegistryImpl implements SystemRegistry {
             outputStream = new FileOutputStream(file, append);
         }
 
+        /**
+         * Opens the redirected output stream.
+         *
+         * @param redirectColor whether to redirect color output
+         * @throws IOException if an I/O error occurs
+         */
         public void open(boolean redirectColor) throws IOException {
             if (redirecting || outputStream == null) {
                 return;
@@ -504,6 +685,9 @@ public class SystemRegistryImpl implements SystemRegistry {
             redirecting = true;
         }
 
+        /**
+         * Closes the redirected output stream and restores original streams.
+         */
         public void close() {
             if (!redirecting) {
                 return;
@@ -521,6 +705,9 @@ public class SystemRegistryImpl implements SystemRegistry {
             reset();
         }
 
+        /**
+         * Resets the captured output.
+         */
         public void resetOutput() {
             output = null;
         }
@@ -535,23 +722,49 @@ public class SystemRegistryImpl implements SystemRegistry {
             redirecting = false;
         }
 
+        /**
+         * Returns the current command session.
+         *
+         * @return the command session
+         */
         public CommandSession getCommandSession() {
             return commandSession;
         }
 
+        /**
+         * Returns the captured output.
+         *
+         * @return the captured output, or null if no output was captured
+         */
         public String getOutput() {
             return output;
         }
 
+        /**
+         * Returns whether output is currently being redirected.
+         *
+         * @return true if redirecting, false otherwise
+         */
         public boolean isRedirecting() {
             return redirecting;
         }
 
+        /**
+         * Returns whether the output stream is a byte array output stream.
+         *
+         * @return true if byte array output stream, false otherwise
+         */
         public boolean isByteOutputStream() {
             return outputStream instanceof ByteArrayOutputStream;
         }
     }
 
+    /**
+     * Checks if the command is an alias.
+     *
+     * @param command the command name
+     * @return {@code true} if the command is an alias, {@code false} otherwise
+     */
     @Override
     public boolean isCommandAlias(String command) {
         if (consoleEngine() == null) {
@@ -847,6 +1060,9 @@ public class SystemRegistryImpl implements SystemRegistry {
         return out;
     }
 
+    /**
+     * Parses command arguments and handles quote and bracket matching.
+     */
     private static class ArgsParser {
         private int round = 0;
         private int curly = 0;
@@ -859,6 +1075,11 @@ public class SystemRegistryImpl implements SystemRegistry {
         private List<String> args;
         private final Parser parser;
 
+        /**
+         * Constructs a new ArgsParser.
+         *
+         * @param parser the parser to use
+         */
         public ArgsParser(Parser parser) {
             this.parser = parser;
         }
@@ -908,6 +1129,12 @@ public class SystemRegistryImpl implements SystemRegistry {
             return round == 0 && curly == 0 && square == 0 && !quoted && !doubleQuoted;
         }
 
+        /**
+         * Checks whether the supplied fragment has balanced quotes and brackets.
+         *
+         * @param arg fragment to inspect
+         * @return {@code true} when the fragment is syntactically enclosed
+         */
         public boolean isEnclosed(String arg) {
             reset();
             next(arg);
@@ -939,6 +1166,11 @@ public class SystemRegistryImpl implements SystemRegistry {
             }
         }
 
+        /**
+         * Parses a command line into arguments.
+         *
+         * @param line the command line to parse
+         */
         public void parse(String line) {
             this.line = line;
             ParsedLine pl = parser.parse(line, 0, ParseContext.SPLIT_LINE);
@@ -954,22 +1186,47 @@ public class SystemRegistryImpl implements SystemRegistry {
             }
         }
 
+        /**
+         * Returns the parsed command line.
+         *
+         * @return the command line
+         */
         public String line() {
             return line;
         }
 
+        /**
+         * Returns the parsed command name.
+         *
+         * @return the command name
+         */
         public String command() {
             return ConsoleEngine.plainCommand(command);
         }
 
+        /**
+         * Returns the raw command name (before processing).
+         *
+         * @return the raw command name
+         */
         public String rawCommand() {
             return command;
         }
 
+        /**
+         * Returns the parsed variable name, if any.
+         *
+         * @return the variable name, or null
+         */
         public String variable() {
             return variable;
         }
 
+        /**
+         * Returns the parsed arguments.
+         *
+         * @return the list of arguments
+         */
         public List<String> args() {
             return args;
         }
@@ -1104,6 +1361,9 @@ public class SystemRegistryImpl implements SystemRegistry {
         return out;
     }
 
+    /**
+     * Holds parsed command data for pipeline execution.
+     */
     protected static class CommandData {
         private final String rawLine;
         private String command;
@@ -1113,6 +1373,17 @@ public class SystemRegistryImpl implements SystemRegistry {
         private final String variable;
         private String pipe;
 
+        /**
+         * Creates a compiled command entry for later execution in a pipeline.
+         *
+         * @param parser parser used to derive command metadata
+         * @param statement whether the raw line should be treated as a script statement
+         * @param rawLine raw command or statement text
+         * @param variable target variable for captured output
+         * @param file redirect target, when present
+         * @param append whether redirected output should be appended
+         * @param pipe pipe operator that follows this command
+         */
         public CommandData(
                 ArgsParser parser,
                 boolean statement,
@@ -1141,38 +1412,83 @@ public class SystemRegistryImpl implements SystemRegistry {
             }
         }
 
+        /**
+         * Sets the pipe operator for this command.
+         *
+         * @param pipe the pipe operator
+         */
         public void setPipe(String pipe) {
             this.pipe = pipe;
         }
 
+        /**
+         * Returns the redirect target file.
+         *
+         * @return the file, or null if no redirection
+         */
         public File file() {
             return file;
         }
 
+        /**
+         * Returns whether output should be appended to the file.
+         *
+         * @return true if append mode, false otherwise
+         */
         public boolean append() {
             return append;
         }
 
+        /**
+         * Returns the variable name for output capture.
+         *
+         * @return the variable name, or null
+         */
         public String variable() {
             return variable;
         }
 
+        /**
+         * Returns the command name.
+         *
+         * @return the command name
+         */
         public String command() {
             return command;
         }
 
+        /**
+         * Returns the command arguments.
+         *
+         * @return the arguments array
+         */
         public String[] args() {
             return args;
         }
 
+        /**
+         * Returns the raw command line.
+         *
+         * @return the raw command line
+         */
         public String rawLine() {
             return rawLine;
         }
 
+        /**
+         * Returns the pipe operator.
+         *
+         * @return the pipe operator
+         */
         public String pipe() {
             return pipe;
         }
 
+        /**
+         * Returns a string representation of this command line.
+         *
+         * @return string representation
+         */
         @Override
         public String toString() {
             return "[" + "rawLine:"
@@ -1186,37 +1502,76 @@ public class SystemRegistryImpl implements SystemRegistry {
         }
     }
 
+    /**
+     * Caches available scripts from the console engine.
+     */
     private static class ScriptStore {
         ConsoleEngine engine;
         Map<String, Boolean> scripts = new HashMap<>();
 
+        /**
+         * Constructs a new ScriptStore with no engine.
+         */
         public ScriptStore() {}
 
+        /**
+         * Constructs a new ScriptStore.
+         *
+         * @param engine the console engine
+         */
         public ScriptStore(ConsoleEngine engine) {
             this.engine = engine;
         }
 
+        /**
+         * Refreshes the script cache from the engine.
+         */
         public void refresh() {
             if (engine != null) {
                 scripts = engine.scripts();
             }
         }
 
+        /**
+         * Checks if a script exists.
+         *
+         * @param name the script name
+         * @return true if the script exists
+         */
         public boolean hasScript(String name) {
             return scripts.containsKey(name);
         }
 
+        /**
+         * Checks if a script is a console script.
+         *
+         * @param name the script name
+         * @return true if it is a console script
+         */
         public boolean isConsoleScript(String name) {
             return scripts.getOrDefault(name, false);
         }
 
+        /**
+         * Returns all available scripts.
+         *
+         * @return the set of script names
+         */
         public Set<String> getScripts() {
             return scripts.keySet();
         }
     }
 
+    /**
+     * Exception thrown when a command is not recognized.
+     */
     @SuppressWarnings("serial")
     public static class UnknownCommandException extends Exception {
+        /**
+         * Constructs a new UnknownCommandException.
+         *
+         * @param message the error message
+         */
         public UnknownCommandException(String message) {
             super(message);
         }
@@ -1355,6 +1710,9 @@ public class SystemRegistryImpl implements SystemRegistry {
         return out;
     }
 
+    /**
+     * Cleans up output streams and purges temporary data.
+     */
     public void cleanUp() {
         outputStream.close();
         outputStream.resetOutput();
@@ -1418,6 +1776,11 @@ public class SystemRegistryImpl implements SystemRegistry {
         names.save();
     }
 
+    /**
+     * Returns the console engine, if available.
+     *
+     * @return the console engine, or null if not configured
+     */
     public ConsoleEngine consoleEngine() {
         return consoleId != null ? (ConsoleEngine) commandRegistries[consoleId] : null;
     }
@@ -1754,23 +2117,45 @@ public class SystemRegistryImpl implements SystemRegistry {
         return -1;
     }
 
+    /**
+     * Completer for pipeline commands and operators.
+     */
     private static class PipelineCompleter implements Completer {
         private final NamesAndValues names;
         private final Supplier<Path> workDir;
         private final Map<Pipe, String> pipeName;
 
+        /**
+         * Constructs a new PipelineCompleter.
+         *
+         * @param workDir supplier for the working directory
+         * @param pipeName map of pipe operators to their names
+         * @param names names and values cache
+         */
         public PipelineCompleter(Supplier<Path> workDir, Map<Pipe, String> pipeName, NamesAndValues names) {
             this.workDir = workDir;
             this.pipeName = pipeName;
             this.names = names;
         }
 
+        /**
+         * Returns the completer wrapped in an ArgumentCompleter.
+         *
+         * @return the completer
+         */
         public Completer doCompleter() {
             ArgumentCompleter out = new ArgumentCompleter(this);
             out.setStrict(false);
             return out;
         }
 
+        /**
+         * Provides completion candidates for pipeline commands.
+         *
+         * @param reader the line reader
+         * @param commandLine the parsed command line
+         * @param candidates the list to populate with candidates
+         */
         @Override
         public void complete(LineReader reader, ParsedLine commandLine, List<Candidate> candidates) {
             assert commandLine != null;
@@ -1835,6 +2220,9 @@ public class SystemRegistryImpl implements SystemRegistry {
         }
     }
 
+    /**
+     * Manages field, value, and option names for pipeline completion.
+     */
     private class NamesAndValues {
         private final String[] delims = {
             "&", "\\|", "\\{", "\\}", "\\[", "\\]", "\\(", "\\)", "\\+", "-", "\\*", "=", ">", "<", "~", "!", ":", ",",
@@ -1845,10 +2233,18 @@ public class SystemRegistryImpl implements SystemRegistry {
         private final Map<String, List<String>> names = new HashMap<>();
         private List<String> namedPipes;
 
+        /**
+         * Constructs a new NamesAndValues with no config path.
+         */
         public NamesAndValues() {
             this(null);
         }
 
+        /**
+         * Constructs a new NamesAndValues.
+         *
+         * @param configPath configuration path for loading saved names
+         */
         @SuppressWarnings("unchecked")
         public NamesAndValues(ConfigurationPath configPath) {
             names.put("fields", new ArrayList<>());
@@ -1869,12 +2265,24 @@ public class SystemRegistryImpl implements SystemRegistry {
             }
         }
 
+        /**
+         * Checks if an argument is a pipe operator.
+         *
+         * @param arg the argument to check
+         * @return true if it is a pipe operator
+         */
         public boolean isPipe(String arg) {
             Map<String, List<String>> customPipes =
                     consoleEngine() != null ? consoleEngine().getPipes() : new HashMap<>();
             return isPipe(arg, customPipes.keySet());
         }
 
+        /**
+         * Checks if any argument in the collection is a pipe operator.
+         *
+         * @param args the arguments to check
+         * @return true if any argument is a pipe operator
+         */
         public boolean hasPipes(Collection<String> args) {
             Map<String, List<String>> customPipes =
                     consoleEngine() != null ? consoleEngine().getPipes() : new HashMap<>();
@@ -1890,6 +2298,11 @@ public class SystemRegistryImpl implements SystemRegistry {
             return pipeName.containsValue(arg) || pipes.contains(arg);
         }
 
+        /**
+         * Extracts field and value names from a command line for completion.
+         *
+         * @param line the command line to parse
+         */
         public void extractNames(String line) {
             if (parser.getCommand(line).equals("pipe")) {
                 return;
@@ -1960,6 +2373,12 @@ public class SystemRegistryImpl implements SystemRegistry {
             namedPipes = null;
         }
 
+        /**
+         * Returns the quote/delimiter character that encloses a parameter, if any.
+         *
+         * @param param the parameter to check
+         * @return the enclosing character, or empty string if not enclosed
+         */
         public String encloseBy(String param) {
             boolean quoted =
                     !param.isEmpty() && (param.startsWith("\"") || param.startsWith("'") || param.startsWith("/"));
@@ -1976,6 +2395,12 @@ public class SystemRegistryImpl implements SystemRegistry {
                             || (word.startsWith("/") && word.endsWith("/")));
         }
 
+        /**
+         * Returns the index of the last delimiter in a word.
+         *
+         * @param word the word to search
+         * @return the index, or -1 if no delimiter found
+         */
         public int indexOfLastDelim(String word) {
             int out = -1;
             for (String d : delims) {
@@ -2011,6 +2436,11 @@ public class SystemRegistryImpl implements SystemRegistry {
             names.get(where).add(0, value);
         }
 
+        /**
+         * Returns the list of named pipes.
+         *
+         * @return the list of named pipe names
+         */
         public List<String> namedPipes() {
             if (namedPipes == null) {
                 namedPipes = consoleId != null ? consoleEngine().getNamedPipes() : new ArrayList<>();
@@ -2018,18 +2448,38 @@ public class SystemRegistryImpl implements SystemRegistry {
             return namedPipes;
         }
 
+        /**
+         * Returns the list of value names.
+         *
+         * @return the list of values
+         */
         public List<String> values() {
             return names.get("values");
         }
 
+        /**
+         * Returns the list of field names.
+         *
+         * @return the list of fields
+         */
         public List<String> fields() {
             return names.get("fields");
         }
 
+        /**
+         * Returns the list of quoted strings.
+         *
+         * @return the list of quoted strings
+         */
         public List<String> quoted() {
             return names.get("quoted");
         }
 
+        /**
+         * Returns the list of option names.
+         *
+         * @return the list of options
+         */
         public List<String> options() {
             return names.get("options");
         }
@@ -2047,6 +2497,9 @@ public class SystemRegistryImpl implements SystemRegistry {
             }
         }
 
+        /**
+         * Saves the collected names to persistent storage.
+         */
         public void save() {
             ConsoleEngine consoleEngine = consoleEngine();
             if (consoleEngine != null && fileNames != null) {
