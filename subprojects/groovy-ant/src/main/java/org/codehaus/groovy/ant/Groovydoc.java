@@ -89,6 +89,9 @@ public class Groovydoc extends Task {
     private String charset;
     private String fileEncoding;
 
+    /**
+     * Creates a Groovydoc Ant task with the default option set.
+     */
     public Groovydoc() {
         packageNames = new ArrayList<>();
         excludePackageNames = new ArrayList<>();
@@ -309,6 +312,11 @@ public class Groovydoc extends Task {
         }
     }
 
+    /**
+     * Accepts the historical Ant {@code use} attribute for compatibility.
+     *
+     * @param b ignored
+     */
     public void setUse(boolean b) {
         //ignore as 'use external file' irrelevant with groovydoc :-)
     }
@@ -460,10 +468,22 @@ public class Groovydoc extends Task {
     /** Nested-element holder populated by Ant introspection for {@code <addStylesheet file="..."/>}. */
     public class AddStylesheet {
         private File file;
+
+        /**
+         * Registers an additional stylesheet to copy into the generated documentation.
+         *
+         * @param f the stylesheet file to add
+         */
         public void setFile(File f) {
             this.file = f;
             if (f != null) addStylesheetFiles.add(f);
         }
+
+        /**
+         * Returns the stylesheet file configured for this nested element.
+         *
+         * @return the configured stylesheet file
+         */
         public File getFile() { return file; }
     }
 
@@ -587,6 +607,11 @@ public class Groovydoc extends Task {
         }
     }
 
+    /**
+     * Generates Groovydoc output for the configured source path.
+     *
+     * @throws BuildException if generation fails
+     */
     @Override
     public void execute() throws BuildException {
         List<String> packagesToDoc = new ArrayList<>();

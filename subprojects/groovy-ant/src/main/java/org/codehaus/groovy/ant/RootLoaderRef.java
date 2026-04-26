@@ -65,6 +65,11 @@ public class RootLoaderRef extends MatchingTask {
         name = n;
     }
 
+    /**
+     * Creates the referenced loader and stores it in the current Ant project.
+     *
+     * @throws BuildException if the classpath has not been configured
+     */
     @Override
     public void execute() throws BuildException {
         if (taskClasspath == null || taskClasspath.isEmpty()) {

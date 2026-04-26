@@ -199,8 +199,19 @@ public class Groovyc extends MatchingTask {
     private String scriptExtension = "*.groovy";
     private String targetBytecode;
 
+    /**
+     * Whether compilation failures should abort the Ant build.
+     */
     protected boolean failOnError = true;
+
+    /**
+     * Whether the task should log every file passed to the compiler.
+     */
     protected boolean listFiles;
+
+    /**
+     * Files selected for compilation in the current execution.
+     */
     protected File[] compileList = EMPTY_FILE_ARRAY;
 
     private String updatedProperty;
@@ -208,6 +219,9 @@ public class Groovyc extends MatchingTask {
     private boolean taskSuccess = true;
     private boolean includeDestClasses = true;
 
+    /**
+     * Compiler configuration produced for the current compilation run.
+     */
     protected CompilerConfiguration configuration;
     private Javac javac;
     private boolean jointCompilation;
@@ -918,6 +932,11 @@ public class Groovyc extends MatchingTask {
         }
     }
 
+    /**
+     * Appends newly discovered files to the current compile list.
+     *
+     * @param newFiles the files to add
+     */
     protected void addToCompileList(File[] newFiles) {
         if (newFiles.length > 0) {
             File[] newCompileList = new File[compileList.length + newFiles.length];
@@ -936,6 +955,11 @@ public class Groovyc extends MatchingTask {
         return compileList.clone();
     }
 
+    /**
+     * Validates the user-supplied task parameters.
+     *
+     * @throws BuildException if required attributes are missing or invalid
+     */
     protected void checkParameters() throws BuildException {
         if (src == null || src.isEmpty()) {
             throw new BuildException("srcdir attribute must be set!", getLocation());
@@ -1314,6 +1338,9 @@ public class Groovyc extends MatchingTask {
         }
     }
 
+    /**
+     * Compiles the files accumulated in {@link #compileList}.
+     */
     protected void compile() {
         if (compileList.length == 0) return;
 
@@ -1361,6 +1388,12 @@ public class Groovyc extends MatchingTask {
         return makeCompileUnit(buildClassLoaderFor());
     }
 
+    /**
+     * Creates the compilation unit to use for the current run.
+     *
+     * @param loader the class loader that should back compilation
+     * @return the configured compilation unit
+     */
     protected CompilationUnit makeCompileUnit(GroovyClassLoader loader) {
         Map<String, Object> options = configuration.getJointCompilationOptions();
         if (options != null) {
@@ -1384,6 +1417,11 @@ public class Groovyc extends MatchingTask {
         }
     }
 
+    /**
+     * Builds the class loader used for in-process compilation.
+     *
+     * @return the class loader for compilation
+     */
     protected GroovyClassLoader buildClassLoaderFor() {
         if (fork) {
             throw new GroovyBugError("Cannot use Groovyc#buildClassLoaderFor() for forked compilation");

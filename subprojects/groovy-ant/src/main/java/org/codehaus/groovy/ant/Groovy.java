@@ -462,6 +462,11 @@ public class Groovy extends Java {
         }
     }
 
+    /**
+     * Creates a nested command-line argument for the executed script.
+     *
+     * @return the argument to configure
+     */
     @Override
     public Commandline.Argument createArg() {
         return cmdline.createArgument();
@@ -662,6 +667,11 @@ public class Groovy extends Java {
         throw new BuildException("Script Failed: " + message, e, getLocation());
     }
 
+    /**
+     * Command-line entry point used when the task executes scripts in forked mode.
+     *
+     * @param args the script file followed by script arguments
+     */
     public static void main(String[] args) {
         final GroovyShell shell = new GroovyShell(new Binding());
         final Groovy groovy = new Groovy();

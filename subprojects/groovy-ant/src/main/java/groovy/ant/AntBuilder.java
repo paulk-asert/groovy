@@ -90,14 +90,28 @@ public class AntBuilder extends BuilderSupport {
     private static DemuxOutputStream demuxErrorStream;
     private static InputStream savedProjectInputStream;
 
+    /**
+     * Creates an {@code AntBuilder} backed by a freshly initialized Ant project.
+     */
     public AntBuilder() {
         this(createProject());
     }
 
+    /**
+     * Creates an {@code AntBuilder} backed by the supplied project.
+     *
+     * @param project the project used to create and execute Ant tasks
+     */
     public AntBuilder(final Project project) {
         this(project, new Target());
     }
 
+    /**
+     * Creates an {@code AntBuilder} backed by the supplied project and owning target.
+     *
+     * @param project the project used to create and execute Ant tasks
+     * @param owningTarget the target that should collect top-level tasks
+     */
     public AntBuilder(final Project project, final Target owningTarget) {
         this.project = project;
 
@@ -124,6 +138,11 @@ public class AntBuilder extends BuilderSupport {
         project.addDataTypeDefinition("fileScanner", FileScanner.class);
     }
 
+    /**
+     * Creates an {@code AntBuilder} that shares the context of the supplied parent task.
+     *
+     * @param parentTask the Ant task whose project and owning target should be reused
+     */
     public AntBuilder(final Task parentTask) {
         this(parentTask.getProject(), parentTask.getOwningTarget());
 
@@ -204,6 +223,12 @@ public class AntBuilder extends BuilderSupport {
         return project;
     }
 
+    /**
+     * Ant child nodes are attached by Ant's own configuration machinery, so this hook is intentionally a no-op.
+     *
+     * @param parent the logical parent node
+     * @param child the logical child node
+     */
     @Override
     protected void setParent(Object parent, Object child) {
     }
@@ -373,11 +398,24 @@ public class AntBuilder extends BuilderSupport {
         }
     }
 
+    /**
+     * Creates a node with no attributes or body text.
+     *
+     * @param tagName the requested node name
+     * @return the created Ant proxy
+     */
     @Override
     protected Object createNode(Object tagName) {
         return createNode(tagName, Collections.EMPTY_MAP);
     }
 
+    /**
+     * Creates a node and applies inline text to it.
+     *
+     * @param name the requested node name
+     * @param value the inline text value
+     * @return the created Ant proxy
+     */
     @Override
     protected Object createNode(Object name, Object value) {
         Object task = createNode(name);
@@ -385,6 +423,14 @@ public class AntBuilder extends BuilderSupport {
         return task;
     }
 
+    /**
+     * Creates a node, applies attributes, and then applies inline text to it.
+     *
+     * @param name the requested node name
+     * @param attributes the node attributes
+     * @param value the inline text value
+     * @return the created Ant proxy
+     */
     @Override
     protected Object createNode(Object name, Map attributes, Object value) {
         Object task = createNode(name, attributes);
@@ -409,6 +455,13 @@ public class AntBuilder extends BuilderSupport {
         return attr;
     }
 
+    /**
+     * Creates a node from the supplied name and attributes.
+     *
+     * @param name the requested node name
+     * @param attributes the attributes to apply
+     * @return the created Ant proxy or target
+     */
     @Override
     protected Object createNode(final Object name, final Map attributes) {
 
@@ -475,6 +528,12 @@ public class AntBuilder extends BuilderSupport {
         }
     }
 
+    /**
+     * Applies nested text content to the current Ant task.
+     *
+     * @param task the current Ant task proxy
+     * @param text the text content to apply
+     */
     protected void setText(Object task, String text) {
         final char[] characters = text.toCharArray();
         try {
@@ -484,6 +543,11 @@ public class AntBuilder extends BuilderSupport {
         }
     }
 
+    /**
+     * Returns the underlying Ant project instance.
+     *
+     * @return the project backing this builder
+     */
     public Project getAntProject() {
         return project;
     }
@@ -494,21 +558,33 @@ public class AntBuilder extends BuilderSupport {
  * In a first time, without info
  */
 class AntBuilderLocator implements Locator {
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getColumnNumber() {
         return 0;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getLineNumber() {
         return 0;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getPublicId() {
         return "";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getSystemId() {
         return "";
