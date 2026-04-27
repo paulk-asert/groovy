@@ -70,6 +70,9 @@ class JScrollBarValueBinding extends AbstractSyntheticBinding implements Propert
         super(source, target, JScrollBar.class, "value");
     }
 
+    /**
+     * Starts listening to the bound scroll bar and its model.
+     */
     @Override
     public synchronized void syntheticBind() {
         boundScrollBar = (JScrollBar) ((PropertyBinding)sourceBinding).getBean();
@@ -77,6 +80,9 @@ class JScrollBarValueBinding extends AbstractSyntheticBinding implements Propert
         boundScrollBar.getModel().addChangeListener(this);
     }
 
+    /**
+     * Stops listening to the bound scroll bar and clears the cached reference.
+     */
     @Override
     public synchronized void syntheticUnbind() {
         boundScrollBar.removePropertyChangeListener("model", this);
@@ -84,11 +90,21 @@ class JScrollBarValueBinding extends AbstractSyntheticBinding implements Propert
         boundScrollBar = null;
     }
 
+    /**
+     * Stores the target binding that receives scroll-bar value updates.
+     *
+     * @param target the target binding
+     */
     @Override
     public void setTargetBinding(TargetBinding target) {
         super.setTargetBinding(target);
     }
 
+    /**
+     * Refreshes the binding after the scroll-bar model instance changes.
+     *
+     * @param event the model change event
+     */
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         update();
@@ -96,6 +112,11 @@ class JScrollBarValueBinding extends AbstractSyntheticBinding implements Propert
         ((BoundedRangeModel) event.getNewValue()).addChangeListener(this);
     }
 
+    /**
+     * Refreshes the binding after the scroll-bar value changes.
+     *
+     * @param e the change event
+     */
     @Override
     public void stateChanged(ChangeEvent e) {
         update();

@@ -36,6 +36,12 @@ import java.util.regex.Pattern
  */
 class PrimitiveNameRewriter {
 
+    /**
+     * Rewrites generated GroovyDoc output to use historical Groovy JDK names and locations.
+     *
+     * @param outputDir directory containing generated documentation
+     * @param manifestFile manifest that describes mock-to-display name mappings
+     */
     static void rewrite(File outputDir, File manifestFile) {
         if (!manifestFile.exists()) return
         def renames = []

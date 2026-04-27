@@ -83,6 +83,9 @@ class JComboBoxSelectedElementBinding extends AbstractSyntheticBinding implement
         super(source, target, JComboBox.class, propertyName);
     }
 
+    /**
+     * Starts listening to the bound combo box and its model.
+     */
     @Override
     public synchronized void syntheticBind() {
         boundComboBox = (JComboBox) ((PropertyBinding)sourceBinding).getBean();
@@ -90,6 +93,9 @@ class JComboBoxSelectedElementBinding extends AbstractSyntheticBinding implement
         boundComboBox.addItemListener(this);
     }
 
+    /**
+     * Stops listening to the bound combo box and clears the cached reference.
+     */
     @Override
     public synchronized void syntheticUnbind() {
         boundComboBox.removePropertyChangeListener("model", this);
@@ -97,16 +103,31 @@ class JComboBoxSelectedElementBinding extends AbstractSyntheticBinding implement
         boundComboBox = null;
     }
 
+    /**
+     * Stores the target binding that receives selected-item updates.
+     *
+     * @param target the target binding
+     */
     @Override
     public void setTargetBinding(TargetBinding target) {
         super.setTargetBinding(target);
     }
 
+    /**
+     * Refreshes the binding after a combo-box model change.
+     *
+     * @param event the model change event
+     */
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         update();
     }
 
+    /**
+     * Refreshes the binding after a combo-box selection change.
+     *
+     * @param e the item event describing the selection change
+     */
     @Override
     public void itemStateChanged(ItemEvent e) {
         update();
@@ -134,6 +155,9 @@ class JComboBoxSelectedIndexBinding extends AbstractSyntheticBinding implements 
         super(source, target, JComboBox.class, "selectedIndex");
     }
 
+    /**
+     * Starts listening to the bound combo box and its model.
+     */
     @Override
     public synchronized void syntheticBind() {
         boundComboBox = (JComboBox) ((PropertyBinding)sourceBinding).getBean();
@@ -141,6 +165,9 @@ class JComboBoxSelectedIndexBinding extends AbstractSyntheticBinding implements 
         boundComboBox.addItemListener(this);
     }
 
+    /**
+     * Stops listening to the bound combo box and clears the cached reference.
+     */
     @Override
     public synchronized void syntheticUnbind() {
         boundComboBox.removePropertyChangeListener("model", this);
@@ -148,16 +175,31 @@ class JComboBoxSelectedIndexBinding extends AbstractSyntheticBinding implements 
         boundComboBox = null;
     }
 
+    /**
+     * Stores the target binding that receives selected-index updates.
+     *
+     * @param target the target binding
+     */
     @Override
     public void setTargetBinding(TargetBinding target) {
         super.setTargetBinding(target);
     }
 
+    /**
+     * Refreshes the binding after a combo-box model change.
+     *
+     * @param event the model change event
+     */
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         update();
     }
 
+    /**
+     * Refreshes the binding after a combo-box selection change.
+     *
+     * @param e the item event describing the selection change
+     */
     @Override
     public void itemStateChanged(ItemEvent e) {
         update();
@@ -185,6 +227,9 @@ class JComboBoxElementsBinding extends AbstractSyntheticBinding implements ListD
         super(propertyBinding, target, JComboBox.class, "elements");
     }
 
+    /**
+     * Starts listening to the bound combo-box model.
+     */
     @Override
     protected void syntheticBind() {
         boundComboBox = (JComboBox) ((PropertyBinding)sourceBinding).getBean();
@@ -192,12 +237,20 @@ class JComboBoxElementsBinding extends AbstractSyntheticBinding implements ListD
         boundComboBox.getModel().addListDataListener(this);
     }
 
+    /**
+     * Stops listening to the bound combo-box model.
+     */
     @Override
     protected void syntheticUnbind() {
         boundComboBox.removePropertyChangeListener("model", this);
         boundComboBox.getModel().removeListDataListener(this);
     }
 
+    /**
+     * Refreshes the binding after the combo-box model instance changes.
+     *
+     * @param event the model change event
+     */
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         update();
@@ -205,16 +258,31 @@ class JComboBoxElementsBinding extends AbstractSyntheticBinding implements ListD
         ((ComboBoxModel) event.getNewValue()).addListDataListener(this);
     }
 
+    /**
+     * Refreshes the binding after items are inserted into the model.
+     *
+     * @param e the list-data event
+     */
     @Override
     public void intervalAdded(ListDataEvent e) {
         update();
     }
 
+    /**
+     * Refreshes the binding after items are removed from the model.
+     *
+     * @param e the list-data event
+     */
     @Override
     public void intervalRemoved(ListDataEvent e) {
         update();
     }
 
+    /**
+     * Refreshes the binding after existing items in the model change.
+     *
+     * @param e the list-data event
+     */
     @Override
     public void contentsChanged(ListDataEvent e) {
         update();

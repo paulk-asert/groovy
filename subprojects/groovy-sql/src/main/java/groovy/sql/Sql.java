@@ -5256,12 +5256,26 @@ public class Sql implements AutoCloseable {
         }
     }
 
+    /**
+     * Base command object for query operations that manage statement and connection lifecycle.
+     */
     protected abstract class AbstractQueryCommand {
+        /**
+         * The SQL text executed by this command.
+         */
         protected final String sql;
+        /**
+         * The statement created while running the command.
+         */
         protected Statement statement;
         private Connection connection;
         private int maxRows = 0;
 
+        /**
+         * Creates a query command for the supplied SQL text.
+         *
+         * @param sql the SQL statement to execute
+         */
         protected AbstractQueryCommand(String sql) {
             // Don't create statement in subclass constructors to avoid throw in constructors
             this.sql = sql;

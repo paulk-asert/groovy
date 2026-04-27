@@ -49,11 +49,22 @@ public class ListWrapperListModel<E> extends AbstractListModel {
         return delegate;
     }
 
+    /**
+     * Returns the number of elements currently exposed by the backing list.
+     *
+     * @return the current model size
+     */
     @Override
     public int getSize() {
         return delegate.size();
     }
 
+    /**
+     * Returns the element at the supplied index from the backing list.
+     *
+     * @param i the requested element index
+     * @return the element at {@code i}
+     */
     @Override
     public Object getElementAt(int i) {
         return delegate.get(i);

@@ -29,6 +29,11 @@ import java.io.Serial;
 class PartitionImpl<T> extends QueryableCollection<T> implements Partition<T> {
     @Serial private static final long serialVersionUID = -3650144225768070117L;
 
+    /**
+     * Creates a partition backed by the supplied iterable.
+     *
+     * @param sourceIterable the partition elements
+     */
     PartitionImpl(Iterable<T> sourceIterable) {
         super(sourceIterable);
     }

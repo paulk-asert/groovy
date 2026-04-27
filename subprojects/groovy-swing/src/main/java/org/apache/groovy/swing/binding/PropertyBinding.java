@@ -316,6 +316,11 @@ public class PropertyBinding implements SourceBinding, TargetBinding, TriggerBin
         }
     }
 
+    /**
+     * Reads the current value of the bound property from the bean.
+     *
+     * @return the current property value
+     */
     @Override
     public Object getSourceValue() {
         return propertyAccessor().read(bean, propertyName);
@@ -366,6 +371,11 @@ public class PropertyBinding implements SourceBinding, TargetBinding, TriggerBin
             setTargetBinding(target);
         }
 
+        /**
+         * Responds to observed property changes by pushing an updated value to the target.
+         *
+         * @param event the property change event
+         */
         @Override
         public void propertyChange(PropertyChangeEvent event) {
             if (boundToProperty || event.getPropertyName().equals(boundProperty)) {
@@ -373,6 +383,9 @@ public class PropertyBinding implements SourceBinding, TargetBinding, TriggerBin
             }
         }
 
+        /**
+         * Starts listening for property changes on the current bean.
+         */
         @Override
         public void bind() {
             if (!bound) {
@@ -393,6 +406,9 @@ public class PropertyBinding implements SourceBinding, TargetBinding, TriggerBin
             }
         }
 
+        /**
+         * Removes any property-change listeners installed by this binding.
+         */
         @Override
         public void unbind() {
             if (bound) {
@@ -415,6 +431,9 @@ public class PropertyBinding implements SourceBinding, TargetBinding, TriggerBin
             }
         }
 
+        /**
+         * Rebinds property-change listeners when the binding is currently active.
+         */
         @Override
         public void rebind() {
             if (bound) {
@@ -465,7 +484,30 @@ public class PropertyBinding implements SourceBinding, TargetBinding, TriggerBin
      * Defines the thread on which target updates should run.
      */
     public enum UpdateStrategy {
-        MIXED, ASYNC, SYNC, SAME, OUTSIDE, DEFER;
+        /**
+         * Chooses a strategy dynamically based on the current execution context.
+         */
+        MIXED,
+        /**
+         * Always updates asynchronously.
+         */
+        ASYNC,
+        /**
+         * Always updates synchronously on the event-dispatch thread.
+         */
+        SYNC,
+        /**
+         * Updates on the calling thread.
+         */
+        SAME,
+        /**
+         * Updates synchronously off the event-dispatch thread.
+         */
+        OUTSIDE,
+        /**
+         * Defers updates until the event queue processes them.
+         */
+        DEFER;
 
         /**
          * Resolves an update strategy name.

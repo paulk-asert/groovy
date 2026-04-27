@@ -118,6 +118,7 @@ class MatchingConstraintsBuilder {
         def clone = (Closure<Boolean>) predicate.clone()
         clone.resolveStrategy = Closure.DELEGATE_FIRST
         tokenPredicate = new ConstraintPredicate<Token>() {
+            /** Evaluates the configured token predicate closure. */
             @Override
             boolean apply(final Token a) {
                 clone.delegate = a
@@ -137,6 +138,7 @@ class MatchingConstraintsBuilder {
         def clone = (Closure<Boolean>) predicate.clone()
         clone.resolveStrategy = Closure.DELEGATE_FIRST
         eventually = new ConstraintPredicate<TreeContext>() {
+            /** Evaluates the configured tree-context predicate closure. */
             @Override
             boolean apply(final TreeContext a) {
                 clone.delegate = a

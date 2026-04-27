@@ -53,6 +53,11 @@ public class PropertyChangeProxyTargetBinding implements TargetBinding {
         this.listener = listener;
     }
 
+    /**
+     * Forwards a synthetic property-change event containing the supplied target value.
+     *
+     * @param value the new property value to report
+     */
     @Override
     public void updateTargetValue(Object value) {
         listener.propertyChange(new PropertyChangeEvent(proxyObject, propertyName,

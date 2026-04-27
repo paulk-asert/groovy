@@ -40,6 +40,9 @@ public class GroovyDocTool {
     private final GroovyDocTemplateEngine templateEngine;
     private final String[] sourcepaths;
 
+    /**
+     * Rendering properties shared with the parser and template engine.
+     */
     protected Properties properties;
 
     /**

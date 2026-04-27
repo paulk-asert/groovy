@@ -76,17 +76,26 @@ class GrapeIvy implements GrapeEngine {
         grabArgs.inject([:]) { Map m, List g -> g.each { a -> m[a] = (g - a) as Set }; m }
     }
 
+    /** Enables or disables grape resolution. */
     boolean enableGrapes = true
 
+    /** Active Ivy instance used for dependency resolution. */
     Ivy ivyInstance
+    /** Ivy settings backing this engine. */
     IvySettings settings
+    /** Artifact files downloaded during the last resolution. */
     Set<String> downloadedArtifacts = []
+    /** Module revisions resolved during the last resolution. */
     Set<String> resolvedDependencies = []
     // weak hash map so we don't leak loaders directly
+    /** Dependencies loaded into each class loader. */
     final Map<ClassLoader, Set<IvyGrabRecord>> loadedDeps = [] as WeakHashMap
     /** Stores the IvyGrabRecord(s) for all dependencies in each grab() call. */
     final Set<IvyGrabRecord> grabRecordsForCurrDependencies = [] as LinkedHashSet
 
+    /**
+     * Creates an Ivy-backed grape engine.
+     */
     GrapeIvy() {
         Message.setDefaultLogger(new PlatformLoggingMessageLogger())
 
@@ -110,6 +119,11 @@ class GrapeIvy implements GrapeEngine {
         IvyContext.getContext().setIvy(ivyInstance)
     }
 
+    /**
+     * Returns the configured Groovy home directory for grape state.
+     *
+     * @return the Groovy home directory
+     */
     File getGroovyRoot() {
         String root = System.getProperty('groovy.root')
         def groovyRoot
@@ -126,6 +140,11 @@ class GrapeIvy implements GrapeEngine {
         groovyRoot
     }
 
+    /**
+     * Returns the root directory used by grape.
+     *
+     * @return the grape root directory
+     */
     File getGrapeDir() {
         String root = System.getProperty('grape.root')
         if (root == null) {
@@ -140,6 +159,11 @@ class GrapeIvy implements GrapeEngine {
         grapeRoot
     }
 
+    /**
+     * Returns the cache directory used for downloaded artifacts.
+     *
+     * @return the grape cache directory
+     */
     File getGrapeCacheDir() {
         File cache = new File(getGrapeDir(), 'grapes')
         if (!cache.exists()) {
@@ -150,6 +174,11 @@ class GrapeIvy implements GrapeEngine {
         cache
     }
 
+    /**
+     * Returns the local Ivy grape configuration file.
+     *
+     * @return the grape configuration file
+     */
     File getLocalGrapeConfig() {
         String grapeConfig = System.getProperty('grape.config')
         if (grapeConfig) {
@@ -159,6 +188,12 @@ class GrapeIvy implements GrapeEngine {
         }
     }
 
+    /**
+     * Chooses the target class loader for a grab operation.
+     *
+     * @param args grab arguments
+     * @return the chosen class loader
+     */
     ClassLoader chooseClassLoader(Map args) {
         ClassLoader loader = (ClassLoader) args.classLoader
         if (!isValidTargetClassLoader(loader)) {
@@ -207,6 +242,12 @@ class GrapeIvy implements GrapeEngine {
                 || isValidTargetClassLoaderClass(loaderClass.getSuperclass()))
     }
 
+    /**
+     * Converts dependency coordinates into an Ivy grab record.
+     *
+     * @param dep the dependency map
+     * @return the corresponding grab record
+     */
     IvyGrabRecord createGrabRecord(Map dep) {
         String module = dep.module ?: dep.artifactId ?: dep.artifact
         if (!module) {
@@ -264,17 +305,35 @@ class GrapeIvy implements GrapeEngine {
         conf
     }
 
+    /**
+     * Grabs the endorsed module for the current Groovy version.
+     *
+     * @param endorsedModule the endorsed module name
+     */
     @Override // TODO deprecate
     grab(String endorsedModule) {
         grab(group: 'groovy.endorsed', module: endorsedModule, version: GroovySystem.getVersion())
     }
 
+    /**
+     * Grabs a dependency described by a single argument map.
+     *
+     * @param args the grab arguments
+     * @return the grab result or exception when suppressed
+     */
     @Override
     grab(Map args) {
         args.calleeDepth = args.calleeDepth ?: DEFAULT_CALLEE_DEPTH + 1
         grab(args, args)
     }
 
+    /**
+     * Grabs one or more dependencies and adds them to the target class loader.
+     *
+     * @param args the shared grab arguments
+     * @param dependencies the dependency descriptors
+     * @return {@code null} on success or the suppressed exception
+     */
     @Override
     grab(Map args, Map... dependencies) {
         ClassLoader loader = null
@@ -323,6 +382,13 @@ class GrapeIvy implements GrapeEngine {
         null
     }
 
+    /**
+     * Resolves the supplied grab records with Ivy.
+     *
+     * @param args the resolution arguments
+     * @param grabRecords the dependencies to resolve
+     * @return the Ivy resolve report
+     */
     ResolveReport getDependencies(Map args, IvyGrabRecord... grabRecords) {
         def cacheManager = ivyInstance.getResolutionCacheManager()
         def millis = System.currentTimeMillis()
@@ -421,6 +487,13 @@ class GrapeIvy implements GrapeEngine {
         }
     }
 
+    /**
+     * Removes a cached artifact version from the grape cache.
+     *
+     * @param group the artifact group
+     * @param module the artifact module
+     * @param rev the artifact revision
+     */
     void uninstallArtifact(String group, String module, String rev) {
         // TODO: consider transitive uninstall as an option
         Pattern ivyFilePattern = ~/ivy-(.*)\.xml/ // TODO: get pattern from ivy conf
@@ -477,6 +550,11 @@ class GrapeIvy implements GrapeEngine {
         }
     }
 
+    /**
+     * Enumerates cached grapes by group, module, and version.
+     *
+     * @return the cached grape coordinates
+     */
     @Override
     Map<String, Map<String, List<String>>> enumerateGrapes() {
         Map<String, Map<String, List<String>>> bunches = [:]
@@ -496,11 +574,26 @@ class GrapeIvy implements GrapeEngine {
         bunches
     }
 
+    /**
+     * Resolves dependencies using the implicit target class loader.
+     *
+     * @param args the resolution arguments
+     * @param dependencies the dependencies to resolve
+     * @return the resolved artifact URIs
+     */
     @Override
     URI[] resolve(Map args, Map... dependencies) {
         resolve(args, null, dependencies)
     }
 
+    /**
+     * Resolves dependencies and optionally collects dependency metadata.
+     *
+     * @param args the resolution arguments
+     * @param depsInfo the optional dependency metadata sink
+     * @param dependencies the dependencies to resolve
+     * @return the resolved artifact URIs
+     */
     @Override
     URI[] resolve(Map args, List depsInfo, Map... dependencies) {
         // identify the target classloader early, so we fail before checking repositories
@@ -519,10 +612,27 @@ class GrapeIvy implements GrapeEngine {
         resolve(loader, args, depsInfo, dependencies)
     }
 
+    /**
+     * Resolves dependencies for an explicit class loader.
+     *
+     * @param loader the target class loader
+     * @param args the resolution arguments
+     * @param dependencies the dependencies to resolve
+     * @return the resolved artifact URIs
+     */
     URI[] resolve(ClassLoader loader, Map args, Map... dependencies) {
         resolve(loader, args, null, dependencies)
     }
 
+    /**
+     * Resolves dependencies for an explicit class loader and optional metadata sink.
+     *
+     * @param loader the target class loader
+     * @param args the resolution arguments
+     * @param depsInfo the optional dependency metadata sink
+     * @param dependencies the dependencies to resolve
+     * @return the resolved artifact URIs
+     */
     URI[] resolve(ClassLoader loader, Map args, List depsInfo, Map... dependencies) {
         // check the kill switch
         if (!enableGrapes) {
@@ -575,6 +685,12 @@ class GrapeIvy implements GrapeEngine {
         loadedDeps.computeIfAbsent(loader, k -> [] as LinkedHashSet)
     }
 
+    /**
+     * Lists dependencies already loaded into the supplied class loader.
+     *
+     * @param classLoader the class loader to inspect
+     * @return the loaded dependency descriptors
+     */
     @Override
     Map[] listDependencies(ClassLoader classLoader) {
         List<? extends Map> results = loadedDeps[classLoader]?.collect { IvyGrabRecord grabbed ->
@@ -609,6 +725,11 @@ class GrapeIvy implements GrapeEngine {
         results as Map[]
     }
 
+    /**
+     * Adds a resolver to the front of the Ivy resolver chain.
+     *
+     * @param args the resolver configuration
+     */
     @Override
     void addResolver(@NamedParams([
         @NamedParam(value='name', type=String, required=true),
@@ -630,10 +751,21 @@ class GrapeIvy implements GrapeEngine {
         downloadedArtifacts = []
     }
 
+    /**
+     * Creates an Ivy listener from a progress closure.
+     *
+     * @param c the progress callback
+     * @return the corresponding Ivy listener
+     */
     IvyListener makeIvyListener(Closure c) {
         [progress: c] as IvyListener
     }
 
+    /**
+     * Sets the Ivy logging verbosity.
+     *
+     * @param level the grape logging level
+     */
     @Override
     void setLoggingLevel(int level) {
         // Map numeric level (from grape -q/-w/-i/-V/-d flags) to JUL level
@@ -663,15 +795,26 @@ class GrapeIvy implements GrapeEngine {
     }
 }
 
+/**
+ * Value object describing a grabbed Ivy dependency.
+ */
 @CompileStatic
 @EqualsAndHashCode
 class IvyGrabRecord {
+    /** Ivy module revision coordinates. */
     ModuleRevisionId mrid
+    /** Requested Ivy configurations. */
     List<String> conf
+    /** Requested extension. */
     String ext
+    /** Requested artifact type. */
     String type
+    /** Requested classifier. */
     String classifier
+    /** Whether this dependency is forced. */
     boolean force
+    /** Whether this dependency may change over time. */
     boolean changing
+    /** Whether transitive dependencies should be resolved. */
     boolean transitive
 }

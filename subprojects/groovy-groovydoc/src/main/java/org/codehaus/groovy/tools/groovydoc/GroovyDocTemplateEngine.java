@@ -86,6 +86,12 @@ public class GroovyDocTemplateEngine {
 
     }
 
+    /**
+     * Applies the configured class template to the supplied class documentation model.
+     *
+     * @param classDoc class documentation to render
+     * @return rendered class documentation
+     */
     String applyClassTemplates(GroovyClassDoc classDoc) {
         String templatePath = classTemplatePaths.get(0); // todo (iterate)
         String templateWithBindingApplied = "";
@@ -110,6 +116,13 @@ public class GroovyDocTemplateEngine {
         return new StringWriter(65536);
     }
 
+    /**
+     * Applies a package template to the supplied package documentation model.
+     *
+     * @param template template path to render
+     * @param packageDoc package documentation to render
+     * @return rendered package documentation
+     */
     String applyPackageTemplate(String template, GroovyPackageDoc packageDoc) {
         String templateWithBindingApplied = "";
         try {
@@ -129,6 +142,13 @@ public class GroovyDocTemplateEngine {
         return templateWithBindingApplied;
     }
 
+    /**
+     * Applies a root-document template to the supplied root documentation model.
+     *
+     * @param template template path to render
+     * @param rootDoc root documentation to render
+     * @return rendered root documentation
+     */
     String applyRootDocTemplate(String template, GroovyRootDoc rootDoc) {
         String templateWithBindingApplied = "";
         try {
@@ -148,14 +168,29 @@ public class GroovyDocTemplateEngine {
         return templateWithBindingApplied;
     }
 
+    /**
+     * Returns the configured class template paths.
+     *
+     * @return iterator over class template paths
+     */
     Iterator<String> classTemplatesIterator() {
         return classTemplatePaths.iterator();
     }
 
+    /**
+     * Returns the configured package template paths.
+     *
+     * @return iterator over package template paths
+     */
     Iterator<String> packageTemplatesIterator() {
         return packageTemplatePaths.iterator();
     }
 
+    /**
+     * Returns the configured top-level documentation template paths.
+     *
+     * @return iterator over documentation template paths
+     */
     Iterator<String> docTemplatesIterator() {
         return docTemplatePaths.iterator();
     }

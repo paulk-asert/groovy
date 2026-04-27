@@ -547,34 +547,69 @@ public interface Queryable<T> {
      * @since 4.0.0
      */
     class Order<T, U extends Comparable<? super U>> {
+        /** Shared empty array for order clauses. */
         @SuppressWarnings("rawtypes")
         public static final Order[] EMPTY_ARRAY = new Order[0];
         private final Function<? super T, ? extends U> keyExtractor;
         private final boolean asc;
         private final boolean nullsLast;
 
+        /**
+         * Creates an order rule with nulls sorted last.
+         *
+         * @param keyExtractor the sort key extractor
+         * @param asc whether to sort ascending
+         */
         public Order(Function<? super T, ? extends U> keyExtractor, boolean asc) {
             this(keyExtractor, asc, true);
         }
 
+        /**
+         * Creates an order rule.
+         *
+         * @param keyExtractor the sort key extractor
+         * @param asc whether to sort ascending
+         * @param nullsLast whether nulls should be ordered last
+         */
         public Order(Function<? super T, ? extends U> keyExtractor, boolean asc, boolean nullsLast) {
             this.keyExtractor = keyExtractor;
             this.asc = asc;
             this.nullsLast = nullsLast;
         }
 
+        /**
+         * Returns the sort key extractor.
+         *
+         * @return the sort key extractor
+         */
         public Function<? super T, ? extends U> getKeyExtractor() {
             return keyExtractor;
         }
 
+        /**
+         * Indicates whether this rule sorts ascending.
+         *
+         * @return {@code true} for ascending order
+         */
         public boolean isAsc() {
             return asc;
         }
 
+        /**
+         * Indicates whether this rule places null values last.
+         *
+         * @return {@code true} if nulls are ordered last
+         */
         public boolean isNullsLast() {
             return nullsLast;
         }
 
+        /**
+         * Compares this rule with another one.
+         *
+         * @param o the other object
+         * @return {@code true} if both rules are equal
+         */
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -583,6 +618,11 @@ public interface Queryable<T> {
                     keyExtractor.equals(order.keyExtractor);
         }
 
+        /**
+         * Returns the hash code of this rule.
+         *
+         * @return the hash code
+         */
         @Override
         public int hashCode() {
             return Objects.hash(keyExtractor, asc);

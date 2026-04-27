@@ -82,6 +82,11 @@ public class TableSorter extends TableMap {
         setModel(model);
     }
 
+    /**
+     * Replaces the wrapped model and rebuilds the cached row index mapping.
+     *
+     * @param model the model to sort
+     */
     @Override
     public void setModel(TableModel model) {
         super.setModel(model);
@@ -218,6 +223,11 @@ public class TableSorter extends TableMap {
             indexes[row] = row;
     }
 
+    /**
+     * Rebuilds the cached row mapping after any delegate table-model change.
+     *
+     * @param e the table-model event
+     */
     @Override
     public void tableChanged(TableModelEvent e) {
         reallocateIndexes();
@@ -329,12 +339,26 @@ public class TableSorter extends TableMap {
     // The mapping only affects the contents of the data rows.
     // Pass all requests to these rows through the mapping array: "indexes".
 
+    /**
+     * Returns the value from the source row mapped to the supplied view row.
+     *
+     * @param aRow the sorted view row
+     * @param aColumn the model column
+     * @return the mapped cell value
+     */
     @Override
     public Object getValueAt(int aRow, int aColumn) {
         checkModel();
         return model.getValueAt(indexes[aRow], aColumn);
     }
 
+    /**
+     * Writes a value to the source row mapped from the supplied view row.
+     *
+     * @param aValue the new cell value
+     * @param aRow the sorted view row
+     * @param aColumn the model column
+     */
     @Override
     public void setValueAt(Object aValue, int aRow, int aColumn) {
         checkModel();

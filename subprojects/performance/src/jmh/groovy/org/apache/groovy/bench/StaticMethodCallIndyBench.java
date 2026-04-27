@@ -62,6 +62,9 @@ public class StaticMethodCallIndyBench {
 
     private StaticMethodCallIndy instance;
 
+    /**
+     * Creates the helper instance used by the instance-method benchmark variants.
+     */
     @Setup
     public void setUp() {
         instance = new StaticMethodCallIndy();
@@ -69,21 +72,37 @@ public class StaticMethodCallIndyBench {
 
     // ---- loop with static call: sum(0..n) via repeated add ----
 
+    /**
+     * Java baseline: static sum via repeated add.
+     * @return the computed sum
+     */
     @Benchmark
     public int staticSum_java() {
         return JavaStaticMethods.sum(SUM_N);
     }
 
+    /**
+     * Groovy dynamic: static sum via repeated add.
+     * @return the computed sum
+     */
     @Benchmark
     public int staticSum_groovy() {
         return StaticMethodCallIndy.staticSum(SUM_N);
     }
 
+    /**
+     * Groovy {@code @CompileStatic}: static sum via repeated add.
+     * @return the computed sum
+     */
     @Benchmark
     public int staticSum_groovyCS() {
         return StaticMethodCallIndy.staticSumCS(SUM_N);
     }
 
+    /**
+     * Groovy dynamic: instance sum via repeated add (control group).
+     * @return the computed sum
+     */
     @Benchmark
     public int instanceSum_groovy() {
         return instance.instanceSum(SUM_N);
@@ -91,21 +110,37 @@ public class StaticMethodCallIndyBench {
 
     // ---- recursive static call: Fibonacci ----
 
+    /**
+     * Java baseline: recursive Fibonacci.
+     * @return the computed Fibonacci value
+     */
     @Benchmark
     public int staticFib_java() {
         return JavaStaticMethods.fib(FIB_N);
     }
 
+    /**
+     * Groovy dynamic: recursive static Fibonacci.
+     * @return the computed Fibonacci value
+     */
     @Benchmark
     public int staticFib_groovy() {
         return StaticMethodCallIndy.staticFib(FIB_N);
     }
 
+    /**
+     * Groovy {@code @CompileStatic}: recursive static Fibonacci.
+     * @return the computed Fibonacci value
+     */
     @Benchmark
     public int staticFib_groovyCS() {
         return StaticMethodCallIndy.staticFibCS(FIB_N);
     }
 
+    /**
+     * Groovy dynamic: instance Fibonacci (control group).
+     * @return the computed Fibonacci value
+     */
     @Benchmark
     public int instanceFib_groovy() {
         return instance.instanceFib(FIB_N);
@@ -113,6 +148,10 @@ public class StaticMethodCallIndyBench {
 
     // ---- chained static calls ----
 
+    /**
+     * Java baseline: chained static calls.
+     * @return the accumulated result
+     */
     @Benchmark
     public int staticChain_java() {
         int result = 0;
@@ -122,6 +161,10 @@ public class StaticMethodCallIndyBench {
         return result;
     }
 
+    /**
+     * Groovy dynamic: chained static calls.
+     * @return the accumulated result
+     */
     @Benchmark
     public int staticChain_groovy() {
         int result = 0;
@@ -131,6 +174,10 @@ public class StaticMethodCallIndyBench {
         return result;
     }
 
+    /**
+     * Groovy {@code @CompileStatic}: chained static calls.
+     * @return the accumulated result
+     */
     @Benchmark
     public int staticChain_groovyCS() {
         int result = 0;
@@ -140,6 +187,10 @@ public class StaticMethodCallIndyBench {
         return result;
     }
 
+    /**
+     * Groovy dynamic: chained instance calls (control group).
+     * @return the accumulated result
+     */
     @Benchmark
     public int instanceChain_groovy() {
         int result = 0;

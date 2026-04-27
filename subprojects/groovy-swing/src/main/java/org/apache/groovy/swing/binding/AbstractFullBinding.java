@@ -69,6 +69,9 @@ public abstract class AbstractFullBinding  implements FullBinding {
         targetBinding.updateTargetValue(result);
     }
 
+    /**
+     * Propagates the current source value to the target.
+     */
     @Override
     public void update() {
         fireBinding();
@@ -85,6 +88,9 @@ public abstract class AbstractFullBinding  implements FullBinding {
         ((TargetBinding)sourceBinding).updateTargetValue(result);
     }
 
+    /**
+     * Propagates the current target value back to the source.
+     */
     @Override
     public void reverseUpdate() {
         fireReverseBinding();

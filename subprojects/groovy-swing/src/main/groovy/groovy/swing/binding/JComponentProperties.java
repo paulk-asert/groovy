@@ -129,6 +129,9 @@ abstract class AbstractJComponentBinding extends AbstractSyntheticBinding implem
         source.setNonChangeCheck(true);
     }
 
+    /**
+     * Starts listening to the bound component and the backing Swing property.
+     */
     @Override
     public synchronized void syntheticBind() {
         boundComponent = (JComponent) ((PropertyBinding)sourceBinding).getBean();
@@ -136,6 +139,9 @@ abstract class AbstractJComponentBinding extends AbstractSyntheticBinding implem
         boundComponent.addComponentListener(this);
     }
 
+    /**
+     * Stops listening to the bound component and clears the cached reference.
+     */
     @Override
     public synchronized void syntheticUnbind() {
         boundComponent.removePropertyChangeListener(propertyName, this);
@@ -143,6 +149,11 @@ abstract class AbstractJComponentBinding extends AbstractSyntheticBinding implem
         boundComponent = null;
     }
 
+    /**
+     * Refreshes the binding after the observed component property changes.
+     *
+     * @param event the property change event
+     */
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         update();

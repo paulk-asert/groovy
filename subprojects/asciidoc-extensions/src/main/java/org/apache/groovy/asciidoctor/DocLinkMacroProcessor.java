@@ -48,6 +48,14 @@ public class DocLinkMacroProcessor extends InlineMacroProcessor {
         this.directPath = directPath;
     }
 
+    /**
+     * Creates a link phrase for the supplied documentation target.
+     *
+     * @param parent the parent node receiving the rendered phrase
+     * @param target the macro target containing the class name and optional anchor
+     * @param attributes the macro attributes, including optional display text
+     * @return the rendered documentation link phrase
+     */
     @Override
     public PhraseNode process(StructuralNode parent, String target, Map<String, Object> attributes) {
         String baseUrl = (String) parent.getDocument().getAttribute(baseUrlAttribute);

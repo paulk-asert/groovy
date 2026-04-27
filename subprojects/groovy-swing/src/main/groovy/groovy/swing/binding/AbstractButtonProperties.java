@@ -69,6 +69,9 @@ class AbstractButtonSelectedBinding extends AbstractSyntheticBinding implements 
         super(source, target, AbstractButton.class, "selected");
     }
 
+    /**
+     * Starts listening to the bound button and its current model.
+     */
     @Override
     public synchronized void syntheticBind() {
             boundButton = (AbstractButton) ((PropertyBinding) sourceBinding).getBean();
@@ -76,6 +79,9 @@ class AbstractButtonSelectedBinding extends AbstractSyntheticBinding implements 
                 boundButton.getModel().addItemListener(this);
     }
 
+    /**
+     * Stops listening to the bound button and clears the cached reference.
+     */
     @Override
     public synchronized void syntheticUnbind() {
             boundButton.removePropertyChangeListener("model", this);
@@ -83,6 +89,11 @@ class AbstractButtonSelectedBinding extends AbstractSyntheticBinding implements 
             boundButton = null;
     }
 
+    /**
+     * Refreshes the binding after the button model changes and reattaches listeners.
+     *
+     * @param event the model change event
+     */
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         update();
@@ -90,6 +101,11 @@ class AbstractButtonSelectedBinding extends AbstractSyntheticBinding implements 
         ((ButtonModel)event.getNewValue()).addItemListener(this);
     }
 
+    /**
+     * Refreshes the binding after the button selection state changes.
+     *
+     * @param e the item event describing the selection change
+     */
     @Override
     public void itemStateChanged(ItemEvent e) {
         update();

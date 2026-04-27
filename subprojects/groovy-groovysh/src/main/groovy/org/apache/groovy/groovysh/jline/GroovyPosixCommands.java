@@ -451,9 +451,15 @@ public class GroovyPosixCommands {
         Map<String, String> colors =
             colored ? (colorMap != null ? colorMap : getLsColorMap(DEFAULT_LS_COLORS)) : Collections.emptyMap();
 
+        /**
+         * Represents one path selected for listing output.
+         */
         class PathEntry implements Comparable<PathEntry> {
+            /** Absolute path resolved for the entry. */
             final Path abs;
+            /** Path shown to the user, relative to the requested root when possible. */
             final Path path;
+            /** File attributes used for sorting and formatting. */
             final Map<String, Object> attributes;
 
             /**
@@ -474,6 +480,12 @@ public class GroovyPosixCommands {
                 this.attributes = readAttributes(abs);
             }
 
+            /**
+             * Orders entries using the active {@code ls} sort options.
+             *
+             * @param o entry to compare against
+             * @return sort order for this entry
+             */
             @Override
             public int compareTo(PathEntry o) {
                 int c = doCompare(o);
@@ -501,10 +513,20 @@ public class GroovyPosixCommands {
                 return path.toString().compareTo(o.path.toString());
             }
 
+            /**
+             * Returns whether this entry should be rendered as a non-directory item.
+             *
+             * @return {@code true} when the entry is not a directory
+             */
             boolean isNotDirectory() {
                 return is("isRegularFile") || is("isSymbolicLink") || is("isOther");
             }
 
+            /**
+             * Returns whether this entry is a directory.
+             *
+             * @return {@code true} when the entry is a directory
+             */
             boolean isDirectory() {
                 return is("isDirectory");
             }
@@ -514,6 +536,11 @@ public class GroovyPosixCommands {
                 return d instanceof Boolean && (Boolean) d;
             }
 
+            /**
+             * Formats the entry name for standard listing output.
+             *
+             * @return formatted entry name
+             */
             String display() {
                 String type;
                 String suffix;
@@ -544,6 +571,11 @@ public class GroovyPosixCommands {
                 return applyStyle(path.toString(), colors, type) + (addSuffix ? suffix : "") + link;
             }
 
+            /**
+             * Formats the entry for long-listing output.
+             *
+             * @return formatted long-listing entry
+             */
             String longDisplay() {
                 String username = Objects.toString(attributes.get("owner"), "owner");
                 String group = Objects.toString(attributes.get("group"), "group");

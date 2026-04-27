@@ -46,6 +46,7 @@ import static org.codehaus.groovy.macro.methods.MacroGroovyMethods.DOLLAR_VALUE;
 
 @Incubating
 public enum MacroBuilder {
+    /** Shared macro builder instance. */
     INSTANCE;
 
     /**
@@ -137,6 +138,12 @@ public enum MacroBuilder {
     private static void performSubstitutions(final List<Closure<Expression>> context, final ASTNode astNode) {
         final Iterator<Closure<Expression>> iterator = context.iterator();
         ClassCodeExpressionTransformer trn = new ClassCodeExpressionTransformer() {
+            /**
+             * Replaces {@code $v} calls with the next substitution expression.
+             *
+             * @param expression the expression to transform
+             * @return the transformed expression
+             */
             @Override
             public Expression transform(Expression expression) {
                 if (!(expression instanceof MethodCallExpression call)) {
@@ -150,6 +157,11 @@ public enum MacroBuilder {
                 return iterator.next().call();
             }
 
+            /**
+             * Returns no source unit when applying runtime substitutions.
+             *
+             * @return {@code null}
+             */
             @Override
             protected SourceUnit getSourceUnit() {
                 // Could be null if there are no errors

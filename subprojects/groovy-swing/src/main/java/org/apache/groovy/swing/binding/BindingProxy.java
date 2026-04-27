@@ -133,6 +133,9 @@ public class BindingProxy extends GroovyObjectSupport implements BindingUpdatabl
         throw new ReadOnlyPropertyException(property, getModel().getClass());
     }
 
+    /**
+     * Binds every generated full binding managed by this proxy.
+     */
     @Override
     public void bind() {
         synchronized (generatedBindings) {
@@ -146,6 +149,9 @@ public class BindingProxy extends GroovyObjectSupport implements BindingUpdatabl
         }
     }
 
+    /**
+     * Unbinds every generated full binding managed by this proxy.
+     */
     @Override
     public void unbind() {
         synchronized (generatedBindings) {
@@ -159,6 +165,9 @@ public class BindingProxy extends GroovyObjectSupport implements BindingUpdatabl
         }
     }
 
+    /**
+     * Rebinds every generated full binding while preserving the current bound state.
+     */
     @Override
     public void rebind() {
         synchronized (generatedBindings) {
@@ -171,6 +180,9 @@ public class BindingProxy extends GroovyObjectSupport implements BindingUpdatabl
         }
     }
 
+    /**
+     * Pushes updates through every generated full binding.
+     */
     @Override
     public void update() {
         synchronized (generatedBindings) {
@@ -181,6 +193,9 @@ public class BindingProxy extends GroovyObjectSupport implements BindingUpdatabl
         }
     }
 
+    /**
+     * Pushes reverse updates through every generated full binding.
+     */
     @Override
     public void reverseUpdate() {
         synchronized (generatedBindings) {

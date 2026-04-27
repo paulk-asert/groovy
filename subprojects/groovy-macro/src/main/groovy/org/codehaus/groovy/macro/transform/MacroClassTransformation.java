@@ -81,11 +81,22 @@ public class MacroClassTransformation extends MethodCallTransformation {
             this.sourceUnit = sourceUnit;
         }
 
+        /**
+         * Returns the source unit being transformed.
+         *
+         * @return the active source unit
+         */
         @Override
         protected SourceUnit getSourceUnit() {
             return sourceUnit;
         }
 
+        /**
+         * Rewrites anonymous macro-class constructor calls to macro invocations.
+         *
+         * @param exp the expression to transform
+         * @return the transformed expression
+         */
         @Override
         public Expression transform(final Expression exp) {
             if (exp instanceof ConstructorCallExpression) {
@@ -107,6 +118,11 @@ public class MacroClassTransformation extends MethodCallTransformation {
             this.sourceUnit = sourceUnit;
         }
 
+        /**
+         * Rewrites anonymous macro-class constructor calls before visiting nested expressions.
+         *
+         * @param call the constructor call to inspect
+         */
         @Override
         public void visitConstructorCallExpression(final ConstructorCallExpression call) {
             ClassNode type = call.getType();

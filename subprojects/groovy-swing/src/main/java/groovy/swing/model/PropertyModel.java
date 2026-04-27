@@ -79,6 +79,11 @@ public class PropertyModel implements ValueModel, NestedValueModel {
         return property;
     }
 
+    /**
+     * Returns the model that supplies the owning object for the bound property.
+     *
+     * @return the nested source model
+     */
     @Override
     public ValueModel getSourceModel() {
         return sourceModel;

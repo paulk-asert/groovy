@@ -37,6 +37,17 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Repeatable(Headers.class)
 public @interface Header {
+    /**
+     * Returns the header name.
+     *
+     * @return header name
+     */
     String name();
+
+    /**
+     * Returns the header value.
+     *
+     * @return header value
+     */
     String value();
 }

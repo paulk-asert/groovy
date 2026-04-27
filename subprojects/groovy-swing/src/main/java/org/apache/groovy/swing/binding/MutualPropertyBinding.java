@@ -92,16 +92,31 @@ public class MutualPropertyBinding implements FullBinding {
         rebuildBindings();
     }
 
+    /**
+     * Returns the forward source-side property binding.
+     *
+     * @return the source binding
+     */
     @Override
     public SourceBinding getSourceBinding() {
         return sourceBinding;
     }
 
+    /**
+     * Returns the forward target-side property binding.
+     *
+     * @return the target binding
+     */
     @Override
     public TargetBinding getTargetBinding() {
         return targetBinding;
     }
 
+    /**
+     * Replaces the source-side property binding and rebuilds the paired bindings.
+     *
+     * @param sourceBinding the new source binding
+     */
     @Override
     public void setSourceBinding(SourceBinding sourceBinding) {
         try {
@@ -117,6 +132,11 @@ public class MutualPropertyBinding implements FullBinding {
         rebuildBindings();
     }
 
+    /**
+     * Replaces the target-side property binding and rebuilds the paired bindings.
+     *
+     * @param targetBinding the new target binding
+     */
     @Override
     public void setTargetBinding(TargetBinding targetBinding) {
         try {
@@ -132,34 +152,64 @@ public class MutualPropertyBinding implements FullBinding {
         rebuildBindings();
     }
 
+    /**
+     * Replaces the validator applied to forward updates.
+     *
+     * @param validator the validator closure, or {@code null}
+     */
     @Override
     public void setValidator(Closure validator) {
         this.validator = validator;
         rebuildBindings();
     }
 
+    /**
+     * Returns the validator applied to forward updates.
+     *
+     * @return the validator closure, or {@code null}
+     */
     @Override
     public Closure getValidator() {
         return validator;
     }
 
+    /**
+     * Replaces the converter applied from source to target.
+     *
+     * @param converter the forward converter, or {@code null}
+     */
     @Override
     public void setConverter(Closure converter) {
         this.converter = converter;
         rebuildBindings();
     }
 
+    /**
+     * Returns the converter applied from source to target.
+     *
+     * @return the forward converter, or {@code null}
+     */
     @Override
     public Closure getConverter() {
         return converter;
     }
 
+    /**
+     * Replaces the converter applied from target to source.
+     *
+     * @param reverseConverter the reverse converter, or {@code null}
+     */
     @Override
     public void setReverseConverter(Closure reverseConverter) {
-       this.reverseConverter = reverseConverter;
+        this.reverseConverter = reverseConverter;
         rebuildBindings();
     }
 
+    /**
+     * Returns the converter applied from target to source.
+     *
+     * @return the reverse converter, or {@code null}
+     */
     @Override
     public Closure getReverseConverter() {
         return reverseConverter;
@@ -205,6 +255,9 @@ public class MutualPropertyBinding implements FullBinding {
 
     }
 
+    /**
+     * Binds both forward and reverse bindings when the pair is fully configured.
+     */
     @Override
     public void bind() {
         if (!bound) {
@@ -228,6 +281,9 @@ public class MutualPropertyBinding implements FullBinding {
         }
     }
 
+    /**
+     * Unbinds both forward and reverse bindings.
+     */
     @Override
     public void unbind() {
         if (bound) {
@@ -237,6 +293,9 @@ public class MutualPropertyBinding implements FullBinding {
         }
     }
 
+    /**
+     * Rebinds both forward and reverse bindings when currently active.
+     */
     @Override
     public void rebind() {
         if (bound) {
@@ -245,11 +304,17 @@ public class MutualPropertyBinding implements FullBinding {
         }
     }
 
+    /**
+     * Pushes an update from the source side to the target side.
+     */
     @Override
     public void update() {
         forwardBinding.update();
     }
 
+    /**
+     * Pushes an update from the target side back to the source side.
+     */
     @Override
     public void reverseUpdate() {
         reverseBinding.update();

@@ -333,6 +333,12 @@ public class GroovyScriptEngineImpl extends AbstractScriptEngine implements Comp
          * will be done in the current ScriptContext instance.
          */
         Binding binding = new Binding(ctx.getBindings(ScriptContext.ENGINE_SCOPE)) {
+            /**
+             * Resolves a script variable from the current JSR-223 context.
+             *
+             * @param name the variable name to resolve
+             * @return the resolved value
+             */
             @Override
             public Object getVariable(String name) {
                 synchronized (ctx) {
@@ -357,6 +363,12 @@ public class GroovyScriptEngineImpl extends AbstractScriptEngine implements Comp
                 throw new MissingPropertyException(name, getClass());
             }
 
+            /**
+             * Stores a script variable back into the current JSR-223 context.
+             *
+             * @param name the variable name to update
+             * @param value the value to store
+             */
             @Override
             public void setVariable(String name, Object value) {
                 synchronized (ctx) {
@@ -388,11 +400,19 @@ public class GroovyScriptEngineImpl extends AbstractScriptEngine implements Comp
                 MetaClass oldMetaClass = scriptObject.getMetaClass();
 
                 /*
-                * We override the MetaClass of this script object so that we can
-                * forward calls to global closures (of previous or future "eval" calls)
-                * This gives the illusion of working on the same "global" scope.
-                */
+                 * We override the MetaClass of this script object so that we can
+                 * forward calls to global closures (of previous or future "eval" calls)
+                 * This gives the illusion of working on the same "global" scope.
+                 */
                 scriptObject.setMetaClass(new DelegatingMetaClass(oldMetaClass) {
+                    /**
+                     * Normalizes Groovy call arguments before delegating to the array-based overload.
+                     *
+                     * @param object the invocation receiver
+                     * @param name the method name
+                     * @param args the original Groovy argument payload
+                     * @return the invocation result
+                     */
                     @Override
                     public Object invokeMethod(Object object, String name, Object args) {
                         if (args == null) {
@@ -408,6 +428,14 @@ public class GroovyScriptEngineImpl extends AbstractScriptEngine implements Comp
                         }
                     }
 
+                    /**
+                     * Invokes an instance method and falls back to a cached global closure when needed.
+                     *
+                     * @param object the invocation receiver
+                     * @param name the method name
+                     * @param args the invocation arguments
+                     * @return the invocation result
+                     */
                     @Override
                     public Object invokeMethod(Object object, String name, Object[] args) {
                         try {
@@ -417,6 +445,14 @@ public class GroovyScriptEngineImpl extends AbstractScriptEngine implements Comp
                         }
                     }
 
+                    /**
+                     * Invokes a static method and falls back to a cached global closure when needed.
+                     *
+                     * @param object the invocation receiver
+                     * @param name the method name
+                     * @param args the invocation arguments
+                     * @return the invocation result
+                     */
                     @Override
                     public Object invokeStaticMethod(Object object, String name, Object[] args) {
                         try {

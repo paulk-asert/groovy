@@ -64,6 +64,11 @@ class Main {
     private static List<String> remainingArgs
     private static List<String> exclusions
 
+    /**
+     * Runs the {@code groovydoc} command-line entry point.
+     *
+     * @param args command-line arguments
+     */
     static void main(final String[] args) {
         IO io = new IO()
         Logger.io = io

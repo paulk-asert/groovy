@@ -32,11 +32,22 @@ class GroupResultImpl<K, T> extends QueryableCollection<T> implements GroupResul
 
     private final K key;
 
+    /**
+     * Creates a group result.
+     *
+     * @param key the group key
+     * @param group the grouped elements
+     */
     GroupResultImpl(K key, Queryable<T> group) {
         super(group.toList());
         this.key = key;
     }
 
+    /**
+     * Returns the group key, unwrapping single-value named keys.
+     *
+     * @return the group key
+     */
     @SuppressWarnings("unchecked")
     @Override
     public K getKey() {
@@ -48,6 +59,12 @@ class GroupResultImpl<K, T> extends QueryableCollection<T> implements GroupResul
         return key;
     }
 
+    /**
+     * Resolves a named key component for grouped results created with aliases.
+     *
+     * @param name the key component name
+     * @return the named key component
+     */
     @Override
     public Object get(String name) {
         if (key instanceof NamedRecord) {

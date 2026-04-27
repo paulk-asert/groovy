@@ -121,6 +121,9 @@ class SwingTimerFullBinding extends AbstractFullBinding implements ActionListene
         timer.start();
     }
 
+    /**
+     * Starts the timer and begins producing timed updates.
+     */
     @Override
     public void bind() {
         if (!bound) {
@@ -129,6 +132,9 @@ class SwingTimerFullBinding extends AbstractFullBinding implements ActionListene
         }
     }
 
+    /**
+     * Stops the timer and marks the binding as inactive.
+     */
     @Override
     public void unbind() {
         if (bound) {
@@ -137,6 +143,9 @@ class SwingTimerFullBinding extends AbstractFullBinding implements ActionListene
         }
     }
 
+    /**
+     * Restarts the timer when the binding is already active.
+     */
     @Override
     public void rebind() {
         if (bound) {
@@ -144,6 +153,11 @@ class SwingTimerFullBinding extends AbstractFullBinding implements ActionListene
         }
     }
 
+    /**
+     * Calculates the current timer progress value and pushes it to the target binding.
+     *
+     * @param e the timer event
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         long currentTime = System.currentTimeMillis();

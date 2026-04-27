@@ -68,6 +68,11 @@ public class ClosureModel implements ValueModel, NestedValueModel {
         this.type = type;
     }
 
+    /**
+     * Returns the model that supplies the source object consumed by the closures.
+     *
+     * @return the nested source model
+     */
     @Override
     public ValueModel getSourceModel() {
         return sourceModel;

@@ -207,6 +207,11 @@ public class JmxBuilderModelMBean extends RequiredModelMBean implements Notifica
     private static final class NumberSequencer {
         private static final AtomicLong NUM = new AtomicLong(0);
 
+        /**
+         * Returns the next notification sequence number.
+         *
+         * @return the next sequence number
+         */
         public static long getNextSequence() {
             return NUM.incrementAndGet();
         }
@@ -236,6 +241,12 @@ public class JmxBuilderModelMBean extends RequiredModelMBean implements Notifica
         private AttributeChangedListener() {
         }
 
+        /**
+         * Dispatches an attribute-change notification to the configured callback closure.
+         *
+         * @param notification the attribute-change notification to process
+         * @param handback the listener descriptor containing callback metadata
+         */
         @Override
         public void handleNotification(Notification notification, Object handback) {
             AttributeChangeNotification note = (AttributeChangeNotification) notification;

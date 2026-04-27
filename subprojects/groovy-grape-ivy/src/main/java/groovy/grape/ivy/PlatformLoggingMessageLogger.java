@@ -48,6 +48,9 @@ class PlatformLoggingMessageLogger extends AbstractMessageLogger {
     private static final String LOGGER_NAME = "groovy.grape.ivy";
     private static final System.Logger LOGGER = System.getLogger(LOGGER_NAME);
 
+    /**
+     * Creates a message logger configured with a warning default level.
+     */
     PlatformLoggingMessageLogger() {
         // Default to WARNING to match the previous behaviour (DefaultMessageLogger
         // at level -1 suppressed everything). Users can raise verbosity via
@@ -58,21 +61,41 @@ class PlatformLoggingMessageLogger extends AbstractMessageLogger {
         }
     }
 
+    /**
+     * Logs an Ivy message through platform logging.
+     *
+     * @param msg the message to log
+     * @param level the Ivy message level
+     */
     @Override
     public void log(String msg, int level) {
         LOGGER.log(toSystemLevel(level), msg);
     }
 
+    /**
+     * Logs a raw Ivy message through platform logging.
+     *
+     * @param msg the message to log
+     * @param level the Ivy message level
+     */
     @Override
     public void rawlog(String msg, int level) {
         LOGGER.log(toSystemLevel(level), msg);
     }
 
+    /**
+     * Ignores Ivy progress updates.
+     */
     @Override
     protected void doProgress() {
         // no-op — progress dots are not useful in structured logging
     }
 
+    /**
+     * Ends a progress section, logging the final message when present.
+     *
+     * @param msg the trailing progress message
+     */
     @Override
     protected void doEndProgress(String msg) {
         if (msg != null && !msg.isEmpty()) {

@@ -1596,6 +1596,13 @@ public class SystemRegistryImpl implements SystemRegistry {
         return out;
     }
 
+    /**
+     * Executes a command line, including pipes, redirection, and console statements.
+     *
+     * @param line command line to execute
+     * @return command result, if any
+     * @throws Exception if command execution fails
+     */
     @Override
     public Object execute(String line) throws Exception {
         if (line.trim().isEmpty() || line.trim().startsWith("#")) {
@@ -1731,6 +1738,11 @@ public class SystemRegistryImpl implements SystemRegistry {
         }
     }
 
+    /**
+     * Reports an exception using the configured console-aware tracing strategy.
+     *
+     * @param exception exception to report
+     */
     @Override
     public void trace(Throwable exception) {
         outputStream.close();
@@ -1745,6 +1757,12 @@ public class SystemRegistryImpl implements SystemRegistry {
         }
     }
 
+    /**
+     * Reports an exception, optionally printing its full stack trace.
+     *
+     * @param stack whether to print the full stack trace
+     * @param exception exception to report
+     */
     @Override
     public void trace(boolean stack, Throwable exception) {
         if (exception instanceof HelpException) {
@@ -1771,6 +1789,9 @@ public class SystemRegistryImpl implements SystemRegistry {
         }
     }
 
+    /**
+     * Persists collected command names before shutdown.
+     */
     @Override
     public void close() {
         names.save();

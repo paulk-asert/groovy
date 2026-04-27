@@ -24,6 +24,7 @@ package org.codehaus.groovy.macro.runtime;
  * @since 2.5.0
  */
 public enum MacroStub {
+    /** Shared macro stub instance. */
     INSTANCE;
 
     /**

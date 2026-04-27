@@ -99,15 +99,24 @@ class GrapeMaven implements GrapeEngine {
     }
 
     // weak hash map so we don't leak loaders directly
+    /** Dependencies loaded into each class loader. */
     final Map<ClassLoader, Set<MavenGrabRecord>> loadedDeps = [] as WeakHashMap
     /** Stores the MavenGrabRecord(s) for all dependencies in each grab() call. */
     final Set<MavenGrabRecord> grabRecordsForCurrDependencies = [] as LinkedHashSet
+    /** Enables or disables grape resolution. */
     boolean enableGrapes = true
+    /** Progress listeners notified during dependency resolution. */
     final List<Closure> progressListeners = new CopyOnWriteArrayList<>()
+    /** Configured remote repositories in lookup order. */
     final List<RemoteRepository> repos = [
         new RemoteRepository.Builder("central", "default", "https://repo.maven.apache.org/maven2/").build()
     ]
 
+    /**
+     * Adds a progress listener for resolution events.
+     *
+     * @param listener the listener to add
+     */
     @CompileDynamic
     void addProgressListener(Closure listener) {
         if (listener != null) {
@@ -115,6 +124,11 @@ class GrapeMaven implements GrapeEngine {
         }
     }
 
+    /**
+     * Removes a previously registered progress listener.
+     *
+     * @param listener the listener to remove
+     */
     void removeProgressListener(Closure listener) {
         progressListeners.remove(listener)
     }
@@ -179,12 +193,25 @@ class GrapeMaven implements GrapeEngine {
         grab(group: 'groovy.endorsed', module: endorsedModule, version: GroovySystem.getVersion())
     }
 
+    /**
+     * Grabs a dependency described by a single argument map.
+     *
+     * @param args the grab arguments
+     * @return the grab result or exception when suppressed
+     */
     @Override
     grab(Map args) {
         args.calleeDepth = args.calleeDepth ?: DEFAULT_CALLEE_DEPTH + 1
         grab(args, args)
     }
 
+    /**
+     * Grabs one or more dependencies and adds them to the target class loader.
+     *
+     * @param args the shared grab arguments
+     * @param dependencies the dependency descriptors
+     * @return {@code null} on success or the suppressed exception
+     */
     @Override
     grab(Map args, Map... dependencies) {
         ClassLoader loader = null
@@ -234,6 +261,11 @@ class GrapeMaven implements GrapeEngine {
     }
 
 
+    /**
+     * Enumerates cached grapes by group, module, and version.
+     *
+     * @return the cached grape coordinates
+     */
     @Override
     @CompileDynamic
     Map<String, Map<String, List<String>>> enumerateGrapes() {
@@ -270,6 +302,13 @@ class GrapeMaven implements GrapeEngine {
         bunches
     }
 
+    /**
+     * Removes a cached artifact version from the grape cache.
+     *
+     * @param group the artifact group
+     * @param module the artifact module
+     * @param rev the artifact revision
+     */
     void uninstallArtifact(String group, String module, String rev) {
         String groupPath = group.replace('.' as char, File.separatorChar)
         def artifactDir = new File(grapeCacheDir, groupPath + File.separator + module + File.separator + rev)
@@ -278,11 +317,26 @@ class GrapeMaven implements GrapeEngine {
         }
     }
 
+    /**
+     * Resolves dependencies using the implicit target class loader.
+     *
+     * @param args the resolution arguments
+     * @param dependencies the dependencies to resolve
+     * @return the resolved artifact URIs
+     */
     @Override
     URI[] resolve(Map args, Map... dependencies) {
         resolve(args, null, dependencies)
     }
 
+    /**
+     * Resolves dependencies and optionally collects dependency metadata.
+     *
+     * @param args the resolution arguments
+     * @param depsInfo the optional dependency metadata sink
+     * @param dependencies the dependencies to resolve
+     * @return the resolved artifact URIs
+     */
     @Override
     URI[] resolve(Map args, List depsInfo, Map... dependencies) {
         // identify the target classloader early, so we fail before checking repositories
@@ -306,10 +360,27 @@ class GrapeMaven implements GrapeEngine {
         loadedDeps.computeIfAbsent(loader, k -> [] as LinkedHashSet)
     }
 
+    /**
+     * Resolves dependencies for an explicit class loader.
+     *
+     * @param loader the target class loader
+     * @param args the resolution arguments
+     * @param dependencies the dependencies to resolve
+     * @return the resolved artifact URIs
+     */
     URI[] resolve(ClassLoader loader, Map args, Map... dependencies) {
         resolve(loader, args, null, dependencies)
     }
 
+    /**
+     * Resolves dependencies for an explicit class loader and optional metadata sink.
+     *
+     * @param loader the target class loader
+     * @param args the resolution arguments
+     * @param depsInfo the optional dependency metadata sink
+     * @param dependencies the dependencies to resolve
+     * @return the resolved artifact URIs
+     */
     URI[] resolve(ClassLoader loader, Map args, List depsInfo, Map... dependencies) {
         if (!enableGrapes) {
             return new URI[0]
@@ -335,6 +406,14 @@ class GrapeMaven implements GrapeEngine {
         }
     }
 
+    /**
+     * Resolves the supplied grab records with Maven Resolver.
+     *
+     * @param args the resolution arguments
+     * @param depsInfo the optional dependency metadata sink
+     * @param grabRecords the dependencies to resolve
+     * @return the resolved artifact URIs
+     */
     URI[] getDependencies(Map args, List depsInfo, MavenGrabRecord... grabRecords) {
         try (RepositorySystem system = new RepositorySystemSupplier().get()) {
             def localRepo = new LocalRepository(grapeCacheDir.toPath())
@@ -483,6 +562,12 @@ class GrapeMaven implements GrapeEngine {
         return false
     }
 
+    /**
+     * Converts dependency coordinates into a Maven grab record.
+     *
+     * @param dep the dependency map
+     * @return the corresponding grab record
+     */
     static MavenGrabRecord createGrabRecord(Map dep) {
         String module = dep.module ?: dep.artifactId ?: dep.artifact
         if (!module) {
@@ -548,6 +633,12 @@ class GrapeMaven implements GrapeEngine {
         (conf as List<String>)
     }
 
+    /**
+     * Lists dependencies already loaded into the supplied class loader.
+     *
+     * @param classLoader the class loader to inspect
+     * @return the loaded dependency descriptors
+     */
     @Override
     Map[] listDependencies(ClassLoader classLoader) {
         List<? extends Map> results = loadedDeps[classLoader]?.collect { MavenGrabRecord grabbed ->
@@ -582,6 +673,11 @@ class GrapeMaven implements GrapeEngine {
         results as Map[]
     }
 
+    /**
+     * Adds a repository resolver to the front of the repository list.
+     *
+     * @param args the resolver configuration
+     */
     @Override
     void addResolver(@NamedParams([
         @NamedParam(value = 'name', type = String, required = true),
@@ -598,6 +694,11 @@ class GrapeMaven implements GrapeEngine {
         repos.add(0, resolver)
     }
 
+    /**
+     * Updates the logging level used by grape integrations.
+     *
+     * @param level the grape logging level
+     */
     @Override
     void setLoggingLevel(int level) {
         // Maven Resolver uses SLF4J for logging, which is configured externally
@@ -606,6 +707,11 @@ class GrapeMaven implements GrapeEngine {
         // Level mapping: 0=quiet/errors, 1=warn, 2=info, 3=verbose, 4=debug
     }
 
+    /**
+     * Returns the configured Groovy home directory for grape state.
+     *
+     * @return the Groovy home directory
+     */
     static File getGroovyRoot() {
         String root = System.getProperty('groovy.root')
         def groovyRoot
@@ -622,6 +728,11 @@ class GrapeMaven implements GrapeEngine {
         groovyRoot
     }
 
+    /**
+     * Returns the root directory used by grape.
+     *
+     * @return the grape root directory
+     */
     static File getGrapeDir() {
         String root = System.getProperty('grape.root')
         if (root == null) {
@@ -636,6 +747,11 @@ class GrapeMaven implements GrapeEngine {
         grapeRoot
     }
 
+    /**
+     * Returns the cache directory used for downloaded artifacts.
+     *
+     * @return the grape cache directory
+     */
     static File getGrapeCacheDir() {
         String prefix = System.getProperty('grape.prefix') ?: 'grapesM2'
         if (prefix.contains('/') || prefix.contains('\\')) {
@@ -762,6 +878,20 @@ class GrapeMaven implements GrapeEngine {
 
 }
 
+/**
+ * Value object describing a grabbed Maven dependency.
+ *
+ * @param groupId the dependency group
+ * @param module the dependency module
+ * @param version the dependency version
+ * @param conf the requested configurations or scopes
+ * @param ext the requested extension
+ * @param type the requested artifact type
+ * @param classifier the requested classifier
+ * @param force whether this dependency is forced
+ * @param changing whether this dependency may change over time
+ * @param transitive whether transitive dependencies should be resolved
+ */
 record MavenGrabRecord(
     String groupId,
     String module,

@@ -26,9 +26,21 @@ import java.sql.SQLException;
  * Represents a ResultSet retrieved as a callable statement out parameter.
  */
 class CallResultSet extends GroovyResultSetExtension {
+    /**
+     * The zero-based out-parameter index.
+     */
     int indx;
+    /**
+     * The callable statement that owns the out parameter.
+     */
     CallableStatement call;
+    /**
+     * The lazily materialized result set for the out parameter.
+     */
     ResultSet resultSet;
+    /**
+     * Indicates whether the out parameter still needs to be read from the callable statement.
+     */
     boolean firstCall = true;
 
     /**

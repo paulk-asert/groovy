@@ -26,6 +26,11 @@ import org.asciidoctor.jruby.extension.spi.ExtensionRegistry;
  * (jdk, gjdk, gapi, gapid) when this JAR is on the AsciidoctorJ classpath.
  */
 public class DocLinkExtensionRegistry implements ExtensionRegistry {
+    /**
+     * Registers Groovy's documentation link macros with the supplied Asciidoctor instance.
+     *
+     * @param asciidoctor the Asciidoctor instance to extend
+     */
     @Override
     public void register(Asciidoctor asciidoctor) {
         asciidoctor.javaExtensionRegistry()

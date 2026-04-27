@@ -30,6 +30,11 @@ import java.util.stream.Stream;
 class GroupImpl<T> extends QueryableCollection<T> implements Group<T> {
     @Serial private static final long serialVersionUID = 5737735821215711785L;
 
+    /**
+     * Creates a group backed by the supplied stream.
+     *
+     * @param sourceStream the group elements
+     */
     GroupImpl(Stream<T> sourceStream) {
         super(sourceStream);
     }

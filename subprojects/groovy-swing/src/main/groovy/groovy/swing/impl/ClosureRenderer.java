@@ -106,6 +106,16 @@ public class ClosureRenderer implements ListCellRenderer, TableCellRenderer, Tre
     }
 
 
+    /**
+     * Prepares list-rendering state and delegates component creation to {@link #render()}.
+     *
+     * @param list the list being rendered
+     * @param value the current cell value
+     * @param index the list index being rendered
+     * @param isSelected whether the cell is selected
+     * @param cellHasFocus whether the cell has focus
+     * @return the renderer component
+     */
     @Override
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
         this.list = list;
@@ -122,6 +132,17 @@ public class ClosureRenderer implements ListCellRenderer, TableCellRenderer, Tre
         return render();
     }
 
+    /**
+     * Prepares table-rendering state and delegates component creation to {@link #render()}.
+     *
+     * @param table the table being rendered
+     * @param value the current cell value
+     * @param isSelected whether the cell is selected
+     * @param hasFocus whether the cell has focus
+     * @param row the model row being rendered
+     * @param column the model column being rendered
+     * @return the renderer component
+     */
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         this.list = null;
@@ -138,6 +159,18 @@ public class ClosureRenderer implements ListCellRenderer, TableCellRenderer, Tre
         return render();
     }
 
+    /**
+     * Prepares tree-rendering state and delegates component creation to {@link #render()}.
+     *
+     * @param tree the tree being rendered
+     * @param value the current node value
+     * @param selected whether the row is selected
+     * @param expanded whether the node is expanded
+     * @param leaf whether the node is a leaf
+     * @param row the tree row being rendered
+     * @param hasFocus whether the row has focus
+     * @return the renderer component
+     */
     @Override
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
         this.list = null;

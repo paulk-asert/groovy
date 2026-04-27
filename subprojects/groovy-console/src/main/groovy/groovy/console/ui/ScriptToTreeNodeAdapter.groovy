@@ -571,136 +571,163 @@ class TreeNodeBuildingVisitor extends CodeVisitorSupport {
         }
     }
 
+    /** Adds a block statement node to the tree. */
     @Override
     void visitBlockStatement(BlockStatement node) {
         addNode(node, BlockStatement, { super.visitBlockStatement(it) })
     }
 
+    /** Adds a for-loop node to the tree. */
     @Override
     void visitForLoop(ForStatement node) {
         addNode(node, ForStatement, { super.visitForLoop(it) })
     }
 
+    /** Adds a while-loop node to the tree. */
     @Override
     void visitWhileLoop(WhileStatement node) {
         addNode(node, WhileStatement, { super.visitWhileLoop(it) })
     }
 
+    /** Adds a do/while-loop node to the tree. */
     @Override
     void visitDoWhileLoop(DoWhileStatement node) {
         addNode(node, DoWhileStatement, { super.visitDoWhileLoop(it) })
     }
 
+    /** Adds an if/else node to the tree. */
     @Override
     void visitIfElse(IfStatement node) {
         addNode(node, IfStatement, { super.visitIfElse(it) })
     }
 
+    /** Adds an expression statement node to the tree. */
     @Override
     void visitExpressionStatement(ExpressionStatement node) {
         addNode(node, ExpressionStatement, { super.visitExpressionStatement(it) })
     }
 
+    /** Adds a return statement node to the tree. */
     @Override
     void visitReturnStatement(ReturnStatement node) {
         addNode(node, ReturnStatement, { super.visitReturnStatement(it) })
     }
 
+    /** Adds an assert statement node to the tree. */
     @Override
     void visitAssertStatement(AssertStatement node) {
         addNode(node, AssertStatement, { super.visitAssertStatement(it) })
     }
 
+    /** Adds a try/catch/finally node to the tree. */
     @Override
     void visitTryCatchFinally(TryCatchStatement node) {
         addNode(node, TryCatchStatement, { super.visitTryCatchFinally(it) })
     }
 
+    /** Adds an empty statement node to the tree. */
     @Override
     void visitEmptyStatement(EmptyStatement node) {
         addNode(node, EmptyStatement, { super.visitEmptyStatement(it) })
     }
 
+    /** Adds a switch node to the tree. */
     @Override
     void visitSwitch(SwitchStatement node) {
         addNode(node, SwitchStatement, { super.visitSwitch(it) })
     }
 
+    /** Adds a case statement node to the tree. */
     @Override
     void visitCaseStatement(CaseStatement node) {
         addNode(node, CaseStatement, { super.visitCaseStatement(it) })
     }
 
+    /** Adds a break statement node to the tree. */
     @Override
     void visitBreakStatement(BreakStatement node) {
         addNode(node, BreakStatement, { super.visitBreakStatement(it) })
     }
 
+    /** Adds a continue statement node to the tree. */
     @Override
     void visitContinueStatement(ContinueStatement node) {
         addNode(node, ContinueStatement, { super.visitContinueStatement(it) })
     }
 
+    /** Adds a synchronized statement node to the tree. */
     @Override
     void visitSynchronizedStatement(SynchronizedStatement node) {
         addNode(node, SynchronizedStatement, { super.visitSynchronizedStatement(it) })
     }
 
+    /** Adds a throw statement node to the tree. */
     @Override
     void visitThrowStatement(ThrowStatement node) {
         addNode(node, ThrowStatement, { super.visitThrowStatement(it) })
     }
 
+    /** Adds a method call expression node to the tree. */
     @Override
     void visitMethodCallExpression(MethodCallExpression node) {
         addNode(node, MethodCallExpression, { super.visitMethodCallExpression(it) })
     }
 
+    /** Adds a static method call node to the tree. */
     @Override
     void visitStaticMethodCallExpression(StaticMethodCallExpression node) {
         addNode(node, StaticMethodCallExpression, { super.visitStaticMethodCallExpression(it) })
     }
 
+    /** Adds a constructor call node to the tree. */
     @Override
     void visitConstructorCallExpression(ConstructorCallExpression node) {
         addNode(node, ConstructorCallExpression, { super.visitConstructorCallExpression(it) })
     }
 
+    /** Adds a binary expression node to the tree. */
     @Override
     void visitBinaryExpression(BinaryExpression node) {
         addNode(node, BinaryExpression, { super.visitBinaryExpression(it) })
     }
 
+    /** Adds a ternary expression node to the tree. */
     @Override
     void visitTernaryExpression(TernaryExpression node) {
         addNode(node, TernaryExpression, { super.visitTernaryExpression(it) })
     }
 
+    /** Adds an Elvis expression node to the tree. */
     @Override
     void visitShortTernaryExpression(ElvisOperatorExpression node) {
         addNode(node, ElvisOperatorExpression, { super.visitShortTernaryExpression(it) })
     }
 
+    /** Adds a postfix expression node to the tree. */
     @Override
     void visitPostfixExpression(PostfixExpression node) {
         addNode(node, PostfixExpression, { super.visitPostfixExpression(it) })
     }
 
+    /** Adds a prefix expression node to the tree. */
     @Override
     void visitPrefixExpression(PrefixExpression node) {
         addNode(node, PrefixExpression, { super.visitPrefixExpression(it) })
     }
 
+    /** Adds a boolean expression node to the tree. */
     @Override
     void visitBooleanExpression(BooleanExpression node) {
         addNode(node, BooleanExpression, { super.visitBooleanExpression(it) })
     }
 
+    /** Adds a logical negation expression node to the tree. */
     @Override
     void visitNotExpression(NotExpression node) {
         addNode(node, NotExpression, { super.visitNotExpression(it) })
     }
 
+    /** Adds a closure expression node to the tree. */
     @Override
     void visitClosureExpression(ClosureExpression node) {
         addNode(node, ClosureExpression, {
@@ -709,6 +736,7 @@ class TreeNodeBuildingVisitor extends CodeVisitorSupport {
         })
     }
 
+    /** Adds a lambda expression node to the tree. */
     @Override
     void visitLambdaExpression(LambdaExpression node) {
         addNode(node, LambdaExpression, {
@@ -727,86 +755,103 @@ class TreeNodeBuildingVisitor extends CodeVisitorSupport {
         addNode(node, Parameter, { })
     }
 
+    /** Adds a tuple expression node to the tree. */
     @Override
     void visitTupleExpression(TupleExpression node) {
         addNode(node, TupleExpression, { super.visitTupleExpression(it) })
     }
 
+    /** Adds a list expression node to the tree. */
     @Override
     void visitListExpression(ListExpression node) {
         addNode(node, ListExpression, { super.visitListExpression(it) })
     }
 
+    /** Adds an array expression node to the tree. */
     @Override
     void visitArrayExpression(ArrayExpression node) {
         addNode(node, ArrayExpression, { super.visitArrayExpression(it) })
     }
 
+    /** Adds a map expression node to the tree. */
     @Override
     void visitMapExpression(MapExpression node) {
         addNode(node, MapExpression, { super.visitMapExpression(it) })
     }
 
+    /** Adds a map entry expression node to the tree. */
     @Override
     void visitMapEntryExpression(MapEntryExpression node) {
         addNode(node, MapEntryExpression, { super.visitMapEntryExpression(it) })
     }
 
+    /** Adds a range expression node to the tree. */
     @Override
     void visitRangeExpression(RangeExpression node) {
         addNode(node, RangeExpression, { super.visitRangeExpression(it) })
     }
 
+    /** Adds a spread expression node to the tree. */
     @Override
     void visitSpreadExpression(SpreadExpression node) {
         addNode(node, SpreadExpression, { super.visitSpreadExpression(it) })
     }
 
+    /** Adds a spread-map expression node to the tree. */
     @Override
     void visitSpreadMapExpression(SpreadMapExpression node) {
         addNode(node, SpreadMapExpression, { super.visitSpreadMapExpression(it) })
     }
 
+    /** Adds a method pointer expression node to the tree. */
     @Override
     void visitMethodPointerExpression(MethodPointerExpression node) {
         addNode(node, MethodPointerExpression, { super.visitMethodPointerExpression(it) })
     }
 
+    /** Adds a method reference expression node to the tree. */
     @Override
     void visitMethodReferenceExpression(MethodReferenceExpression node) {
         addNode(node, MethodReferenceExpression, { super.visitMethodReferenceExpression(it) })
     }
 
+    /** Adds a unary minus expression node to the tree. */
     @Override
     void visitUnaryMinusExpression(UnaryMinusExpression node) {
         addNode(node, UnaryMinusExpression, { super.visitUnaryMinusExpression(it) })
     }
 
+    /** Adds a unary plus expression node to the tree. */
     @Override
     void visitUnaryPlusExpression(UnaryPlusExpression node) {
         addNode(node, UnaryPlusExpression, { super.visitUnaryPlusExpression(it) })
     }
 
+    /** Adds a bitwise negation expression node to the tree. */
     @Override
     void visitBitwiseNegationExpression(BitwiseNegationExpression node) {
         addNode(node, BitwiseNegationExpression, { super.visitBitwiseNegationExpression(it) })
     }
 
+    /** Adds a cast expression node to the tree. */
     @Override
     void visitCastExpression(CastExpression node) {
         addNode(node, CastExpression, { super.visitCastExpression(it) })
     }
 
+    /** Adds a constant expression node to the tree. */
     @Override
     void visitConstantExpression(ConstantExpression node) {
         addNode(node, ConstantExpression, { super.visitConstantExpression(it) })
     }
 
+    /** Adds a class expression node to the tree. */
     @Override
     void visitClassExpression(ClassExpression node) {
         addNode(node, ClassExpression, { super.visitClassExpression(it) })
     }
 
+    /** Adds a variable expression node to the tree. */
     @Override
     void visitVariableExpression(VariableExpression node) {
         addNode(node, VariableExpression, { VariableExpression it ->
@@ -820,31 +865,37 @@ class TreeNodeBuildingVisitor extends CodeVisitorSupport {
         })
     }
 
+    /** Adds a declaration expression node to the tree. */
     @Override
     void visitDeclarationExpression(DeclarationExpression node) {
         addNode(node, DeclarationExpression, { super.visitDeclarationExpression(it) })
     }
 
+    /** Adds a property expression node to the tree. */
     @Override
     void visitPropertyExpression(PropertyExpression node) {
         addNode(node, PropertyExpression, { super.visitPropertyExpression(it) })
     }
 
+    /** Adds an attribute expression node to the tree. */
     @Override
     void visitAttributeExpression(AttributeExpression node) {
         addNode(node, AttributeExpression, { super.visitAttributeExpression(it) })
     }
 
+    /** Adds a field expression node to the tree. */
     @Override
     void visitFieldExpression(FieldExpression node) {
         addNode(node, FieldExpression, { super.visitFieldExpression(it) })
     }
 
+    /** Adds a GString expression node to the tree. */
     @Override
     void visitGStringExpression(GStringExpression node) {
         addNode(node, GStringExpression, { super.visitGStringExpression(it) })
     }
 
+    /** Adds a catch clause node to the tree. */
     @Override
     void visitCatchStatement(CatchStatement node) {
         addNode(node, CatchStatement, {
@@ -853,21 +904,25 @@ class TreeNodeBuildingVisitor extends CodeVisitorSupport {
         })
     }
 
+    /** Adds an argument list expression node to the tree. */
     @Override
     void visitArgumentlistExpression(ArgumentListExpression node) {
         addNode(node, ArgumentListExpression, { super.visitArgumentlistExpression(it) })
     }
 
+    /** Adds a closure list expression node to the tree. */
     @Override
     void visitClosureListExpression(ClosureListExpression node) {
         addNode(node, ClosureListExpression, { super.visitClosureListExpression(it) })
     }
 
+    /** Adds a bytecode expression node to the tree. */
     @Override
     void visitBytecodeExpression(BytecodeExpression node) {
         addNode(node, BytecodeExpression, { super.visitBytecodeExpression(it) })
     }
 
+    /** Adds each expression from the supplied list to the tree. */
     @Override
     void visitListOfExpressions(List<? extends Expression> list) {
         list.each { Expression node ->

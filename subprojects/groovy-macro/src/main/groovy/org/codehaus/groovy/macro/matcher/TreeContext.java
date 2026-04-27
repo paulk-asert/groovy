@@ -40,20 +40,35 @@ public class TreeContext {
     private enum TreeContextKey {
         expression_replacement
     }
+    /** Parent traversal context. */
     final TreeContext parent;
+    /** AST node represented by this context. */
     final ASTNode node;
+    /** Child contexts created from this context. */
     final List<TreeContext> siblings = new LinkedList<>();
+    /** Actions invoked when this context is popped. */
     final List<TreeContextAction> onPopHandlers = new LinkedList<>();
+    /** User data stored against this context. */
     final Map<Object, List<Object>> userdata = MapWithDefault.newInstance(
             new HashMap<Object, List<Object>>(),
             new Closure<List<Object>>(this) {
                 private static final long serialVersionUID = -4694773031569936343L;
+
+                /**
+                 * Creates the default list for a user-data key.
+                 *
+                 * @param key the user-data key
+                 * @return a new mutable value list
+                 */
                 public Object doCall(Object key) {
                     return new LinkedList<Object>();
                 }
             }
     );
 
+    /**
+     * Creates a traversal context for the supplied node.
+     */
     TreeContext(final TreeContext parent, final ASTNode node) {
         this.parent = parent;
         this.node = node;
@@ -210,6 +225,11 @@ public class TreeContext {
         return null;
     }
 
+    /**
+     * Returns a string form containing the current node and its parent path.
+     *
+     * @return the context description
+     */
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("TreeContext{");

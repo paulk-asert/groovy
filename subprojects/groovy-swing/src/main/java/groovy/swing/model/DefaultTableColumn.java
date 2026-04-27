@@ -59,6 +59,11 @@ public class DefaultTableColumn extends TableColumn {
         setIdentifier(identifier);
     }
 
+    /**
+     * Returns a debug-friendly description of this column and its backing value model.
+     *
+     * @return the column description
+     */
     @Override
     public String toString() {
         return super.toString() + "[header:" + getHeaderValue() + " valueModel:" + valueModel + "]";

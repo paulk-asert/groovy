@@ -82,23 +82,42 @@ import java.util.concurrent.TimeUnit;
 public class StaticMethodCallIndyColdBench {
 
     @Param({"500", "2000", "20000"})
+    /**
+     * Input size used to exercise different cold-start dispatch regimes.
+     */
     public int n;
 
+    /**
+     * Java baseline for cold-start sum.
+     * @return the computed sum
+     */
     @Benchmark
     public int staticSum_java() {
         return javaSum(n);
     }
 
+    /**
+     * Groovy dynamic cold-start static sum.
+     * @return the computed sum
+     */
     @Benchmark
     public int staticSum_groovy() {
         return StaticMethodCallIndy.staticSum(n);
     }
 
+    /**
+     * Groovy {@code @CompileStatic} cold-start static sum.
+     * @return the computed sum
+     */
     @Benchmark
     public int staticSum_groovyCS() {
         return StaticMethodCallIndy.staticSumCS(n);
     }
 
+    /**
+     * Groovy instance cold-start sum (control group).
+     * @return the computed sum
+     */
     @Benchmark
     public int instanceSum_groovy() {
         return new StaticMethodCallIndy().instanceSum(n);

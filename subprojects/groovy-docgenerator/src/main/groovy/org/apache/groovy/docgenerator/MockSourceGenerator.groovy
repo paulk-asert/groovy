@@ -43,7 +43,9 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods
  */
 class MockSourceGenerator {
 
+    /** Synthetic package used for primitive and primitive-array receiver mocks. */
     static final String PRIMITIVES_PKG = 'primitives'
+    /** Primitive base names that require dedicated mock types. */
     static final List<String> PRIMITIVE_BASES = [
         'int', 'long', 'double', 'float', 'boolean', 'byte', 'short', 'char'
     ]
@@ -51,6 +53,12 @@ class MockSourceGenerator {
     private final List<File> sourceFiles
     private final File outputDir
 
+    /**
+     * Creates a generator for the supplied extension source files.
+     *
+     * @param sourceFiles source files that contribute extension methods
+     * @param outputDir directory where mock sources should be written
+     */
     MockSourceGenerator(List<File> sourceFiles, File outputDir) {
         this.sourceFiles = sourceFiles
         this.outputDir = outputDir
@@ -63,6 +71,9 @@ class MockSourceGenerator {
      */
     static final String MANIFEST_FILE = 'mocks.manifest'
 
+    /**
+     * Generates mock source files for all supported receiver types.
+     */
     void generateAll() {
         def builder = new JavaProjectBuilder()
         sourceFiles.each {
@@ -325,6 +336,11 @@ class MockSourceGenerator {
         (fqcn.length() - base.length()) / 2 as int
     }
 
+    /**
+     * Runs the mock-source generator from the command line.
+     *
+     * @param args command-line arguments
+     */
     static void main(String... args) {
         def cli = new CliBuilderInternal(usage: 'MockSourceGenerator [options] [sourcefiles]', posix: false)
         cli.help(longOpt: 'help', 'Print this help')

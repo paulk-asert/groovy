@@ -59,6 +59,9 @@ public class AggregateBinding implements BindingUpdatable {
         bindings.remove(binding);
     }
 
+    /**
+     * Binds every member binding in insertion order.
+     */
     @Override
     public void bind() {
         if (!bound) {
@@ -69,6 +72,9 @@ public class AggregateBinding implements BindingUpdatable {
         }
     }
 
+    /**
+     * Unbinds every member binding in insertion order.
+     */
     @Override
     public void unbind() {
         if (bound) {
@@ -79,6 +85,9 @@ public class AggregateBinding implements BindingUpdatable {
         }
     }
 
+    /**
+     * Rebinds every member binding when the aggregate is currently active.
+     */
     @Override
     public void rebind() {
         if (bound) {
@@ -87,6 +96,9 @@ public class AggregateBinding implements BindingUpdatable {
         }
     }
 
+    /**
+     * Pushes source updates through every member binding.
+     */
     @Override
     public void update() {
         for (BindingUpdatable binding : bindings) {
@@ -94,6 +106,9 @@ public class AggregateBinding implements BindingUpdatable {
         }
     }
 
+    /**
+     * Pushes reverse updates through every member binding.
+     */
     @Override
     public void reverseUpdate() {
         for (BindingUpdatable binding : bindings) {

@@ -135,16 +135,32 @@ public class DefaultTableModel extends AbstractTableModel {
         columnModel.removeColumn(column);
     }
 
+    /**
+     * Returns the number of rows currently exposed by the rows model.
+     *
+     * @return the current row count
+     */
     @Override
     public int getRowCount() {
         return getRows().size();
     }
 
+    /**
+     * Returns the number of configured columns.
+     *
+     * @return the current column count
+     */
     @Override
     public int getColumnCount() {
         return columnModel.getColumnCount();
     }
 
+    /**
+     * Returns the header text for the supplied column.
+     *
+     * @param columnIndex the column index
+     * @return the column header text, or {@code null} when unavailable
+     */
     @Override
     public String getColumnName(int columnIndex) {
         String answer = null;
@@ -158,17 +174,37 @@ public class DefaultTableModel extends AbstractTableModel {
         return answer;
     }
 
+    /**
+     * Returns the declared value type for the supplied column.
+     *
+     * @param columnIndex the column index
+     * @return the column value type
+     */
     @SuppressWarnings("rawtypes")
     @Override
     public Class getColumnClass(int columnIndex) {
         return getColumnModel(columnIndex).getType();
     }
 
+    /**
+     * Indicates whether the supplied cell can be edited through its column model.
+     *
+     * @param rowIndex the row index
+     * @param columnIndex the column index
+     * @return {@code true} when the column model is editable
+     */
     @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         return getColumnModel(columnIndex).isEditable();
     }
 
+    /**
+     * Reads the value for the supplied row and column.
+     *
+     * @param rowIndex the row index
+     * @param columnIndex the column index
+     * @return the cell value, or {@code null} when the coordinates are invalid
+     */
     @SuppressWarnings("rawtypes")
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
@@ -189,6 +225,13 @@ public class DefaultTableModel extends AbstractTableModel {
         return column.getValue(row, rowIndex, columnIndex);
     }
 
+    /**
+     * Writes a value to the supplied row and column when both coordinates are valid.
+     *
+     * @param value the new cell value
+     * @param rowIndex the row index
+     * @param columnIndex the column index
+     */
     @SuppressWarnings("rawtypes")
     @Override
     public void setValueAt(Object value, int rowIndex, int columnIndex) {
@@ -237,22 +280,33 @@ public class DefaultTableModel extends AbstractTableModel {
      * Column model implementation that keeps model indexes aligned with the current column order.
      */
     protected static class MyTableColumnModel extends DefaultTableColumnModel {
-        @SuppressWarnings("rawtypes")
         /**
          * Returns the live list of table columns.
          *
          * @return the backing column list
          */
+        @SuppressWarnings("rawtypes")
         public List getColumnList() {
             return tableColumns;
         }
 
+        /**
+         * Removes a column and then renumbers the remaining model indexes.
+         *
+         * @param column the column to remove
+         */
         @Override
         public void removeColumn(TableColumn column) {
             super.removeColumn(column);
             renumberTableColumns();
         }
 
+        /**
+         * Moves a column and then renumbers the model indexes to match the new order.
+         *
+         * @param columnIndex the source column index
+         * @param newIndex the destination column index
+         */
         @Override
         public void moveColumn(int columnIndex, int newIndex) {
             super.moveColumn(columnIndex, newIndex);

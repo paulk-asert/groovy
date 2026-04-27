@@ -731,7 +731,10 @@ public class Groovy extends Java {
         }
     }
 
-    // package-private for testing
+    /**
+     * Copies Ant project properties into the forked process unless they were already supplied as
+     * explicit system properties.
+     */
     void passParentAntProperties() {
         Set<String> alreadySet = new HashSet<>();
         for (Environment.Variable v : super.getSysProperties().getVariablesVector()) {

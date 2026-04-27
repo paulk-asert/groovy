@@ -113,6 +113,11 @@ import static org.codehaus.groovy.ast.tools.GeneralUtils.varX
 @CompileStatic
 class GinqAstWalker implements GinqAstVisitor<Expression>, SyntaxErrorReportable {
 
+    /**
+     * Creates a walker for the supplied source unit.
+     *
+     * @param sourceUnit the source unit being transformed
+     */
     GinqAstWalker(SourceUnit sourceUnit) {
         this.sourceUnit = sourceUnit
     }
@@ -121,6 +126,12 @@ class GinqAstWalker implements GinqAstVisitor<Expression>, SyntaxErrorReportable
         ginqExpressionStack.peek()
     }
 
+    /**
+     * Visits a full GINQ expression and converts it into chained queryable calls.
+     *
+     * @param ginqExpression the expression to transform
+     * @return the transformed method call
+     */
     @Override
     MethodCallExpression visitGinqExpression(GinqExpression ginqExpression) {
         if (!ginqExpression) {
@@ -317,6 +328,12 @@ class GinqAstWalker implements GinqAstVisitor<Expression>, SyntaxErrorReportable
         }
     }
 
+    /**
+     * Visits a {@code from} clause.
+     *
+     * @param fromExpression the clause to transform
+     * @return the transformed method call
+     */
     @Override
     MethodCallExpression visitFromExpression(FromExpression fromExpression) {
         MethodCallExpression fromMethodCallExpression = constructFromMethodCallExpression(fromExpression.dataSourceExpr)
@@ -325,6 +342,12 @@ class GinqAstWalker implements GinqAstVisitor<Expression>, SyntaxErrorReportable
         return fromMethodCallExpression
     }
 
+    /**
+     * Visits a join clause.
+     *
+     * @param joinExpression the clause to transform
+     * @return the transformed method call
+     */
     @Override
     MethodCallExpression visitJoinExpression(JoinExpression joinExpression) {
         Expression receiver = joinExpression.getNodeMetaData(__METHOD_CALL_RECEIVER)
@@ -345,6 +368,12 @@ class GinqAstWalker implements GinqAstVisitor<Expression>, SyntaxErrorReportable
         return joinMethodCallExpression
     }
 
+    /**
+     * Leaves {@code on} clauses to their owning join clause.
+     *
+     * @param onExpression the clause being visited
+     * @return {@code null}
+     */
     @Override
     MethodCallExpression visitOnExpression(OnExpression onExpression) {
         // do nothing
@@ -528,6 +557,12 @@ class GinqAstWalker implements GinqAstVisitor<Expression>, SyntaxErrorReportable
         }
     }
 
+    /**
+     * Visits a {@code where} clause.
+     *
+     * @param whereExpression the clause to transform
+     * @return the transformed method call
+     */
     @Override
     MethodCallExpression visitWhereExpression(WhereExpression whereExpression) {
         DataSourceExpression dataSourceExpression = whereExpression.getDataSourceExpression()
@@ -576,6 +611,12 @@ class GinqAstWalker implements GinqAstVisitor<Expression>, SyntaxErrorReportable
         return callX(visit(expression), "toList")
     }
 
+    /**
+     * Visits a {@code groupby} clause.
+     *
+     * @param groupExpression the clause to transform
+     * @return the transformed method call
+     */
     @Override
     MethodCallExpression visitGroupExpression(GroupExpression groupExpression) {
         DataSourceExpression dataSourceExpression = groupExpression.dataSourceExpression
@@ -620,11 +661,23 @@ class GinqAstWalker implements GinqAstVisitor<Expression>, SyntaxErrorReportable
         return groupMethodCallExpression
     }
 
+    /**
+     * Leaves {@code having} clauses to their owning group clause.
+     *
+     * @param havingExpression the clause being visited
+     * @return {@code null}
+     */
     @Override
     Expression visitHavingExpression(HavingExpression havingExpression) {
         // do nothing
     }
 
+    /**
+     * Visits an {@code orderby} clause.
+     *
+     * @param orderExpression the clause to transform
+     * @return the transformed method call
+     */
     @Override
     MethodCallExpression visitOrderExpression(OrderExpression orderExpression) {
         DataSourceExpression dataSourceExpression = orderExpression.dataSourceExpression
@@ -696,6 +749,12 @@ class GinqAstWalker implements GinqAstVisitor<Expression>, SyntaxErrorReportable
         }
     }
 
+    /**
+     * Visits a {@code limit} clause.
+     *
+     * @param limitExpression the clause to transform
+     * @return the transformed method call
+     */
     @Override
     MethodCallExpression visitLimitExpression(LimitExpression limitExpression) {
         Expression limitMethodCallReceiver = limitExpression.getNodeMetaData(__METHOD_CALL_RECEIVER)
@@ -706,6 +765,12 @@ class GinqAstWalker implements GinqAstVisitor<Expression>, SyntaxErrorReportable
         return limitMethodCallExpression
     }
 
+    /**
+     * Visits a {@code select} clause.
+     *
+     * @param selectExpression the clause to transform
+     * @return the transformed method call
+     */
     @Override
     MethodCallExpression visitSelectExpression(SelectExpression selectExpression) {
         currentGinqExpression.putNodeMetaData(__VISITING_SELECT, true)
@@ -871,6 +936,12 @@ class GinqAstWalker implements GinqAstVisitor<Expression>, SyntaxErrorReportable
         return selectMethodCallExpression
     }
 
+    /**
+     * Visits a set-operation expression.
+     *
+     * @param setOperationExpression the expression to transform
+     * @return the transformed expression
+     */
     @Override
     Expression visitSetOperationExpression(SetOperationExpression setOperationExpression) {
         Expression leftExpr = visit(setOperationExpression.left)
@@ -888,6 +959,12 @@ class GinqAstWalker implements GinqAstVisitor<Expression>, SyntaxErrorReportable
         return callX(leftExpr, methodName, args(rightExpr))
     }
 
+    /**
+     * Visits a shutdown expression.
+     *
+     * @param shutdownExpression the expression to transform
+     * @return the shutdown call expression
+     */
     @Override
     Expression visitShutdownExpression(ShutdownExpression shutdownExpression) {
         return callX(classX(makeCached(QueryableHelper)), 'shutdown', constX(shutdownExpression.mode))
@@ -1427,6 +1504,12 @@ class GinqAstWalker implements GinqAstVisitor<Expression>, SyntaxErrorReportable
         expression
     }
 
+    /**
+     * Visits an arbitrary GINQ expression.
+     *
+     * @param expression the expression to transform
+     * @return the transformed expression
+     */
     @Override
     Expression visit(AbstractGinqExpression expression) {
         expression.accept(this)

@@ -44,21 +44,37 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 public class NonCapturingLambdaBench {
 
+    /**
+     * Benchmark non-capturing lambda application.
+     * @return the result value
+     */
     @Benchmark
     public int nonCapturingLambdaApply() {
         return NonCapturingLambda.applyNonCapturingLambda(42);
     }
 
+    /**
+     * Benchmark capturing lambda application.
+     * @return the result value
+     */
     @Benchmark
     public int capturingLambdaApply() {
         return NonCapturingLambda.applyCapturingLambda(42);
     }
 
+    /**
+     * Benchmark stream map with non-capturing lambda.
+     * @param bh the blackhole for consuming results
+     */
     @Benchmark
     public void streamMapNonCapturing(Blackhole bh) {
         bh.consume(NonCapturingLambda.streamMapNonCapturing(List.of(1, 2, 3, 4, 5)));
     }
 
+    /**
+     * Benchmark stream reduce with non-capturing lambda.
+     * @return the sum
+     */
     @Benchmark
     public int streamReduceNonCapturing() {
         return NonCapturingLambda.streamReduceNonCapturing(100);

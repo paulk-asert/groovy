@@ -78,6 +78,11 @@ public class ValueHolder implements ValueModel {
     }
 
 
+    /**
+     * Returns the current stored value.
+     *
+     * @return the current value
+     */
     @Override
     public Object getValue() {
         return value;
@@ -97,11 +102,21 @@ public class ValueHolder implements ValueModel {
         }
     }
 
+    /**
+     * Returns the declared value type for this holder.
+     *
+     * @return the holder type
+     */
     @Override
     public Class getType() {
         return type;
     }
 
+    /**
+     * Indicates whether callers should treat this holder as writable.
+     *
+     * @return {@code true} when the holder is editable
+     */
     @Override
     public boolean isEditable() {
         return editable;

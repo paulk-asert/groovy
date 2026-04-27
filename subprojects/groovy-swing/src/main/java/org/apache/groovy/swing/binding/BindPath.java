@@ -151,7 +151,13 @@ public class BindPath {
         return newValue;
     }
 
+    /**
+     * Signature used for property-specific {@code addPropertyChangeListener} lookups.
+     */
     static final Class[] NAME_PARAMS = {String.class, PropertyChangeListener.class};
+    /**
+     * Signature used for global {@code addPropertyChangeListener} lookups.
+     */
     static final Class[] GLOBAL_PARAMS = {PropertyChangeListener.class};
 
     /**

@@ -219,11 +219,21 @@ public class MacroGroovyMethods {
         final ListExpression listExpression = new ListExpression();
 
         ClassCodeVisitorSupport visitor = new ClassCodeVisitorSupport() {
+            /**
+             * Returns no source unit because this visitor only collects substitutions.
+             *
+             * @return {@code null}
+             */
             @Override
             protected SourceUnit getSourceUnit() {
                 return null;
             }
 
+            /**
+             * Visits the class and its inner classes to collect substitutions.
+             *
+             * @param node the class node to inspect
+             */
             @Override
             public void visitClass(final ClassNode node) {
                 super.visitClass(node);
@@ -234,6 +244,11 @@ public class MacroGroovyMethods {
                 }
             }
 
+            /**
+             * Collects substitution closures referenced through {@code $v} calls.
+             *
+             * @param call the method call to inspect
+             */
             @Override
             public void visitMethodCallExpression(MethodCallExpression call) {
                 super.visitMethodCallExpression(call);

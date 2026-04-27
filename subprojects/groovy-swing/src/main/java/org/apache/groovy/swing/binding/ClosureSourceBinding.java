@@ -76,6 +76,11 @@ public class ClosureSourceBinding implements SourceBinding {
         this.closure = closure;
     }
 
+    /**
+     * Invokes the configured closure with the current argument list.
+     *
+     * @return the computed source value
+     */
     @Override
     public Object getSourceValue() {
         return closure.call(arguments);

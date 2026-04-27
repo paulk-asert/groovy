@@ -31,5 +31,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface Headers {
+    /**
+     * Returns the repeated {@link Header} declarations.
+     *
+     * @return contained header annotations
+     */
     Header[] value();
 }

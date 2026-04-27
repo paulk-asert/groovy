@@ -89,6 +89,14 @@ class GroovyCommands extends JlineCommandRegistry implements CommandRegistry {
         'TOML'     : 'groovy.toml.TomlSlurper',
     ]
 
+    /**
+     * Creates the Groovy-specific command registry for groovysh.
+     *
+     * @param engine shell execution engine
+     * @param workDir supplier for the current working directory
+     * @param printer terminal printer
+     * @param highlighter syntax highlighter used for previews
+     */
     GroovyCommands(GroovyEngine engine, Supplier<Path> workDir, Printer printer, SyntaxHighlighter highlighter) {
         this.engine = engine
         this.printer = printer
@@ -113,21 +121,44 @@ class GroovyCommands extends JlineCommandRegistry implements CommandRegistry {
         registerCommands(available)
     }
 
+    /**
+     * Returns the short help text registered for the named command.
+     *
+     * @param command command name
+     * @return command summary lines
+     */
     @Override
     List<String> commandInfo(String command) {
         commands[command].v4
     }
 
+    /**
+     * Builds the detailed description for the selected command.
+     *
+     * @param args command arguments whose first element identifies the command
+     * @return command description metadata
+     */
     @Override
     CmdDesc commandDescription(List<String> args) {
         String command = args?[0] ?: ''
         commands[command].v3(command)
     }
 
+    /**
+     * Returns the display name for this command registry.
+     *
+     * @return registry name
+     */
     String name() {
         'Groovy Commands'
     }
 
+    /**
+     * Lists cached grapes or grabs the supplied dependency coordinates.
+     *
+     * @param input parsed command input
+     * @return always {@code null}
+     */
     def grab(CommandInput input) {
         if (!input.xargs()) {
             return null
@@ -183,12 +214,22 @@ class GroovyCommands extends JlineCommandRegistry implements CommandRegistry {
         return null
     }
 
+    /**
+     * Clears the current buffer.
+     *
+     * @param input parsed command input
+     */
     void reset(CommandInput input) {
         checkArgCount(input, [0, 1])
         if (maybePrintHelp(input, '/reset')) return
         engine.reset()
     }
 
+    /**
+     * Saves shared state or the current buffer to disk.
+     *
+     * @param input parsed command input
+     */
     void save(CommandInput input) {
         checkArgCount(input, [0, 1, 2])
         if (maybePrintHelp(input, '/save')) return
@@ -206,6 +247,13 @@ class GroovyCommands extends JlineCommandRegistry implements CommandRegistry {
         saveFile(engine, workDir.get().resolve(arg).toFile(), overwrite)
     }
 
+    /**
+     * Writes the current buffer to the target file.
+     *
+     * @param engine shell execution engine
+     * @param file target file
+     * @param overwrite whether existing files may be replaced
+     */
     static void saveFile(GroovyEngine engine, File file, boolean overwrite = false) {
         if (!file && overwrite) {
             throw new IllegalArgumentException('File to overwrite not found: ' + file.path)
@@ -217,6 +265,11 @@ class GroovyCommands extends JlineCommandRegistry implements CommandRegistry {
         println "Saved: " + file.path
     }
 
+    /**
+     * Restores saved state or loads a file into the current buffer.
+     *
+     * @param input parsed command input
+     */
     void load(CommandInput input) {
         checkArgCount(input, [0, 1, 2])
         if (maybePrintHelp(input, '/load')) return
@@ -245,6 +298,12 @@ class GroovyCommands extends JlineCommandRegistry implements CommandRegistry {
         opts[key]
     }
 
+    /**
+     * Opens configured documentation for the supplied object or type.
+     *
+     * @param input parsed command input
+     * @return always {@code null}
+     */
     def doc(CommandInput input) {
         def usage = new String[]{
             "/doc -  open document on browser",
@@ -341,6 +400,12 @@ class GroovyCommands extends JlineCommandRegistry implements CommandRegistry {
         }
     }
 
+    /**
+     * Reads content into {@code _} from a file, URL, or literal value.
+     *
+     * @param input parsed command input
+     * @return the parsed value
+     */
     def slurpcmd(CommandInput input) {
         checkArgCount(input, [0, 1, 2, 3, 4])
         if (maybePrintHelp(input, '/slurp')) return
@@ -459,6 +524,13 @@ class GroovyCommands extends JlineCommandRegistry implements CommandRegistry {
         throw new IllegalArgumentException("CSV format requires $GROOVY_CSV_SLURPER or $COMMONS_CSV_FORMAT to be available")
     }
 
+    /**
+     * Creates the parser implementation backing a named slurper format.
+     *
+     * @param format user-facing format name
+     * @param parserName parser class name
+     * @return parser instance
+     */
     Object getParser(String format, String parserName) {
         if (!ClassUtils.lookFor(parserName)) {
             throw new IllegalArgumentException("$format format requires $parserName to be available")
@@ -466,6 +538,13 @@ class GroovyCommands extends JlineCommandRegistry implements CommandRegistry {
         engine.execute("new ${parserName}()")
     }
 
+    /**
+     * Replays file contents through the engine, optionally merging with existing state.
+     *
+     * @param engine shell execution engine
+     * @param file source file to load
+     * @param merge whether existing state should be preserved
+     */
     static void loadFile(GroovyEngine engine, File file, boolean merge = false) {
         if (!file) {
             throw new IllegalArgumentException('File not found: ' + file.path)
@@ -528,6 +607,11 @@ class GroovyCommands extends JlineCommandRegistry implements CommandRegistry {
         }
     }
 
+    /**
+     * Lists or removes import statements tracked by the shell.
+     *
+     * @param input parsed command input
+     */
     void importsCommand(CommandInput input) {
         checkArgCount(input, [0, 1, 2])
         if (maybePrintHelp(input, '/imports')) return
@@ -540,6 +624,11 @@ class GroovyCommands extends JlineCommandRegistry implements CommandRegistry {
         }
     }
 
+    /**
+     * Lists or removes tracked type declarations.
+     *
+     * @param input parsed command input
+     */
     void typesCommand(CommandInput input) {
         checkArgCount(input, [0, 1, 2])
         if (maybePrintHelp(input, '/types')) return
@@ -552,6 +641,11 @@ class GroovyCommands extends JlineCommandRegistry implements CommandRegistry {
         }
     }
 
+    /**
+     * Lists or removes tracked variable declarations.
+     *
+     * @param input parsed command input
+     */
     void varsCommand(CommandInput input) {
         checkArgCount(input, [0, 1, 2])
         if (maybePrintHelp(input, '/vars')) return
@@ -564,6 +658,11 @@ class GroovyCommands extends JlineCommandRegistry implements CommandRegistry {
         }
     }
 
+    /**
+     * Lists or removes tracked method definitions.
+     *
+     * @param input parsed command input
+     */
     void methodsCommand(CommandInput input) {
         checkArgCount(input, [0, 1, 2])
         if (maybePrintHelp(input, '/methods')) return
@@ -576,6 +675,11 @@ class GroovyCommands extends JlineCommandRegistry implements CommandRegistry {
         }
     }
 
+    /**
+     * Launches the Swing Groovy console seeded with the current shell state.
+     *
+     * @param input parsed command input
+     */
     void console(CommandInput input) {
         checkArgCount(input, [0, 1])
         if (maybePrintHelp(input, '/console')) return
@@ -591,6 +695,12 @@ class GroovyCommands extends JlineCommandRegistry implements CommandRegistry {
         c.run()
     }
 
+    /**
+     * Displays object details in the terminal or object browser.
+     *
+     * @param input parsed command input
+     * @return always {@code null}
+     */
     def inspect(CommandInput input) {
         checkArgCount(input, [1, 2])
         if (maybePrintHelp(input, '/inspect')) return

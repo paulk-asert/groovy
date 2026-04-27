@@ -370,6 +370,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         }
     }
 
+    /** Renders a class or interface declaration. */
     @Override
     void visitClass(ClassNode node) {
 
@@ -459,6 +460,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         }
     }
 
+    /** Renders a constructor declaration. */
     @Override
     void visitConstructor(ConstructorNode node) {
         visitMethod(node)
@@ -486,6 +488,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         }
     }
 
+    /** Renders a method or initializer declaration. */
     @Override
     void visitMethod(MethodNode node) {
         node?.annotations?.each {
@@ -536,6 +539,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         print mods
     }
 
+    /** Renders a field declaration. */
     @Override
     void visitField(FieldNode node) {
         node?.annotations?.each {
@@ -566,6 +570,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         printLineBreak()
     }
 
+    /** Renders an annotation and its members. */
     void visitAnnotationNode(AnnotationNode node) {
         print '@' + node?.classNode?.name
         if (node?.members) {
@@ -585,11 +590,13 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
 
     }
 
+    /** Skips property rendering because fields already emit the corresponding output. */
     @Override
     void visitProperty(PropertyNode node) {
         // is a FieldNode, avoid double dispatch
     }
 
+    /** Renders a block statement. */
     @Override
     void visitBlockStatement(BlockStatement block) {
         if (printStatementLabels(block)) {
@@ -614,6 +621,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         }
     }
 
+    /** Renders a for-loop statement. */
     @Override
     void visitForLoop(ForStatement statement) {
         printStatementLabels(statement)
@@ -636,6 +644,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         printLineBreak()
     }
 
+    /** Renders an if/else statement. */
     @Override
     void visitIfElse(IfStatement ifElse) {
         printStatementLabels(ifElse)
@@ -659,11 +668,13 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         printLineBreak()
     }
 
+    /** Renders a standalone expression statement. */
     @Override
     void visitExpressionStatement(ExpressionStatement statement) {
         statement.expression.visit this
     }
 
+    /** Renders a return statement. */
     @Override
     void visitReturnStatement(ReturnStatement statement) {
         printLineBreak()
@@ -672,6 +683,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         printLineBreak()
     }
 
+    /** Renders a switch statement. */
     @Override
     void visitSwitch(SwitchStatement statement) {
         printStatementLabels(statement)
@@ -693,6 +705,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         printLineBreak()
     }
 
+    /** Renders a switch case. */
     @Override
     void visitCaseStatement(CaseStatement statement) {
         print 'case '
@@ -704,6 +717,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         }
     }
 
+    /** Renders a break statement. */
     @Override
     void visitBreakStatement(BreakStatement statement) {
         print 'break'
@@ -713,6 +727,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         printLineBreak()
     }
 
+    /** Renders a continue statement. */
     @Override
     void visitContinueStatement(ContinueStatement statement) {
         print 'continue'
@@ -722,6 +737,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         printLineBreak()
     }
 
+    /** Renders a method call expression. */
     @Override
     void visitMethodCallExpression(MethodCallExpression expression) {
         printExpression expression.objectExpression
@@ -741,6 +757,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         expression.arguments.visit(this)
     }
 
+    /** Renders a static method call expression. */
     @Override
     void visitStaticMethodCallExpression(StaticMethodCallExpression expression) {
         boolean parens = expression?.arguments instanceof MethodCallExpression
@@ -751,6 +768,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         if (parens) print ')'
     }
 
+    /** Renders a constructor invocation expression. */
     @Override
     void visitConstructorCallExpression(ConstructorCallExpression expression) {
         if (expression?.isSuperCall()) {
@@ -764,6 +782,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         expression?.arguments?.visit this
     }
 
+    /** Renders a binary or assignment expression. */
     @Override
     void visitBinaryExpression(BinaryExpression expression) {
         if (expression !instanceof DeclarationExpression && expression?.leftExpression instanceof VariableExpression) {
@@ -782,6 +801,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         }
     }
 
+    /** Renders a postfix expression. */
     @Override
     void visitPostfixExpression(PostfixExpression expression) {
         if (expression?.expression instanceof VariableExpression) {
@@ -794,6 +814,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         print expression?.operation?.text
     }
 
+    /** Renders a prefix expression. */
     @Override
     void visitPrefixExpression(PrefixExpression expression) {
         print expression?.operation?.text
@@ -806,6 +827,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         }
     }
 
+    /** Renders a closure expression. */
     @Override
     void visitClosureExpression(ClosureExpression expression) {
         print '{ '
@@ -820,6 +842,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         print '}'
     }
 
+    /** Renders a lambda expression. */
     @Override
     void visitLambdaExpression(LambdaExpression expression) {
         print '('
@@ -834,6 +857,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         print '}'
     }
 
+    /** Renders a tuple expression. */
     @Override
     void visitTupleExpression(TupleExpression expression) {
         print '('
@@ -841,6 +865,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         print ')'
     }
 
+    /** Renders a range expression. */
     @Override
     void visitRangeExpression(RangeExpression expression) {
         print '('
@@ -850,6 +875,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         print ')'
     }
 
+    /** Renders a property access expression. */
     @Override
     void visitPropertyExpression(PropertyExpression expression) {
         printExpression expression?.objectExpression
@@ -866,16 +892,19 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         }
     }
 
+    /** Renders an attribute access expression. */
     @Override
     void visitAttributeExpression(AttributeExpression attributeExpression) {
         visitPropertyExpression attributeExpression
     }
 
+    /** Renders a field reference expression. */
     @Override
     void visitFieldExpression(FieldExpression expression) {
         print expression?.field?.name
     }
 
+    /** Renders a constant expression. */
     @Override
     void visitConstantExpression(ConstantExpression expression, boolean unwrapQuotes = false) {
         if (expression.value instanceof String && !unwrapQuotes) {
@@ -887,11 +916,13 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         }
     }
 
+    /** Renders a class literal expression. */
     @Override
     void visitClassExpression(ClassExpression expression) {
         print expression.text
     }
 
+    /** Renders a variable reference. */
     @Override
     void visitVariableExpression(VariableExpression expression, boolean spacePad = true) {
         if (spacePad) {
@@ -901,6 +932,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         }
     }
 
+    /** Renders a declaration expression. */
     @Override
     void visitDeclarationExpression(DeclarationExpression expression) {
         if (!expression.isMultipleAssignmentDeclaration()) {
@@ -921,11 +953,13 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         expression.rightExpression.visit this
     }
 
+    /** Renders a GString expression. */
     @Override
     void visitGStringExpression(GStringExpression expression) {
         print '"' + expression.text + '"'
     }
 
+    /** Renders a spread expression. */
     @Override
     void visitSpreadExpression(SpreadExpression expression) {
         print '*'
@@ -946,21 +980,25 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         }
     }
 
+    /** Renders a logical negation expression. */
     @Override
     void visitNotExpression(NotExpression expression) {
         printUnaryExpression('!', expression)
     }
 
+    /** Renders a unary minus expression. */
     @Override
     void visitUnaryMinusExpression(UnaryMinusExpression expression) {
         printUnaryExpression('-', expression)
     }
 
+    /** Renders a unary plus expression. */
     @Override
     void visitUnaryPlusExpression(UnaryPlusExpression expression) {
         printUnaryExpression('+', expression)
     }
 
+    /** Renders a cast or coercion expression. */
     @Override
     void visitCastExpression(CastExpression expression) {
         print '('
@@ -1001,12 +1039,14 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         visitGenerics classNode?.genericsTypes
     }
 
+    /** Emits a placeholder for a bytecode expression. */
     @Override
     void visitBytecodeExpression(BytecodeExpression expression) {
         print '/*BytecodeExpression*/'
         printLineBreak()
     }
 
+    /** Renders a map expression. */
     @Override
     void visitMapExpression(MapExpression expression) {
         print '['
@@ -1018,6 +1058,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         print ']'
     }
 
+    /** Renders a map entry expression. */
     @Override
     void visitMapEntryExpression(MapEntryExpression expression) {
         if (expression?.keyExpression instanceof SpreadMapExpression) {
@@ -1029,6 +1070,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         expression?.valueExpression?.visit this
     }
 
+    /** Renders a list expression. */
     @Override
     void visitListExpression(ListExpression expression) {
         print '['
@@ -1036,6 +1078,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         print ']'
     }
 
+    /** Renders a try/catch/finally statement. */
     @Override
     void visitTryCatchFinally(TryCatchStatement statement) {
         printStatementLabels(statement)
@@ -1061,6 +1104,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         }
     }
 
+    /** Renders a throw statement. */
     @Override
     void visitThrowStatement(ThrowStatement statement) {
         print 'throw '
@@ -1068,6 +1112,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         printLineBreak()
     }
 
+    /** Renders a synchronized statement. */
     @Override
     void visitSynchronizedStatement(SynchronizedStatement statement) {
         printStatementLabels(statement)
@@ -1081,6 +1126,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         print '}'
     }
 
+    /** Renders a ternary expression. */
     @Override
     void visitTernaryExpression(TernaryExpression expression) {
         expression?.booleanExpression?.visit this
@@ -1090,16 +1136,19 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         expression?.falseExpression?.visit this
     }
 
+    /** Renders an Elvis expression. */
     @Override
     void visitShortTernaryExpression(ElvisOperatorExpression expression) {
         visitTernaryExpression expression
     }
 
+    /** Renders a boolean expression. */
     @Override
     void visitBooleanExpression(BooleanExpression expression) {
         printExpression expression?.expression
     }
 
+    /** Renders a while-loop statement. */
     @Override
     void visitWhileLoop(WhileStatement statement) {
         printStatementLabels(statement)
@@ -1115,6 +1164,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         printLineBreak()
     }
 
+    /** Renders a do/while-loop statement. */
     @Override
     void visitDoWhileLoop(DoWhileStatement statement) {
         printStatementLabels(statement)
@@ -1129,6 +1179,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         printLineBreak()
     }
 
+    /** Renders a catch clause. */
     @Override
     void visitCatchStatement(CatchStatement statement) {
         print 'catch ('
@@ -1142,6 +1193,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         printLineBreak()
     }
 
+    /** Renders a bitwise negation expression. */
     @Override
     void visitBitwiseNegationExpression(BitwiseNegationExpression expression) {
         print '~('
@@ -1149,6 +1201,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         print ') '
     }
 
+    /** Renders an assert statement. */
     @Override
     void visitAssertStatement(AssertStatement statement) {
         print 'assert '
@@ -1165,11 +1218,13 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         visitArgumentlistExpression(expression)
     }
 
+    /** Renders an argument list expression. */
     @Override
     void visitArgumentlistExpression(ArgumentListExpression expression) {
         visitTupleExpression expression
     }
 
+    /** Renders a closure list expression. */
     @Override
     void visitClosureListExpression(ClosureListExpression expression) {
         int i = 0
@@ -1184,6 +1239,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         }
     }
 
+    /** Renders a method pointer expression. */
     @Override
     void visitMethodPointerExpression(MethodPointerExpression expression) {
         expression?.expression?.visit this
@@ -1191,6 +1247,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         expression?.methodName?.visit this
     }
 
+    /** Renders a method reference expression. */
     @Override
     void visitMethodReferenceExpression(MethodReferenceExpression expression) {
         expression?.expression?.visit this
@@ -1198,6 +1255,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         expression?.methodName?.visit this
     }
 
+    /** Renders an array expression. */
     @Override
     void visitArrayExpression(ArrayExpression expression) {
         print 'new '
@@ -1207,6 +1265,7 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         print ']'
     }
 
+    /** Renders a spread-map expression. */
     @Override
     void visitSpreadMapExpression(SpreadMapExpression expression) {
         print '*:'

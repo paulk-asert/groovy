@@ -20,6 +20,9 @@ package org.codehaus.groovy.macro.matcher;
 
 import groovy.lang.Closure;
 
+/**
+ * Utility methods shared by AST matcher support classes.
+ */
 class MatcherUtils {
     /**
      * Clones a closure and sets its delegate for matcher evaluation.

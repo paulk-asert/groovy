@@ -25,24 +25,47 @@ import java.util.function.Function
 import java.util.function.IntUnaryOperator
 import java.util.stream.IntStream
 
+/**
+ * Helper class for benchmarking non-capturing lambda optimization (GROOVY-11905).
+ */
 @CompileStatic
 class NonCapturingLambda {
 
+    /**
+     * Applies a non-capturing lambda that adds 1 to the input.
+     * @param x the input value
+     * @return x plus 1
+     */
     static int applyNonCapturingLambda(int x) {
         IntUnaryOperator op = (int i) -> i + 1
         op.applyAsInt(x)
     }
 
+    /**
+     * Applies a capturing lambda that adds an offset to the input.
+     * @param x the input value
+     * @return x plus the captured offset
+     */
     static int applyCapturingLambda(int x) {
         int offset = 1
         IntUnaryOperator op = (int i) -> i + offset
         op.applyAsInt(x)
     }
 
+    /**
+     * Maps each element using a non-capturing lambda.
+     * @param input the input list
+     * @return a new list with each element incremented by 1
+     */
     static List<Integer> streamMapNonCapturing(List<Integer> input) {
         input.stream().map(e -> (Integer) (e + 1)).toList()
     }
 
+    /**
+     * Reduces a range using a non-capturing lambda.
+     * @param n the upper bound of the range (inclusive)
+     * @return the sum of doubled values from 1 to n
+     */
     static int streamReduceNonCapturing(int n) {
         IntStream.rangeClosed(1, n).map((int i) -> i * 2).sum()
     }

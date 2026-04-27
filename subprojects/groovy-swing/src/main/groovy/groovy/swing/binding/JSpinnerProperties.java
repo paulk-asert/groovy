@@ -69,6 +69,9 @@ class JSpinnerValueBinding extends AbstractSyntheticBinding implements PropertyC
         super(source, target, JSpinner.class, "value");
     }
 
+    /**
+     * Starts listening to the bound spinner and its model.
+     */
     @Override
     public synchronized void syntheticBind() {
         boundSlider = (JSpinner) ((PropertyBinding)sourceBinding).getBean();
@@ -76,6 +79,9 @@ class JSpinnerValueBinding extends AbstractSyntheticBinding implements PropertyC
         boundSlider.getModel().addChangeListener(this);
     }
 
+    /**
+     * Stops listening to the bound spinner and clears the cached reference.
+     */
     @Override
     public synchronized void syntheticUnbind() {
         boundSlider.removePropertyChangeListener("model", this);
@@ -83,6 +89,11 @@ class JSpinnerValueBinding extends AbstractSyntheticBinding implements PropertyC
         boundSlider = null;
     }
 
+    /**
+     * Refreshes the binding after the spinner model instance changes.
+     *
+     * @param event the model change event
+     */
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         update();
@@ -90,6 +101,11 @@ class JSpinnerValueBinding extends AbstractSyntheticBinding implements PropertyC
         ((SpinnerModel) event.getNewValue()).addChangeListener(this);
     }
 
+    /**
+     * Refreshes the binding after the spinner value changes.
+     *
+     * @param e the change event
+     */
     @Override
     public void stateChanged(ChangeEvent e) {
         update();

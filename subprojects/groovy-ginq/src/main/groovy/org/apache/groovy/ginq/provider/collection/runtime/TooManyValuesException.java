@@ -30,6 +30,11 @@ import java.io.Serial;
 public class TooManyValuesException extends GroovyRuntimeException {
     @Serial private static final long serialVersionUID = -2479599910868287387L;
 
+    /**
+     * Creates an exception for a sub-query that returned too many values.
+     *
+     * @param msg the error message
+     */
     public TooManyValuesException(String msg) {
         super(msg);
     }

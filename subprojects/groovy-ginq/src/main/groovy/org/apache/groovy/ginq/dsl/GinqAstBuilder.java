@@ -67,12 +67,19 @@ import java.util.Set;
  * @since 4.0.0
  */
 public class GinqAstBuilder extends CodeVisitorSupport implements SyntaxErrorReportable {
+    /** Metadata key storing the root GINQ expression. */
     public static final String ROOT_GINQ_EXPRESSION = "__ROOT_GINQ_EXPRESSION";
+    /** Metadata key marking {@code select distinct}. */
     public static final String GINQ_SELECT_DISTINCT = "__GINQ_SELECT_DISTINCT";
     private final Deque<GinqExpression> ginqExpressionStack = new ArrayDeque<>();
     private GinqExpression latestGinqExpression;
     private final SourceUnit sourceUnit;
 
+    /**
+     * Creates a builder for the supplied source unit.
+     *
+     * @param sourceUnit the source unit being processed
+     */
     public GinqAstBuilder(SourceUnit sourceUnit) {
         this.sourceUnit = sourceUnit;
     }
@@ -82,6 +89,12 @@ public class GinqAstBuilder extends CodeVisitorSupport implements SyntaxErrorRep
     private String setOperationOp;
 
     private static final List<String> SHUTDOWN_OPTION_LIST = Arrays.asList("immediate", "abort");
+    /**
+     * Builds a GINQ AST from the supplied AST node.
+     *
+     * @param astNode the node containing GINQ code
+     * @return the built GINQ expression
+     */
     public AbstractGinqExpression buildAST(ASTNode astNode) {
         if (astNode instanceof BlockStatement) {
             List<Statement> statementList = ((BlockStatement) astNode).getStatements();
@@ -172,6 +185,11 @@ public class GinqAstBuilder extends CodeVisitorSupport implements SyntaxErrorRep
 
     private boolean visitingOverClause;
 
+    /**
+     * Visits method-call expressions while assembling GINQ clauses.
+     *
+     * @param call the method call to visit
+     */
     @Override
     public void visitMethodCallExpression(MethodCallExpression call) {
         final String methodName = call.getMethodAsString();
@@ -419,6 +437,11 @@ public class GinqAstBuilder extends CodeVisitorSupport implements SyntaxErrorRep
         }
     }
 
+    /**
+     * Visits binary expressions to wire nested GINQ expressions into filters.
+     *
+     * @param expression the expression to visit
+     */
     @Override
     public void visitBinaryExpression(BinaryExpression expression) {
         super.visitBinaryExpression(expression);
@@ -438,6 +461,11 @@ public class GinqAstBuilder extends CodeVisitorSupport implements SyntaxErrorRep
         }
     }
 
+    /**
+     * Visits variable expressions and validates GINQ keywords.
+     *
+     * @param expression the expression to visit
+     */
     @Override
     public void visitVariableExpression(VariableExpression expression) {
         if (SET_OP_SET.contains(expression.getText())) {
@@ -474,6 +502,11 @@ public class GinqAstBuilder extends CodeVisitorSupport implements SyntaxErrorRep
         super.visitVariableExpression(expression);
     }
 
+    /**
+     * Visits property expressions and reports malformed aliases in {@code select}.
+     *
+     * @param expression the expression to visit
+     */
     @Override
     public void visitPropertyExpression(PropertyExpression expression) {
         super.visitPropertyExpression(expression);
@@ -487,6 +520,11 @@ public class GinqAstBuilder extends CodeVisitorSupport implements SyntaxErrorRep
         }
     }
 
+    /**
+     * Visits declaration expressions and rejects assignments inside clause keywords.
+     *
+     * @param expression the expression to visit
+     */
     @Override
     public void visitDeclarationExpression(DeclarationExpression expression) {
         final String typeName = expression.getLeftExpression().getType().getNameWithoutPackage();
@@ -501,6 +539,11 @@ public class GinqAstBuilder extends CodeVisitorSupport implements SyntaxErrorRep
         super.visitDeclarationExpression(expression);
     }
 
+    /**
+     * Visits cast expressions and substitutes nested GINQ expressions when needed.
+     *
+     * @param expression the expression to visit
+     */
     @Override
     public void visitCastExpression(CastExpression expression) {
         super.visitCastExpression(expression);
@@ -512,6 +555,11 @@ public class GinqAstBuilder extends CodeVisitorSupport implements SyntaxErrorRep
         }
     }
 
+    /**
+     * Visits argument lists and replaces nested {@code select} expressions with built GINQ AST nodes.
+     *
+     * @param expression the expression to visit
+     */
     @Override
     public void visitArgumentlistExpression(ArgumentListExpression expression) {
         List<Expression> list = expression.getExpressions();
@@ -533,6 +581,11 @@ public class GinqAstBuilder extends CodeVisitorSupport implements SyntaxErrorRep
         return expression instanceof MethodCallExpression && KW_SELECT.equals(((MethodCallExpression) expression).getMethodAsString());
     }
 
+    /**
+     * Returns the source unit used for syntax reporting.
+     *
+     * @return the current source unit
+     */
     @Override
     public SourceUnit getSourceUnit() {
         return sourceUnit;

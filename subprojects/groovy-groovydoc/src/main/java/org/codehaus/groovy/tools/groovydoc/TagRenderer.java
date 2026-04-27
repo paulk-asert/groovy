@@ -124,11 +124,23 @@ final class TagRenderer {
      * tokenizer implementation can drive both.
      */
     static final class Config {
+        /** Opening markup used for inline code fragments. */
         final String codeOpen;
+        /** Closing markup used for inline code fragments. */
         final String codeClose;
+        /** Whether the {@code @literal} inline tag should be recognized. */
         final boolean literalEnabled;
+        /** Whether block tags should be collated into grouped sections. */
         final boolean collateBlockTags;
 
+        /**
+         * Creates a rendering configuration for a specific documentation context.
+         *
+         * @param codeOpen opening markup for inline code
+         * @param codeClose closing markup for inline code
+         * @param literalEnabled whether the {@code @literal} inline tag should be recognized
+         * @param collateBlockTags whether block tags should be grouped by type
+         */
         Config(String codeOpen, String codeClose, boolean literalEnabled, boolean collateBlockTags) {
             this.codeOpen = codeOpen;
             this.codeClose = codeClose;

@@ -77,7 +77,10 @@ public class AntBuilder extends BuilderSupport {
     private final Target implicitTarget;
     private Target definingTarget;
     private Object lastCompletedNode;
-    // true when inside a task so special ant.target handling occurs just at top level
+    /**
+     * Tracks whether builder execution is currently inside a task so top-level {@code ant.target}
+     * handling can be applied correctly.
+     */
     boolean insideTask;
 
     private boolean saveStreams = true;

@@ -39,6 +39,12 @@ import org.codehaus.groovy.ast.CodeVisitorSupport;
  * @since 4.0.0
  */
 public class GinqAstBaseVisitor extends CodeVisitorSupport implements GinqAstVisitor<Void> {
+    /**
+     * Visits a GINQ expression and its child clauses.
+     *
+     * @param ginqExpression the expression to visit
+     * @return {@code null}
+     */
     @Override
     public Void visitGinqExpression(GinqExpression ginqExpression) {
         visit(ginqExpression.getFromExpression());
@@ -71,6 +77,12 @@ public class GinqAstBaseVisitor extends CodeVisitorSupport implements GinqAstVis
         return null;
     }
 
+    /**
+     * Visits a {@code from} clause.
+     *
+     * @param fromExpression the clause to visit
+     * @return {@code null}
+     */
     @Override
     public Void visitFromExpression(FromExpression fromExpression) {
         visit(fromExpression.getAliasExpr());
@@ -78,6 +90,12 @@ public class GinqAstBaseVisitor extends CodeVisitorSupport implements GinqAstVis
         return null;
     }
 
+    /**
+     * Visits a join clause.
+     *
+     * @param joinExpression the clause to visit
+     * @return {@code null}
+     */
     @Override
     public Void visitJoinExpression(JoinExpression joinExpression) {
         visit((joinExpression.getAliasExpr()));
@@ -86,18 +104,36 @@ public class GinqAstBaseVisitor extends CodeVisitorSupport implements GinqAstVis
         return null;
     }
 
+    /**
+     * Visits an {@code on} clause.
+     *
+     * @param onExpression the clause to visit
+     * @return {@code null}
+     */
     @Override
     public Void visitOnExpression(OnExpression onExpression) {
         visit(onExpression.getFilterExpr());
         return null;
     }
 
+    /**
+     * Visits a {@code where} clause.
+     *
+     * @param whereExpression the clause to visit
+     * @return {@code null}
+     */
     @Override
     public Void visitWhereExpression(WhereExpression whereExpression) {
         visit(whereExpression.getFilterExpr());
         return null;
     }
 
+    /**
+     * Visits a {@code groupby} clause.
+     *
+     * @param groupExpression the clause to visit
+     * @return {@code null}
+     */
     @Override
     public Void visitGroupExpression(GroupExpression groupExpression) {
         visit(groupExpression.getClassifierExpr());
@@ -105,30 +141,60 @@ public class GinqAstBaseVisitor extends CodeVisitorSupport implements GinqAstVis
         return null;
     }
 
+    /**
+     * Visits a {@code having} clause.
+     *
+     * @param havingExpression the clause to visit
+     * @return {@code null}
+     */
     @Override
     public Void visitHavingExpression(HavingExpression havingExpression) {
         visit(havingExpression.getFilterExpr());
         return null;
     }
 
+    /**
+     * Visits an {@code orderby} clause.
+     *
+     * @param orderExpression the clause to visit
+     * @return {@code null}
+     */
     @Override
     public Void visitOrderExpression(OrderExpression orderExpression) {
         visit(orderExpression.getOrdersExpr());
         return null;
     }
 
+    /**
+     * Visits a {@code limit} clause.
+     *
+     * @param limitExpression the clause to visit
+     * @return {@code null}
+     */
     @Override
     public Void visitLimitExpression(LimitExpression limitExpression) {
         visit(limitExpression.getOffsetAndSizeExpr());
         return null;
     }
 
+    /**
+     * Visits a {@code select} clause.
+     *
+     * @param selectExpression the clause to visit
+     * @return {@code null}
+     */
     @Override
     public Void visitSelectExpression(SelectExpression selectExpression) {
         visit(selectExpression.getProjectionExpr());
         return null;
     }
 
+    /**
+     * Visits a set-operation expression.
+     *
+     * @param setOperationExpression the expression to visit
+     * @return {@code null}
+     */
     @Override
     public Void visitSetOperationExpression(SetOperationExpression setOperationExpression) {
         setOperationExpression.getLeft().accept(this);
@@ -136,12 +202,24 @@ public class GinqAstBaseVisitor extends CodeVisitorSupport implements GinqAstVis
         return null;
     }
 
+    /**
+     * Visits a shutdown expression.
+     *
+     * @param shutdownExpression the expression to visit
+     * @return {@code null}
+     */
     @Override
     public Void visitShutdownExpression(ShutdownExpression shutdownExpression) {
         visit(shutdownExpression.getExpr());
         return null;
     }
 
+    /**
+     * Visits the supplied expression when present.
+     *
+     * @param expression the expression to visit
+     * @return {@code null}
+     */
     @Override
     public Void visit(AbstractGinqExpression expression) {
         if (null == expression) return null;

@@ -82,14 +82,29 @@ import static org.codehaus.groovy.runtime.typehandling.NumberMath.toBigDecimal;
 @Internal
 class QueryableCollection<T> implements Queryable<T>, Serializable {
 
+    /**
+     * Creates a queryable collection backed by an iterable.
+     *
+     * @param sourceIterable the source elements
+     */
     QueryableCollection(Iterable<T> sourceIterable) {
         this.sourceIterable = sourceIterable;
     }
 
+    /**
+     * Creates a queryable collection backed by a stream.
+     *
+     * @param sourceStream the source stream
+     */
     QueryableCollection(Stream<T> sourceStream) {
         this.sourceStream = sourceStream;
     }
 
+    /**
+     * Returns an iterator over the current source.
+     *
+     * @return an iterator over the elements
+     */
     public Iterator<T> iterator() {
         readLock.lock();
         try {
@@ -223,6 +238,13 @@ class QueryableCollection<T> implements Queryable<T>, Serializable {
         return lj.union(rj);
     }
 
+    /**
+     * Produces the Cartesian product with another queryable source.
+     *
+     * @param queryable the other source
+     * @param <U> the element type of the other source
+     * @return the joined result
+     */
     @Override
     public <U> Queryable<Tuple2<T, U>> crossJoin(Queryable<? extends U> queryable) {
         Stream<Tuple2<T, U>> stream =
@@ -314,6 +336,13 @@ class QueryableCollection<T> implements Queryable<T>, Serializable {
         return comparator;
     }
 
+    /**
+     * Applies offset and size limits to the current stream.
+     *
+     * @param offset the number of rows to skip
+     * @param size the maximum number of rows to keep
+     * @return the limited queryable
+     */
     @Override
     public Queryable<T> limit(long offset, long size) {
         Stream<T> stream = this.stream().skip(offset).limit(size);
@@ -365,6 +394,11 @@ class QueryableCollection<T> implements Queryable<T>, Serializable {
         }
     }
 
+    /**
+     * Removes duplicate elements.
+     *
+     * @return the distinct queryable
+     */
     @Override
     public Queryable<T> distinct() {
         Stream<T> stream = this.stream().distinct();
@@ -372,6 +406,12 @@ class QueryableCollection<T> implements Queryable<T>, Serializable {
         return from(stream);
     }
 
+    /**
+     * Appends all elements from another queryable.
+     *
+     * @param queryable the other queryable
+     * @return the combined queryable
+     */
     @Override
     public Queryable<T> unionAll(Queryable<? extends T> queryable) {
         Stream<T> stream = Stream.concat(this.stream(), queryable.stream());
@@ -379,6 +419,12 @@ class QueryableCollection<T> implements Queryable<T>, Serializable {
         return from(stream);
     }
 
+    /**
+     * Keeps only elements that also occur in the other queryable.
+     *
+     * @param queryable the other queryable
+     * @return the intersection
+     */
     @Override
     public Queryable<T> intersect(Queryable<? extends T> queryable) {
         Stream<T> stream = this.stream().filter(a -> {
@@ -392,6 +438,12 @@ class QueryableCollection<T> implements Queryable<T>, Serializable {
         return from(stream);
     }
 
+    /**
+     * Removes elements that also occur in the other queryable.
+     *
+     * @param queryable the other queryable
+     * @return the difference
+     */
     @Override
     public Queryable<T> minus(Queryable<? extends T> queryable) {
         Stream<T> stream = this.stream().filter(a -> {
@@ -406,6 +458,11 @@ class QueryableCollection<T> implements Queryable<T>, Serializable {
     }
 
     // ------------------------------ BEGIN AGGREGATE FUNCTIONS --------------------------------
+    /**
+     * Counts all elements.
+     *
+     * @return the number of elements
+     */
     @Override
     public Long count() {
         return agg(q -> q.stream().count());
@@ -594,6 +651,11 @@ class QueryableCollection<T> implements Queryable<T>, Serializable {
                      .map(c -> tuple(p, c.original));
     }
 
+    /**
+     * Materializes this queryable as a list.
+     *
+     * @return the materialized list
+     */
     @Override
     public List<T> toList() {
         writeLock.lock();
@@ -611,11 +673,21 @@ class QueryableCollection<T> implements Queryable<T>, Serializable {
         }
     }
 
+    /**
+     * Counts the current elements.
+     *
+     * @return the number of elements
+     */
     @Override
     public long size() {
         return stream().count();
     }
 
+    /**
+     * Returns a reusable stream over the current elements.
+     *
+     * @return the element stream
+     */
     @Override
     public Stream<T> stream() {
         writeLock.lock();
@@ -634,6 +706,14 @@ class QueryableCollection<T> implements Queryable<T>, Serializable {
         }
     }
 
+    /**
+     * Opens a window for the supplied current record.
+     *
+     * @param currentRecord the current record with its index
+     * @param windowDefinition the window definition
+     * @param <U> the order value type
+     * @return the window for the current record
+     */
     @Override
     public <U extends Comparable<? super U>> Window<T> over(Tuple2<T, Long> currentRecord, WindowDefinition<T, U> windowDefinition) {
         @SuppressWarnings("unchecked")
@@ -750,6 +830,12 @@ class QueryableCollection<T> implements Queryable<T>, Serializable {
         }
     }
 
+    /**
+     * Coerces this queryable to a supported target type.
+     *
+     * @param clazz the requested target type
+     * @return the coerced value
+     */
     public Object asType(Class<?> clazz) {
         if (Queryable.class == clazz || QueryableCollection.class == clazz) {
             return this;
@@ -799,6 +885,12 @@ class QueryableCollection<T> implements Queryable<T>, Serializable {
         return DefaultGroovyMethods.asType(this, clazz);
     }
 
+    /**
+     * Compares this collection with another queryable collection.
+     *
+     * @param o the other object
+     * @return {@code true} if both contain the same elements
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -806,11 +898,21 @@ class QueryableCollection<T> implements Queryable<T>, Serializable {
         return toList().equals(that.toList());
     }
 
+    /**
+     * Returns the hash code of the materialized contents.
+     *
+     * @return the hash code
+     */
     @Override
     public int hashCode() {
         return Objects.hash(toList());
     }
 
+    /**
+     * Returns the ASCII-table representation of this queryable.
+     *
+     * @return the string representation
+     */
     @Override
     public String toString() {
         return AsciiTableMaker.makeAsciiTable(this);

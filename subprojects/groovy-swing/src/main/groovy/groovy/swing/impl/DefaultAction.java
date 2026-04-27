@@ -30,6 +30,11 @@ public class DefaultAction extends AbstractAction {
 
     private Closure closure;
 
+    /**
+     * Invokes the configured closure in response to the action event.
+     *
+     * @param event the Swing action event
+     */
     @Override
     public void actionPerformed(ActionEvent event) {
         if (closure == null) {

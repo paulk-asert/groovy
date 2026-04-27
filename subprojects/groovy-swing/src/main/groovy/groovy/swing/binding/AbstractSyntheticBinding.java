@@ -57,6 +57,9 @@ public abstract class AbstractSyntheticBinding extends AbstractFullBinding {
         setTargetBinding(target);
     }
 
+    /**
+     * Installs the synthetic listeners if this binding is not already active.
+     */
     @Override
     public void bind() {
         if (!bound) {
@@ -74,6 +77,9 @@ public abstract class AbstractSyntheticBinding extends AbstractFullBinding {
         }
     }
 
+    /**
+     * Removes the synthetic listeners if this binding is currently active.
+     */
     @Override
     public void unbind() {
         if (bound) {
@@ -92,6 +98,9 @@ public abstract class AbstractSyntheticBinding extends AbstractFullBinding {
      */
     protected abstract void syntheticUnbind();
 
+    /**
+     * Reinstalls the synthetic listeners when the binding is already active.
+     */
     @Override
     public void rebind() {
         if (bound) {
@@ -100,6 +109,11 @@ public abstract class AbstractSyntheticBinding extends AbstractFullBinding {
         }
     }
 
+    /**
+     * Validates and stores the source binding for this synthetic property.
+     *
+     * @param source the source binding to validate
+     */
     @Override
     public void setSourceBinding(SourceBinding source) {
         if (!(source instanceof PropertyBinding)) {
@@ -116,6 +130,11 @@ public abstract class AbstractSyntheticBinding extends AbstractFullBinding {
         super.setSourceBinding(source);
     }
 
+    /**
+     * Stores the target binding that receives propagated updates.
+     *
+     * @param target the target binding
+     */
     @Override
     public void setTargetBinding(TargetBinding target) {
         super.setTargetBinding(target);

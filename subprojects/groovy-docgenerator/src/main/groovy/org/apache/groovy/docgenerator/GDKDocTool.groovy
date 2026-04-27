@@ -35,14 +35,26 @@ import org.codehaus.groovy.tools.groovydoc.gstringTemplates.GroovyDocTemplateInf
  */
 class GDKDocTool {
 
+    /** Title used for generated documentation pages. */
     String title
+    /** Directory containing the mock source files to document. */
     File sourceDir
+    /** Directory where generated documentation is written. */
     File outputDir
+    /** External documentation links forwarded to GroovyDoc. */
     List<LinkArgument> links = []
+    /** Language hint used when rewriting generated {@code <pre>} blocks. */
     String preLanguage = 'groovy'
+    /** Syntax highlighter identifier passed to the documentation templates. */
     String syntaxHighlighter = 'prism'
+    /** Theme name passed to the documentation templates. */
     String theme = 'auto'
 
+    /**
+     * Generates Groovy JDK documentation for the configured source tree.
+     *
+     * @return the GroovyDoc error count
+     */
     int run() {
         if (!sourceDir.directory) {
             throw new IllegalStateException("source directory not found: $sourceDir")
@@ -97,6 +109,11 @@ class GDKDocTool {
         out
     }
 
+    /**
+     * Runs the documentation generator from the command line.
+     *
+     * @param args command-line arguments
+     */
     static void main(String... args) {
         def cli = new CliBuilderInternal(usage: 'GDKDocTool [options]', posix: false)
         cli.help(longOpt: 'help', 'Print this help')

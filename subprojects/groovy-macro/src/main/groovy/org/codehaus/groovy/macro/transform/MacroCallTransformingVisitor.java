@@ -77,6 +77,11 @@ class MacroCallTransformingVisitor extends ClassCodeVisitorSupport {
         this.classLoader = unit.getTransformLoader();
     }
 
+    /**
+     * Returns the source unit currently being rewritten.
+     *
+     * @return the active source unit
+     */
     @Override
     protected SourceUnit getSourceUnit() {
         return sourceUnit;

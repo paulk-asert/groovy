@@ -31,34 +31,73 @@ public class SetOperationExpression extends AbstractGinqExpression {
     private final String operation;
     private final GinqExpression right;
 
+    /**
+     * Creates a set-operation expression.
+     *
+     * @param left the left query
+     * @param operation the set-operation name
+     * @param right the right query
+     */
     public SetOperationExpression(AbstractGinqExpression left, String operation, GinqExpression right) {
         this.left = left;
         this.operation = operation;
         this.right = right;
     }
 
+    /**
+     * Returns the left query.
+     *
+     * @return the left query
+     */
     public AbstractGinqExpression getLeft() {
         return left;
     }
 
+    /**
+     * Returns the operation name.
+     *
+     * @return the operation name
+     */
     public String getOperation() {
         return operation;
     }
 
+    /**
+     * Returns the right query.
+     *
+     * @return the right query
+     */
     public GinqExpression getRight() {
         return right;
     }
 
+    /**
+     * Accepts a visitor for this expression.
+     *
+     * @param visitor the visitor to accept
+     * @param <R> the visit result type
+     * @return the visit result
+     */
     @Override
     public <R> R accept(GinqAstVisitor<R> visitor) {
         return visitor.visitSetOperationExpression(this);
     }
 
+    /**
+     * Returns the textual GINQ form of this expression.
+     *
+     * @return the expression text
+     */
     @Override
     public String getText() {
         return left.getText() + " " + operation + " " + right.getText();
     }
 
+    /**
+     * Returns the textual form of this expression.
+     *
+     * @return the expression text
+     */
     @Override
     public String toString() {
         return getText();

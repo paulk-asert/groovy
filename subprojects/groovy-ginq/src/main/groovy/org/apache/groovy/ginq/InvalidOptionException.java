@@ -30,6 +30,11 @@ import java.io.Serial;
 public class InvalidOptionException extends GroovyException {
     @Serial private static final long serialVersionUID = -8644282992572200089L;
 
+    /**
+     * Creates an invalid-option exception with the supplied message.
+     *
+     * @param message the validation failure message
+     */
     public InvalidOptionException(String message) {
         super(message);
     }
