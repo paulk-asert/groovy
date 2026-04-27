@@ -62,10 +62,10 @@ public class JComboBoxProperties {
 }
 
 
-@SuppressWarnings("rawtypes")
 /**
  * Tracks the synthetic selected-element properties on a {@link JComboBox}.
  */
+@SuppressWarnings("rawtypes")
 class JComboBoxSelectedElementBinding extends AbstractSyntheticBinding implements PropertyChangeListener, ItemListener {
     /**
      * The currently bound combo box instance.
@@ -135,10 +135,10 @@ class JComboBoxSelectedElementBinding extends AbstractSyntheticBinding implement
 
 }
 
-@SuppressWarnings("rawtypes")
 /**
  * Tracks the synthetic {@code selectedIndex} property on a {@link JComboBox}.
  */
+@SuppressWarnings("rawtypes")
 class JComboBoxSelectedIndexBinding extends AbstractSyntheticBinding implements PropertyChangeListener, ItemListener {
     /**
      * The currently bound combo box instance.
@@ -207,10 +207,10 @@ class JComboBoxSelectedIndexBinding extends AbstractSyntheticBinding implements 
 
 }
 
-@SuppressWarnings({"rawtypes", "unchecked"})
 /**
  * Tracks the synthetic {@code elements} property on a {@link JComboBox}.
  */
+@SuppressWarnings({"rawtypes", "unchecked"})
 class JComboBoxElementsBinding extends AbstractSyntheticBinding implements ListDataListener, PropertyChangeListener {
     /**
      * The currently bound combo box instance.
