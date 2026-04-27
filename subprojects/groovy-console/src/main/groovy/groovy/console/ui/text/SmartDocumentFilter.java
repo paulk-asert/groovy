@@ -133,6 +133,9 @@ import static org.apache.groovy.parser.antlr4.GroovyLexer.YIELD;
  * @since 3.0.0
  */
 public class SmartDocumentFilter extends DocumentFilter {
+    /**
+     * Token types rendered with the reserved-word style.
+     */
     public static final List<Integer> HIGHLIGHTED_TOKEN_TYPE_LIST =
         Arrays.asList(AS, ASYNC, AWAIT, DEF, DEFER, IN, TRAIT, THREADSAFE,
             VAR, BuiltInPrimitiveType, ABSTRACT, ASSERT, BREAK, CASE, CATCH, CLASS, CONST, CONTINUE, DEFAULT, DO,
@@ -145,6 +148,11 @@ public class SmartDocumentFilter extends DocumentFilter {
     private final StyleContext styleContext;
     private final Style defaultStyle;
 
+    /**
+     * Creates a filter that styles the supplied document.
+     *
+     * @param styledDocument the document to tokenize and highlight
+     */
     public SmartDocumentFilter(DefaultStyledDocument styledDocument) {
         this.styledDocument = styledDocument;
 
@@ -155,6 +163,9 @@ public class SmartDocumentFilter extends DocumentFilter {
         initStyles();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void insertString(DocumentFilter.FilterBypass fb, int offset,
                              String text, AttributeSet attrs) throws BadLocationException {
@@ -165,6 +176,9 @@ public class SmartDocumentFilter extends DocumentFilter {
         parseDocument();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void remove(DocumentFilter.FilterBypass fb, int offset, int length)
             throws BadLocationException {
@@ -173,6 +187,9 @@ public class SmartDocumentFilter extends DocumentFilter {
         parseDocument();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void replace(DocumentFilter.FilterBypass fb, int offset,
                         int length, String text, AttributeSet attrs)
@@ -489,17 +506,38 @@ public class SmartDocumentFilter extends DocumentFilter {
     private volatile List<Token> latestTokenList = Collections.emptyList();
     private volatile Tuple2<Integer, Integer> renderRange;
 
+    /**
+     * Indicates whether the cached token list reflects the current document text.
+     *
+     * @return {@code true} if the latest parse completed successfully
+     */
     public boolean isLatest() {
         return latest;
     }
 
+    /**
+     * Returns the tokens produced by the most recent successful parse.
+     *
+     * @return the latest token list
+     */
     public List<Token> getLatestTokenList() {
         return latestTokenList;
     }
 
+    /**
+     * Limits rendering to the supplied character range for the next parse.
+     *
+     * @param renderRange the inclusive start and stop offsets to re-render, or {@code null} for all text
+     */
     public void setRenderRange(Tuple2<Integer, Integer> renderRange) {
         this.renderRange = renderRange;
     }
+
+    /**
+     * Returns the character range scheduled for selective re-rendering.
+     *
+     * @return the current render range, or {@code null} if the whole document will be rendered
+     */
     public Tuple2<Integer, Integer> getRenderRange() {
         return renderRange;
     }

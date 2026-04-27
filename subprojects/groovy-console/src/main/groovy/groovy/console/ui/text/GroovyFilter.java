@@ -32,39 +32,99 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
+/**
+ * Regex-based syntax-highlighting filter for Groovy source text.
+ */
 public class GroovyFilter extends StructuredSyntaxDocumentFilter {
 
     // java tab policy action
     private static final Action AUTO_TAB_ACTION = new AutoTabAction();
 
     // Style names
+    /**
+     * Style name used for comments.
+     */
     public static final String COMMENT = "comment";
+    /**
+     * Pattern matching block comments.
+     */
     public static final String SLASH_STAR_COMMENT = "/\\*(?s:.)*?(?:\\*/|\\z)";
+    /**
+     * Pattern matching line comments.
+     */
     public static final String SLASH_SLASH_COMMENT = "//.*";
 
+    /**
+     * Pattern matching double-quoted and triple-double-quoted strings.
+     */
     public static final String QUOTES =
             "(?ms:\"{3}.*?(?:\"{3}|\\z))|(?:\"{1}.*?(?:\"|\\Z))";
 
+    /**
+     * Pattern matching single-quoted and triple-single-quoted strings.
+     */
     public static final String SINGLE_QUOTES =
             "(?ms:'{3}(?!'{1,3}).*?(?:'{3}|\\z))|(?:'{1}.*?(?:'|\\z))";
 
+    /**
+     * Pattern matching slashy and dollar-slashy strings.
+     */
     public static final String SLASHY_QUOTES = "(?:/[^/*].*?(?<!\\\\)/|(?ms:\\$/.*?(?:/\\$|\\z)))";
 
+    /**
+     * Style name used for numeric literals.
+     */
     public static final String DIGIT = "DIGIT";
+    /**
+     * Pattern matching decimal integer literals.
+     */
     public static final String DECIMAL_INTEGER_LITERAL = "(?:0|[1-9](?:[_0-9]*[0-9])?)[lL]?";
+    /**
+     * Pattern matching hexadecimal integer literals.
+     */
     public static final String HEX_INTEGER_LITERAL = "0[xX][0-9a-fA-F](?:[0-9a-fA-F_]*[0-9a-fA-F])?";
+    /**
+     * Pattern matching octal integer literals.
+     */
     public static final String OCTAL_INTEGER_LITERAL = "0[0-7](?:[_0-7]*[0-7])?";
+    /**
+     * Pattern matching binary integer literals.
+     */
     public static final String BINARY_INTEGER_LITERAL = "0[bB][01](?:[_01]*[01])?";
+    /**
+     * Pattern matching decimal floating-point literals.
+     */
     public static final String DECIMAL_FLOATING_POINT_LITERAL = "(?:0|[1-9](?:[_0-9]*[0-9])?)?\\.?[0-9](?:[_0-9]*[0-9])?(?:[eE][+-]?[0-9]+(?:[_0-9]*[0-9])?)?[fFdD]?";
+    /**
+     * Pattern matching hexadecimal floating-point literals.
+     */
     public static final String HEXADECIMAL_FLOATING_POINT_LITERAL = "0[xX](?:[0-9a-fA-F](?:[0-9a-fA-F_]*[0-9a-fA-F])?)?\\.?(?:[0-9a-fA-F_]*[0-9a-fA-F])?(?:[pP][+-]?[0-9]+(?:[_0-9]*[0-9])?)?[fFdD]?";
 
+    /**
+     * Pattern matching annotations.
+     */
     public static final String ANNOTATION = "@[A-Za-z](?:[\\w.]*\\w)?";
 
+    /**
+     * Pattern matching identifiers.
+     */
     public static final String IDENT = "[\\w\\$&&[\\D]][\\w\\$]*";
+    /**
+     * Pattern matching method-style identifiers followed by an opening parenthesis.
+     */
     public static final String OPERATION = "[\\w\\$&&[\\D]][\\w\\$]* *\\(";
+    /**
+     * Pattern matching left parentheses inside operation matches.
+     */
     public static final String LEFT_PARENS = "\\(";
 
+    /**
+     * Style name used for reserved words.
+     */
     public static final String RESERVED_WORD = "reserved";
+    /**
+     * Patterns matching Groovy reserved words.
+     */
     public static final String[] RESERVED_WORDS = {"\\babstract\\b",
             "\\bassert\\b",
             "\\bdefault\\b",
@@ -125,6 +185,8 @@ public class GroovyFilter extends StructuredSyntaxDocumentFilter {
 
     /**
      * Creates a new instance of GroovyFilter
+     *
+     * @param doc the document to highlight
      */
     public GroovyFilter(DefaultStyledDocument doc) {
         super(doc);
@@ -189,6 +251,11 @@ public class GroovyFilter extends StructuredSyntaxDocumentFilter {
         getRootNode().putChild(IDENT, node);
     }
 
+    /**
+     * Installs the auto-indent action on the supplied text component.
+     *
+     * @param tComp the text component to configure
+     */
     public static void installAutoTabAction(JTextComponent tComp) {
         tComp.getActionMap().put("GroovyFilter-autoTab", AUTO_TAB_ACTION);
         KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, false);

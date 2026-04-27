@@ -44,10 +44,13 @@ import static javax.swing.JSplitPane.VERTICAL_SPLIT
 
 Preferences prefs = Preferences.userNodeForPackage(Console)
 def detachedOutputFlag = prefs.getBoolean('detachedOutput', false)
+/** Detached output frame shown when console output is separated from the main window. */
 outputWindow = frame(visible: false, defaultCloseOperation: WindowConstants.HIDE_ON_CLOSE) {
+    /** Placeholder component swapped in while the output area is detached. */
     blank = glue()
     blank.preferredSize = [0, 0] as Dimension
 }
+/** Split pane that hosts the editor and the attached output area. */
 splitPane = splitPane(resizeWeight: 0.5, orientation:
         prefs.getBoolean('orientationVertical', true) ? VERTICAL_SPLIT : HORIZONTAL_SPLIT) {
     def editor = new ConsoleTextEditor()
@@ -55,12 +58,15 @@ splitPane = splitPane(resizeWeight: 0.5, orientation:
     if (smartHighlighterEnabled) {
         editor.enableHighLighter(SmartDocumentFilter)
     }
+    /** Editor wrapper used for script input. */
     inputEditor = widget(editor, border: emptyBorder(0))
     buildOutputArea(prefs)
 }
 
 private def buildOutputArea(prefs) {
+    /** Scroll pane that contains the console output component. */
     scrollArea = scrollPane(border: emptyBorder(0)) {
+        /** Read-only text pane used to render console output. */
         outputArea = textPane(
                 editable: false,
                 name: 'outputArea',
@@ -73,6 +79,7 @@ private def buildOutputArea(prefs) {
 }
 
 
+/** Text component backing the script input area. */
 inputArea = inputEditor.textEditor
 inputArea.background = ThemeManager.inputBackground
 // attach ctrl-enter to input area
@@ -102,21 +109,27 @@ def applyStyle = { Style style, values -> values.each { k, v -> style.addAttribu
 Style regular = doc.addStyle('regular', defStyle)
 applyStyle(regular, styles.regular)
 
+/** Style used for console prompts. */
 promptStyle = doc.addStyle('prompt', regular)
 applyStyle(promptStyle, styles.prompt)
 
+/** Style used for echoed commands. */
 commandStyle = doc.addStyle('command', regular)
 applyStyle(commandStyle, styles.command)
 
+/** Style used for standard output. */
 outputStyle = doc.addStyle('output', regular)
 applyStyle(outputStyle, styles.output)
 
+/** Style used for evaluation results. */
 resultStyle = doc.addStyle('result', regular)
 applyStyle(resultStyle, styles.result)
 
+/** Style used for stack traces. */
 stacktraceStyle = doc.addStyle('stacktrace', regular)
 applyStyle(stacktraceStyle, styles.stacktrace)
 
+/** Style used for hyperlinks in the output pane. */
 hyperlinkStyle = doc.addStyle('hyperlink', regular)
 applyStyle(hyperlinkStyle, styles.hyperlink)
 
@@ -158,6 +171,7 @@ inputEditor.preferredSize = [
         prefs.getInt('inputAreaHeight', (fm.getHeight() + fm.getLeading()) * 12)
 ] as Dimension
 
+/** Original split-pane divider size restored when output is reattached. */
 origDividerSize = -1
 if (detachedOutputFlag) {
     splitPane.add(blank, JSplitPane.BOTTOM)

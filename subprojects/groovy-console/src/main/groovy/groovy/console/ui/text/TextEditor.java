@@ -68,11 +68,29 @@ import java.util.regex.Pattern;
 public class TextEditor extends JTextPane implements Pageable, Printable {
     @Serial private static final long serialVersionUID = 8478062945229999402L;
 
+    /**
+     * Action name for opening the find dialog.
+     */
     public static final String FIND = "Find...";
+    /**
+     * Action name for repeating the next find.
+     */
     public static final String FIND_NEXT = "Find Next";
+    /**
+     * Action name for repeating the previous find.
+     */
     public static final String FIND_PREVIOUS = "Find Previous";
+    /**
+     * Action name for opening the replace dialog.
+     */
     public static final String REPLACE = "Replace...";
+    /**
+     * Action name for automatic indentation.
+     */
     public static final String AUTO_INDENT = "AutoIndent";
+    /**
+     * Action name for backspace deletion.
+     */
     public static final String DELETE = "delete";
 
     private static final String TABBED_SPACES = "    ";
@@ -131,6 +149,8 @@ public class TextEditor extends JTextPane implements Pageable, Printable {
 
     /**
      * Creates a new instance of TextEditor
+     *
+     * @param tabsAsSpaces whether typed tabs should be converted to spaces
      */
     public TextEditor(boolean tabsAsSpaces) {
         this(tabsAsSpaces, false);
@@ -138,6 +158,9 @@ public class TextEditor extends JTextPane implements Pageable, Printable {
 
     /**
      * Creates a new instance of TextEditor
+     *
+     * @param tabsAsSpaces whether typed tabs should be converted to spaces
+     * @param multiLineTab whether tab actions should affect all selected lines
      */
     public TextEditor(boolean tabsAsSpaces, boolean multiLineTab) {
         this(tabsAsSpaces, multiLineTab, false);
@@ -145,6 +168,10 @@ public class TextEditor extends JTextPane implements Pageable, Printable {
 
     /**
      * Creates a new instance of TextEditor
+     *
+     * @param tabsAsSpaces whether typed tabs should be converted to spaces
+     * @param multiLineTab whether tab actions should affect all selected lines
+     * @param unwrapped whether long lines should avoid viewport wrapping
      */
     public TextEditor(boolean tabsAsSpaces, boolean multiLineTab, boolean unwrapped) {
         this.tabsAsSpaces = tabsAsSpaces;
@@ -213,6 +240,9 @@ public class TextEditor extends JTextPane implements Pageable, Printable {
         overtypeCaret.setBlinkRate(defaultCaret.getBlinkRate());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void addNotify() {
         super.addNotify();
@@ -220,6 +250,9 @@ public class TextEditor extends JTextPane implements Pageable, Printable {
         FindReplaceUtility.registerTextComponent(this);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getNumberOfPages() {
         Paper paper = PAGE_FORMAT.getPaper();
@@ -227,16 +260,25 @@ public class TextEditor extends JTextPane implements Pageable, Printable {
         return numPages;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public PageFormat getPageFormat(int pageIndex) throws IndexOutOfBoundsException {
         return PAGE_FORMAT;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Printable getPrintable(int param) throws IndexOutOfBoundsException {
         return this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int print(Graphics graphics, PageFormat pageFormat, int page)
             throws PrinterException {
@@ -301,6 +343,9 @@ public class TextEditor extends JTextPane implements Pageable, Printable {
         return Printable.NO_SUCH_PAGE;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean getScrollableTracksViewportWidth() {
         boolean bool = super.getScrollableTracksViewportWidth();
@@ -343,6 +388,9 @@ public class TextEditor extends JTextPane implements Pageable, Printable {
         return unwrapped;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void processKeyEvent(KeyEvent e) {
         super.processKeyEvent(e);
@@ -357,6 +405,9 @@ public class TextEditor extends JTextPane implements Pageable, Printable {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void removeNotify() {
         super.removeNotify();
@@ -364,6 +415,9 @@ public class TextEditor extends JTextPane implements Pageable, Printable {
         FindReplaceUtility.unregisterTextComponent(this);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void replaceSelection(String text) {
         //  Implement overtype mode by selecting the character at the current
@@ -377,6 +431,9 @@ public class TextEditor extends JTextPane implements Pageable, Printable {
         super.replaceSelection(text);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setBounds(int x, int y, int width, int height) {
         if (unwrapped) {
@@ -390,6 +447,8 @@ public class TextEditor extends JTextPane implements Pageable, Printable {
     }
 
     /**
+     * Enables or disables indenting all selected lines when tabbing.
+     *
      * @param multiLineTab the new multiLine tab value
      */
     public void isMultiLineTabbed(boolean multiLineTab) {
@@ -397,6 +456,8 @@ public class TextEditor extends JTextPane implements Pageable, Printable {
     }
 
     /**
+     * Enables or disables replacing typed tab characters with spaces.
+     *
      * @param tabsAsSpaces whether tabs are converted to spaces
      */
     public void isTabsAsSpaces(boolean tabsAsSpaces) {

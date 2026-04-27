@@ -107,6 +107,9 @@ class NullChecker extends GroovyTypeCheckingExtensionSupport.TypeCheckingDSL {
     private static final Set<String> NONNULL_BY_DEFAULT_ANNOS = Set.of('NonNullByDefault', 'NonnullByDefault', 'NullMarked')
     private static final Set<String> NULL_UNMARKED_ANNOS = Set.of('NullUnmarked')
 
+    /**
+     * Registers null-safety checks for each visited method body.
+     */
     @Override
     Object run() {
         boolean strict = options?.strict ?: false

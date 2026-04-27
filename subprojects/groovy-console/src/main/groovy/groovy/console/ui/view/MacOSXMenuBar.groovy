@@ -236,6 +236,12 @@ menuBar {
     }
 }
 
+/**
+ * Tests whether the current class loader can resolve the supplied class name.
+ *
+ * @param className the fully qualified class name to resolve
+ * @return {@code true} if the class is available
+ */
 static classExists(String className) {
     try {
         MacOSXMenuBar.class.classLoader.loadClass(className)

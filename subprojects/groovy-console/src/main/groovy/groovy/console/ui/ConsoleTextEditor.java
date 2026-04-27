@@ -69,10 +69,20 @@ public class ConsoleTextEditor extends JScrollPane {
     private static final String PREFERENCE_FONT_SIZE = "fontSize";
     private static final int DEFAULT_FONT_SIZE = 12;
 
+    /**
+     * Returns the preferred monospaced font family for the editor.
+     *
+     * @return the default font family name
+     */
     public String getDefaultFamily() {
         return defaultFamily;
     }
 
+    /**
+     * Sets the preferred monospaced font family for the editor.
+     *
+     * @param defaultFamily the font family name to use
+     */
     public void setDefaultFamily(String defaultFamily) {
         this.defaultFamily = defaultFamily;
     }
@@ -152,6 +162,9 @@ public class ConsoleTextEditor extends JScrollPane {
     private int fontSize;
 
     /**
+     * Returns the undo manager backing this editor.
+     *
+     * @return the editor undo manager
      * @since 6.0.0
      */
     public TextUndoManager getUndoManager() {
@@ -184,7 +197,8 @@ public class ConsoleTextEditor extends JScrollPane {
     }
 
     /**
-     * Creates a new instance of ConsoleTextEditor
+     * Creates a styled text editor with line numbers, undo/redo support,
+     * printing support, and syntax highlighting.
      */
     public ConsoleTextEditor() {
         fontSize = PREFERENCES.getInt(PREFERENCE_FONT_SIZE, DEFAULT_FONT_SIZE);
@@ -278,6 +292,11 @@ public class ConsoleTextEditor extends JScrollPane {
         }
     }
 
+    /**
+     * Shows or hides the line-number gutter.
+     *
+     * @param showLineNumbers {@code true} to show line numbers
+     */
     public void setShowLineNumbers(boolean showLineNumbers) {
         if (showLineNumbers) {
             JPanel view = new JPanel(new BorderLayout());
@@ -289,19 +308,37 @@ public class ConsoleTextEditor extends JScrollPane {
         }
     }
 
+    /**
+     * Updates whether the text editor accepts user edits.
+     *
+     * @param editable {@code true} if the editor should be editable
+     */
     public void setEditable(boolean editable) {
         textEditor.setEditable(editable);
     }
 
+    /**
+     * Reports whether plain-text clipboard content is currently available.
+     *
+     * @return {@code true} if the clipboard contains a string
+     */
     public boolean clipBoardAvailable() {
         Transferable t = StructuredSyntaxResources.SYSTEM_CLIPBOARD.getContents(this);
         return t.isDataFlavorSupported(DataFlavor.stringFlavor);
     }
 
+    /**
+     * Returns the wrapped text editor component.
+     *
+     * @return the embedded text editor
+     */
     public TextEditor getTextEditor() {
         return textEditor;
     }
 
+    /**
+     * Installs actions exposed by this editor on its action map.
+     */
     protected void initActions() {
         ActionMap map = getActionMap();
         map.put(StructuredSyntaxResources.PRINT, new PrintAction());
@@ -394,18 +431,38 @@ public class ConsoleTextEditor extends JScrollPane {
         }
     }
 
+    /**
+     * Returns the action that undoes the most recent edit.
+     *
+     * @return the undo action
+     */
     public Action getUndoAction() {
         return undoAction;
     }
 
+    /**
+     * Returns the action that redoes the most recently undone edit.
+     *
+     * @return the redo action
+     */
     public Action getRedoAction() {
         return redoAction;
     }
 
+    /**
+     * Returns the action that prints the editor content.
+     *
+     * @return the print action
+     */
     public Action getPrintAction() {
         return printAction;
     }
 
+    /**
+     * Replaces the current syntax highlighter document filter.
+     *
+     * @param clazz the filter type to instantiate for the current document
+     */
     public void enableHighLighter(Class<? extends DocumentFilter> clazz) {
         DefaultStyledDocument doc = (DefaultStyledDocument) textEditor.getDocument();
 

@@ -27,10 +27,18 @@ import groovy.grape.GrapeEngine
  * Adds Groovy Grape feedback (via an Ivy listener).
  */
 class ConsoleIvyPlugin {
+    /** Console receiving dependency progress messages. */
     Console savedConsole
+    /** Dependency coordinates already reported as resolving. */
     Set<String> resolvedDependencies = []
+    /** Artifacts already reported as downloading. */
     Set<String> downloadedArtifacts = []
 
+    /**
+     * Registers an Ivy listener that reports Grape progress to the console.
+     *
+     * @param console console to receive progress messages
+     */
     def addListener(Console console) {
         savedConsole = console
         GrapeEngine engine = Grape.instance

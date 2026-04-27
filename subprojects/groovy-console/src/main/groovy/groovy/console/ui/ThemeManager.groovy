@@ -37,10 +37,17 @@ import java.util.prefs.Preferences
 class ThemeManager {
 
     /**
+     * Available theme selection modes for the console.
+     *
      * @since 6.0.0
      */
     enum ThemeMode {
-        LIGHT, DARK, SYSTEM
+        /** Always use the light theme. */
+        LIGHT,
+        /** Always use the dark theme. */
+        DARK,
+        /** Follow the operating system theme. */
+        SYSTEM
     }
 
     private static final Preferences prefs = Preferences.userNodeForPackage(Console)
@@ -53,18 +60,22 @@ class ThemeManager {
     // frames (AstBrowser, ObjectBrowser) can retint their own text panes/icons
     private static final List<Runnable> themeChangeListeners = new CopyOnWriteArrayList<>()
 
+    /** Registers a listener notified after the console theme changes. */
     static void addThemeChangeListener(Runnable listener) {
         themeChangeListeners << listener
     }
 
+    /** Removes a previously registered theme-change listener. */
     static void removeThemeChangeListener(Runnable listener) {
         themeChangeListeners.remove(listener)
     }
 
+    /** Notifies all registered listeners that the theme has changed. */
     static void notifyThemeChanged() {
         themeChangeListeners.each { it.run() }
     }
 
+    /** Returns the configured theme mode, defaulting to {@link ThemeMode#SYSTEM}. */
     static ThemeMode getCurrentMode() {
         try {
             ThemeMode.valueOf(prefs.get('theme', 'SYSTEM').toUpperCase())
@@ -73,11 +84,13 @@ class ThemeManager {
         }
     }
 
+    /** Returns whether the active console theme currently resolves to dark. */
     static boolean isDark() {
         def mode = currentMode
         mode == ThemeMode.DARK || (mode == ThemeMode.SYSTEM && isSystemDarkMode())
     }
 
+    /** Applies and persists the supplied theme mode. */
     static void applyTheme(ThemeMode mode) {
         prefs.put('theme', mode.name())
         refreshSystemDarkMode()
@@ -95,6 +108,7 @@ class ThemeManager {
         prior == null || prior != cachedSystemDark
     }
 
+    /** Returns whether the operating system appearance currently resolves to dark. */
     static boolean isSystemDarkMode() {
         if (cachedSystemDark == null) {
             cachedSystemDark = probeSystemDarkMode()
@@ -126,6 +140,7 @@ class ThemeManager {
         }
     }
 
+    /** Cycles through light, dark, and system theme modes. */
     static ThemeMode cycleMode() {
         switch (currentMode) {
             case ThemeMode.LIGHT: return ThemeMode.DARK
@@ -134,6 +149,7 @@ class ThemeManager {
         }
     }
 
+    /** Returns a user-facing label for the current theme mode. */
     static String getThemeLabel() {
         switch (currentMode) {
             case ThemeMode.LIGHT: return 'Light'
@@ -142,14 +158,17 @@ class ThemeManager {
         }
     }
 
+    /** Returns the active theme's editor background colour. */
     static Color getInputBackground() {
         activeTheme.inputBackground
     }
 
+    /** Returns the active theme's output background colour. */
     static Color getOutputBackground() {
         activeTheme.outputBackground
     }
 
+    /** Builds the Swing style map for the active theme and font family. */
     static Map getStyles(String fontFamily) {
         buildSwingStyles(activeTheme, fontFamily)
     }
@@ -170,13 +189,17 @@ class ThemeManager {
 
     private static final Map<String, Object> themeCache = [:]
 
+    /** Returns the configured custom light-theme file path, if any. */
     static String getCustomLightPath() { prefs.get('themeCustomLightPath', null) }
+    /** Returns the configured custom dark-theme file path, if any. */
     static String getCustomDarkPath()  { prefs.get('themeCustomDarkPath',  null) }
 
+    /** Persists the custom light-theme file path or clears it when blank. */
     static void setCustomLightPath(String path) {
         path ? prefs.put('themeCustomLightPath', path) : prefs.remove('themeCustomLightPath')
     }
 
+    /** Persists the custom dark-theme file path or clears it when blank. */
     static void setCustomDarkPath(String path) {
         path ? prefs.put('themeCustomDarkPath', path) : prefs.remove('themeCustomDarkPath')
     }

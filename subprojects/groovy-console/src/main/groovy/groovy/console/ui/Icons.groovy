@@ -46,9 +46,13 @@ import java.util.function.Function
  * @since 6.0.0
  */
 class Icons {
+    /** Small toolbar icon size in pixels. */
     static final int SIZE_SMALL = 16
+    /** Default toolbar icon size in pixels. */
     static final int SIZE_NORMAL = 18
+    /** Large toolbar icon size in pixels. */
     static final int SIZE_LARGE = 28
+    /** Fixed menu icon size in pixels. */
     static final int MENU_SIZE = 18
 
     private static final String PATH = 'groovy/console/ui/icons/'
@@ -59,47 +63,74 @@ class Icons {
 
     // ---- fixed-size icons (in-window menus, popups, AstBrowser/ObjectBrowser toolbars) ----
 
+    /** Returns a neutral app-themed icon at the fixed menu size. */
     static DynamicSVGIcon load(String name) {
         menuIcon(name, { Color c -> UIManager.getColor('Label.foreground') ?: c })
     }
 
+    /** Returns a green app-themed icon at the fixed menu size. */
     static DynamicSVGIcon green(String name)  { menuIcon(name, greenMapper({ ThemeManager.isDark() })) }
+    /** Returns a red app-themed icon at the fixed menu size. */
     static DynamicSVGIcon red(String name)    { menuIcon(name, redMapper({ ThemeManager.isDark() })) }
+    /** Returns a blue app-themed icon at the fixed menu size. */
     static DynamicSVGIcon blue(String name)   { menuIcon(name, blueMapper({ ThemeManager.isDark() })) }
+    /** Returns an amber app-themed icon at the fixed menu size. */
     static DynamicSVGIcon amber(String name)  { menuIcon(name, amberMapper({ ThemeManager.isDark() })) }
+    /** Returns a violet app-themed icon at the fixed menu size. */
     static DynamicSVGIcon violet(String name) { menuIcon(name, violetMapper({ ThemeManager.isDark() })) }
+    /** Returns a teal app-themed icon at the fixed menu size. */
     static DynamicSVGIcon teal(String name)   { menuIcon(name, tealMapper({ ThemeManager.isDark() })) }
+    /** Returns a Java-brand blue app-themed icon at the fixed menu size. */
     static DynamicSVGIcon javaBlue(String name) { menuIcon(name, javaBlueMapper({ ThemeManager.isDark() })) }
+    /** Returns a muted blue app-themed icon at the fixed menu size. */
     static DynamicSVGIcon subtleBlue(String name) { menuIcon(name, subtleBlueMapper({ ThemeManager.isDark() })) }
 
     // ---- main menu-bar icons (tint follows the menu-bar background, which is OS-drawn on macOS) ----
 
+    /** Returns a neutral menu-bar icon tinted for the current menu background. */
     static DynamicSVGIcon menu(String name) {
         menuIcon(name, { Color c -> ThemeManager.menuIconForeground ?: c })
     }
 
+    /** Returns a green menu-bar icon tinted for the current menu background. */
     static DynamicSVGIcon menuGreen(String name)  { menuIcon(name, greenMapper({ ThemeManager.isMenuDark() })) }
+    /** Returns a red menu-bar icon tinted for the current menu background. */
     static DynamicSVGIcon menuRed(String name)    { menuIcon(name, redMapper({ ThemeManager.isMenuDark() })) }
+    /** Returns a blue menu-bar icon tinted for the current menu background. */
     static DynamicSVGIcon menuBlue(String name)   { menuIcon(name, blueMapper({ ThemeManager.isMenuDark() })) }
+    /** Returns an amber menu-bar icon tinted for the current menu background. */
     static DynamicSVGIcon menuAmber(String name)  { menuIcon(name, amberMapper({ ThemeManager.isMenuDark() })) }
+    /** Returns a violet menu-bar icon tinted for the current menu background. */
     static DynamicSVGIcon menuViolet(String name) { menuIcon(name, violetMapper({ ThemeManager.isMenuDark() })) }
+    /** Returns a teal menu-bar icon tinted for the current menu background. */
     static DynamicSVGIcon menuTeal(String name)   { menuIcon(name, tealMapper({ ThemeManager.isMenuDark() })) }
+    /** Returns a Java-brand blue menu-bar icon tinted for the current menu background. */
     static DynamicSVGIcon menuJavaBlue(String name) { menuIcon(name, javaBlueMapper({ ThemeManager.isMenuDark() })) }
+    /** Returns a muted blue menu-bar icon tinted for the current menu background. */
     static DynamicSVGIcon menuSubtleBlue(String name) { menuIcon(name, subtleBlueMapper({ ThemeManager.isMenuDark() })) }
 
     // ---- toolbar / resizable ----
 
+    /** Returns a neutral resizable toolbar icon. */
     static DynamicSVGIcon toolbar(String name) {
         toolbarIcon(name, { Color c -> UIManager.getColor('Label.foreground') ?: c })
     }
 
+    /** Returns a green resizable toolbar icon. */
     static DynamicSVGIcon toolbarGreen(String name)  { toolbarIcon(name, greenMapper({ ThemeManager.isDark() })) }
+    /** Returns a red resizable toolbar icon. */
     static DynamicSVGIcon toolbarRed(String name)    { toolbarIcon(name, redMapper({ ThemeManager.isDark() })) }
+    /** Returns a blue resizable toolbar icon. */
     static DynamicSVGIcon toolbarBlue(String name)   { toolbarIcon(name, blueMapper({ ThemeManager.isDark() })) }
+    /** Returns an amber resizable toolbar icon. */
     static DynamicSVGIcon toolbarAmber(String name)  { toolbarIcon(name, amberMapper({ ThemeManager.isDark() })) }
+    /** Returns a violet resizable toolbar icon. */
     static DynamicSVGIcon toolbarViolet(String name) { toolbarIcon(name, violetMapper({ ThemeManager.isDark() })) }
+    /** Returns a teal resizable toolbar icon. */
     static DynamicSVGIcon toolbarTeal(String name)   { toolbarIcon(name, tealMapper({ ThemeManager.isDark() })) }
+    /** Returns a Java-brand blue resizable toolbar icon. */
     static DynamicSVGIcon toolbarJavaBlue(String name) { toolbarIcon(name, javaBlueMapper({ ThemeManager.isDark() })) }
+    /** Returns a muted blue resizable toolbar icon. */
     static DynamicSVGIcon toolbarSubtleBlue(String name) { toolbarIcon(name, subtleBlueMapper({ ThemeManager.isDark() })) }
 
     // Material "700" for light theme / "400" for dark — muted enough not to
@@ -141,6 +172,7 @@ class Icons {
         toolbarIcons.each { it.setSize(size) }
     }
 
+    /** Returns the current toolbar icon size in pixels. */
     static int getCurrentSize() { currentSize }
 
     /** Re-run the colour filter so every icon adopts the new LaF foreground. */
@@ -159,17 +191,26 @@ class Icons {
         private Icon disabledDelegate
         private int size
 
+        /**
+         * Creates a dynamic icon wrapper for the given SVG resource.
+         *
+         * @param path the classpath-relative SVG resource path
+         * @param size the initial square icon size in pixels
+         * @param colorMapper the color filter applied to the loaded icon
+         */
         DynamicSVGIcon(String path, int size, Closure<Color> colorMapper) {
             this.path = path
             this.colorMapper = colorMapper
             setSize(size)
         }
 
+        /** Rebuilds this icon at a new square size. */
         void setSize(int newSize) {
             this.size = newSize
             rebuildDelegates()
         }
 
+        /** Rebuilds this icon so it adopts current theme colours. */
         void refreshColors() {
             // rebuild the FlatSVGIcon entirely — setColorFilter alone leaves the
             // internal raster cache in a state where some contexts (notably the
@@ -186,8 +227,11 @@ class Icons {
             this.disabledDelegate = delegate.getDisabledIcon()
         }
 
+        /** Returns the current icon width in pixels. */
         @Override int getIconWidth() { size }
+        /** Returns the current icon height in pixels. */
         @Override int getIconHeight() { size }
+        /** Paints the enabled or disabled delegate icon for the target component. */
         @Override void paintIcon(Component c, Graphics g, int x, int y) {
             if (c != null && !c.isEnabled()) {
                 disabledDelegate.paintIcon(c, g, x, y)

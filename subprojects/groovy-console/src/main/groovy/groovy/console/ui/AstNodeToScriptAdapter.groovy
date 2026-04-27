@@ -186,13 +186,26 @@ and [compilephase] is a valid Integer based org.codehaus.groovy.control.CompileP
 class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperation, GroovyClassVisitor, GroovyCodeVisitor {
 
     private final Writer _out
+    /** Stack of nested class names used while rendering constructors. */
     Stack<String> classNameStack = []
+    /** Current indentation prefix. */
     String _indent = ''
+    /** Indicates whether the next write should emit indentation first. */
     boolean readyToIndent = true
+    /** Whether free-form script statements should be rendered. */
     boolean showScriptFreeForm
+    /** Whether the generated script class should be rendered. */
     boolean showScriptClass
+    /** Tracks whether the free-form script body has already been emitted. */
     boolean scriptHasBeenVisited
 
+    /**
+     * Creates a visitor that renders AST nodes as Groovy source.
+     *
+     * @param writer target writer
+     * @param showScriptFreeForm whether free-form script statements should be rendered
+     * @param showScriptClass whether the generated script class should be rendered
+     */
     AstNodeToScriptVisitor(Writer writer, boolean showScriptFreeForm = true, boolean showScriptClass = true) {
         this._out = writer
         this.showScriptFreeForm = showScriptFreeForm
@@ -200,6 +213,9 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         this.scriptHasBeenVisited = false
     }
 
+    /**
+     * Renders the supplied primary class node and optional script body.
+     */
     @Override
     void call(SourceUnit source, GeneratorContext context, ClassNode classNode) {
 
@@ -246,6 +262,11 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         }
     }
 
+    /**
+     * Writes text, applying the current indentation rules.
+     *
+     * @param parameter value to append to the output
+     */
     void print(parameter) {
         def output = parameter.toString()
 
@@ -264,10 +285,20 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         _out.print output
     }
 
+    /**
+     * This visitor writes directly to its target and does not support println-style output.
+     *
+     * @param parameter ignored output parameter
+     */
     def println(parameter) {
         throw new UnsupportedOperationException('Wrong API')
     }
 
+    /**
+     * Executes the supplied block one indentation level deeper.
+     *
+     * @param block block to execute while indented
+     */
     def indented(Closure block) {
         String startingIndent = _indent
         _indent = _indent + '    '
@@ -275,6 +306,9 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         _indent = startingIndent
     }
 
+    /**
+     * Ensures the output ends with a single line break.
+     */
     def printLineBreak() {
         if (!_out.toString().endsWith('\n')) {
             _out.print '\n'
@@ -282,6 +316,9 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         readyToIndent = true
     }
 
+    /**
+     * Ensures the output ends with a blank line.
+     */
     def printDoubleBreak() {
         if (_out.toString().endsWith('\n\n')) {
             // do nothing
@@ -294,6 +331,11 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         readyToIndent = true
     }
 
+    /**
+     * Writes the package declaration for the current source unit.
+     *
+     * @param packageNode package node to render
+     */
     void visitPackage(PackageNode packageNode) {
 
         if (packageNode) {
@@ -312,6 +354,11 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         }
     }
 
+    /**
+     * Writes an import declaration.
+     *
+     * @param node import node to render
+     */
     void visitImport(ImportNode node) {
         if (node) {
             node.annotations?.each {
@@ -940,7 +987,8 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
 
     /**
      * Prints out the type, safely handling arrays.
-     * @param classNode
+     *
+     * @param classNode type to render
      */
     void visitType(ClassNode classNode) {
         def name = classNode.name
@@ -1109,6 +1157,9 @@ class AstNodeToScriptVisitor implements CompilationUnit.IPrimaryClassNodeOperati
         statement?.messageExpression?.visit this
     }
 
+    /**
+     * Retained for compatibility; delegates to {@link #visitArgumentlistExpression(ArgumentListExpression)}.
+     */
     @Deprecated
     void visitArgumentlistExpression(ArgumentListExpression expression, boolean showTypesIgnored) {
         visitArgumentlistExpression(expression)

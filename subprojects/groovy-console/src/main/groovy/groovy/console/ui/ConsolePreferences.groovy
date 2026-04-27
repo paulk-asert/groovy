@@ -28,27 +28,37 @@ import javax.swing.JOptionPane
 import javax.swing.filechooser.FileNameExtensionFilter
 import java.awt.Dimension
 
+/**
+ * Manages the Groovy Console preferences dialog and persisted settings.
+ */
 class ConsolePreferences {
 
-    // Default maximum number of characters to show on console at any time
+    /** Default maximum number of characters retained in the output area. */
     static int DEFAULT_MAX_OUTPUT_CHARS = 20000
+    /** Default loop mode delay, in milliseconds. */
     static int DEFAULT_LOOP_MODE_DELAY_MILLIS = 1000
 
+    /** Maximum number of characters retained in the output area. */
     @Bindable
     int maxOutputChars
 
+    /** Delay between loop mode executions, in milliseconds. */
     @Bindable
     int loopModeDelay
 
+    /** Selected icon size for console actions. */
     @Bindable
     int iconSize
 
+    /** Whether action icons should track the current font size. */
     @Bindable
     boolean scaleIconsWithFont
 
+    /** Optional custom light theme path. */
     @Bindable
     String customLightThemePath
 
+    /** Optional custom dark theme path. */
     @Bindable
     String customDarkThemePath
 
@@ -56,8 +66,14 @@ class ConsolePreferences {
     private final MessageSource T
 
     private JDialog dialog
+    /** Output file currently selected in the preferences dialog. */
     File outputFile
 
+    /**
+     * Creates a preferences controller for the supplied console.
+     *
+     * @param console console instance that owns the dialog
+     */
     ConsolePreferences(console) {
         this.console = console
         T = new MessageSource(Console)
@@ -71,6 +87,9 @@ class ConsolePreferences {
         console.maxOutputChars = maxOutputChars
     }
 
+    /**
+     * Displays the preferences dialog.
+     */
     void show() {
         console.swing.edt {
             if (!dialog) {
@@ -345,6 +364,11 @@ class ConsolePreferences {
     }
 
     // Useful for testing gui
+    /**
+     * Launches the preferences dialog in isolation for manual UI checks.
+     *
+     * @param args ignored command-line arguments
+     */
     static void main(args) {
         javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName())
         def c = new Expando().with {

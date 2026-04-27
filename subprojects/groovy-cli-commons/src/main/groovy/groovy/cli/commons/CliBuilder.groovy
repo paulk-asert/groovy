@@ -302,8 +302,19 @@ class CliBuilder {
      */
     Options options = new Options()
 
+    /**
+     * Typed option metadata keyed by long name or short name.
+     */
     Map<String, TypedOption> savedTypeOptions = new HashMap<String, TypedOption>()
 
+    /**
+     * Creates and registers a typed option definition.
+     *
+     * @param args option attributes using the standard DSL keys
+     * @param type the target type for the option value
+     * @param description the option description
+     * @return the created typed option
+     */
     public <T> TypedOption<T> option(Map args, Class<T> type, String description) {
         def name = args.opt ?: '_'
         args.type = type
@@ -406,6 +417,12 @@ class CliBuilder {
         optionInstance
     }
 
+    /**
+     * Adds options declared with {@link Option} annotations to this builder.
+     *
+     * @param optionClass the annotated class or interface
+     * @param namesAreSetters whether annotated methods should be treated as setters
+     */
     void addOptionsFromAnnotations(Class optionClass, boolean namesAreSetters) {
         optionClass.methods.findAll{ it.getAnnotation(Option) }.each { Method m ->
             Annotation annotation = m.getAnnotation(Option)
@@ -506,6 +523,14 @@ class CliBuilder {
         result
     }
 
+    /**
+     * Applies parsed option values to an annotated target object or map.
+     *
+     * @param cli the parsed options accessor
+     * @param optionClass the annotated class or interface
+     * @param t the target object or backing map
+     * @param namesAreSetters whether annotated methods should be treated as setters
+     */
     def setOptionsFromAnnotations(def cli, Class optionClass, Object t, boolean namesAreSetters) {
         optionClass.methods.findAll{ it.getAnnotation(Option) }.each { Method m ->
             Annotation annotation = m.getAnnotation(Option)
@@ -611,6 +636,12 @@ class CliBuilder {
         return option
     }
 
+    /**
+     * Normalizes DSL option details into Commons CLI-compatible values.
+     *
+     * @param m the raw option details
+     * @return the normalized option details
+     */
     static Map adjustDetails(Map m) {
         m.collectMany { k, v ->
             if (k == 'args' && v == '+') {
@@ -626,6 +657,13 @@ class CliBuilder {
         }.sum()
     }
 
+    /**
+     * Expands {@code @file} arguments using command argument file semantics.
+     *
+     * @param args the original command-line arguments
+     * @return the arguments with any argument files expanded
+     * @throws IOException if an argument file cannot be read
+     */
     static expandArgumentFiles(args) throws IOException {
         def result = []
         for (arg in args) {

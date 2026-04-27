@@ -72,7 +72,14 @@ class FormatStringChecker extends GroovyTypeCheckingExtensionSupport.TypeCheckin
     private static final ClassNode LOCALE_TYPE = makeCached(Locale)
     private static final ClassNode FORMATTER_TYPE = makeCached(Formatter)
 
+    /**
+     * Pattern used to extract {@link Formatter} conversion specifiers from constant format strings.
+     */
     private String formatSpecifier = /%(\d+\$)?([-#+ 0,(\<]*)?(\d+)?(\.\d+)?([tT])?([a-zA-Z%])/
+
+    /**
+     * AST patterns for formatter-style methods that this checker validates automatically.
+     */
     private List<ASTNode> formatMethods = [
         macro(CompilePhase.SEMANTIC_ANALYSIS) { String.format(a) }.withConstraints { varargPlaceholder a },
         macro { _.format(a) }.withConstraints { varargPlaceholder a },
@@ -83,6 +90,9 @@ class FormatStringChecker extends GroovyTypeCheckingExtensionSupport.TypeCheckin
         macro { _.formatted(a) }.withConstraints{ varargPlaceholder a }
     ]
 
+    /**
+     * Registers checks for built-in formatter calls and methods annotated with {@link FormatMethod}.
+     */
     @Override
     Object run() {
         afterMethodCall { call ->

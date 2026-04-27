@@ -26,6 +26,7 @@ import java.awt.BorderLayout
 // Toolbar buttons override each action's smallIcon with a resizable toolbar-only
 // icon — so View → Icon Size / Scale with Font affect toolbar icons only,
 // not the matching menu items (which keep the fixed-size menu icons).
+/** Toolbar shown above the editor and output area. */
 toolbar = toolBar(rollover: true, visible: controller.showToolbar, constraints: BorderLayout.NORTH) {
     button(newFileAction,      text: null, icon: Icons.toolbar('note_add'))
     button(openAction,         text: null, icon: Icons.toolbar('folder_open'))

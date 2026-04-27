@@ -72,8 +72,11 @@ menuBar {
         separator()
         menu(text: 'Theme') {
             buttonGroup(id: 'themeGroup')
+            /** Menu item that selects the light theme. */
             lightThemeMenuItem = radioButtonMenuItem(lightThemeAction, buttonGroup: themeGroup, selected: controller.currentTheme == 'LIGHT')
+            /** Menu item that selects the dark theme. */
             darkThemeMenuItem = radioButtonMenuItem(darkThemeAction, buttonGroup: themeGroup, selected: controller.currentTheme == 'DARK')
+            /** Menu item that selects the system theme. */
             systemThemeMenuItem = radioButtonMenuItem(systemThemeAction, buttonGroup: themeGroup, selected: controller.currentTheme == 'SYSTEM')
         }
     }

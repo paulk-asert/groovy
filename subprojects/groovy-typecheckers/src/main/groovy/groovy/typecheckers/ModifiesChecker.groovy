@@ -94,6 +94,9 @@ class ModifiesChecker extends GroovyTypeCheckingExtensionSupport.TypeCheckingDSL
     private static final Set<String> SIDE_EFFECT_FREE_ANNOS = Set.of('SideEffectFree')
     private static final Set<String> CONTRACT_ANNOS = Set.of('Contract')
 
+    /**
+     * Registers frame-condition checks for methods visited by the type checker.
+     */
     @Override
     Object run() {
         afterVisitMethod { MethodNode mn ->

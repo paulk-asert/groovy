@@ -107,6 +107,9 @@ class RegexChecker extends GroovyTypeCheckingExtensionSupport.TypeCheckingDSL {
     private static final String REGEX_GROUP_COUNT = RegexChecker.getSimpleName() + '_INFERRED_GROUP_COUNT'
     private static final String REGEX_MATCHER_RESULT_TYPE = RegexChecker.getSimpleName() + '_MATCHER_RESULT_INFERRED_TYPE'
 
+    /**
+     * Registers regex validation and matcher type-inference hooks for visited methods.
+     */
     @Override
     Object run() {
         beforeVisitMethod { MethodNode method ->

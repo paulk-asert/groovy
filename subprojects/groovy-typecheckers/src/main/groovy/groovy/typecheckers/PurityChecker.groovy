@@ -165,6 +165,9 @@ class PurityChecker extends GroovyTypeCheckingExtensionSupport.TypeCheckingDSL {
             'java.sql.',
     ]
 
+    /**
+     * Registers purity checks for annotated methods encountered during type checking.
+     */
     @Override
     Object run() {
         Set<String> baseAllows = parseAllows(options?.allows as String)

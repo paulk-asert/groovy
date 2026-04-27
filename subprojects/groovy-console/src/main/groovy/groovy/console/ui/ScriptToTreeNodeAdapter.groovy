@@ -116,9 +116,13 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 class ScriptToTreeNodeAdapter {
 
+    /** Maps AST node class names to display templates. */
     static Properties classNameToStringForm
+    /** Display flags that control which script structures are included. */
     boolean showScriptFreeForm, showScriptClass, showClosureClasses
+    /** Class loader used for script compilation. */
     final GroovyClassLoader classLoader
+    /** Factory used to create tree node instances. */
     final AstBrowserNodeMaker nodeMaker
     private final CompilerConfiguration config
 
@@ -148,6 +152,16 @@ class ScriptToTreeNodeAdapter {
         }
     }
 
+    /**
+     * Creates an adapter for the supplied compilation settings.
+     *
+     * @param classLoader class loader used for compilation
+     * @param showScriptFreeForm whether to include free-form script statements
+     * @param showScriptClass whether to include the generated script class
+     * @param showClosureClasses whether to include generated closure classes
+     * @param nodeMaker node factory used for tree creation
+     * @param config optional compiler configuration
+     */
     ScriptToTreeNodeAdapter(classLoader, showScriptFreeForm, showScriptClass, showClosureClasses, nodeMaker, config = null) {
         this.classLoader = classLoader ?: new GroovyClassLoader(getClass().classLoader)
         this.showScriptFreeForm = showScriptFreeForm
@@ -164,6 +178,7 @@ class ScriptToTreeNodeAdapter {
      *      a Groovy script in String form
      * @param compilePhase
      *      the int based CompilePhase to compile it to.
+     * @return the generated tree root
      */
     def compile(String script, int compilePhase) {
         def scriptName = 'script' + System.currentTimeMillis() + '.groovy'
@@ -194,10 +209,22 @@ class ScriptToTreeNodeAdapter {
         return operation.root
     }
 
+    /**
+     * Creates a tree node for the supplied AST node.
+     *
+     * @param node AST node to adapt
+     * @return the created tree node
+     */
     def make(node) {
         makeWithTable(node, getPropertyTable(node))
     }
 
+    /**
+     * Creates a tree node for a method node with its descriptor metadata.
+     *
+     * @param node method node to adapt
+     * @return the created tree node
+     */
     def make(MethodNode node) {
         def table = getPropertyTable(node)
         extendMethodNodePropertyTable(table, node)
@@ -210,6 +237,9 @@ class ScriptToTreeNodeAdapter {
 
     /**
      * Extends the method node property table by adding custom properties.
+     *
+     * @param table property table to extend
+     * @param node method node supplying the descriptor
      */
     void extendMethodNodePropertyTable(List<List<?>> table, MethodNode node) {
         def descriptor = BytecodeHelper.getMethodDescriptor(node)
@@ -244,6 +274,12 @@ class ScriptToTreeNodeAdapter {
         }.sort { list -> list[0] } // sort by name
     }
 
+    /**
+     * Returns a string representation without crossing visibility boundaries.
+     *
+     * @param o value to convert
+     * @return string form of the supplied value
+     */
     // GROOVY-8339: to avoid illegal access to a non-visible implementation class - can be removed if a more general solution is found
     @CompileStatic
     String toString(Object o) {
@@ -273,20 +309,42 @@ class ScriptToTreeNodeAdapter {
  */
 class TreeNodeBuildingNodeOperation implements CompilationUnit.IPrimaryClassNodeOperation {
 
+    /** Root node for the generated tree. */
     final root
+    /** Tracks whether free-form source nodes were already collected. */
     final sourceCollected = new AtomicBoolean(false)
+    /** Adapter used to create child nodes. */
     final ScriptToTreeNodeAdapter adapter
 
+    /** Whether free-form script statements should be included. */
     final showScriptFreeForm
+    /** Whether the generated script class should be included. */
     final showScriptClass
+    /** Whether generated closure classes should be included. */
     final showClosureClasses
 
+    /** Factory used to create tree nodes. */
     final nodeMaker
 
+    /**
+     * Creates an operation with closure class nodes hidden.
+     *
+     * @param adapter adapter used to create tree nodes
+     * @param showScriptFreeForm whether free-form script statements should be shown
+     * @param showScriptClass whether the generated script class should be shown
+     */
     TreeNodeBuildingNodeOperation(ScriptToTreeNodeAdapter adapter, showScriptFreeForm, showScriptClass) {
         this(adapter, showScriptFreeForm, showScriptClass, false)
     }
 
+    /**
+     * Creates an operation for building the AST tree.
+     *
+     * @param adapter adapter used to create tree nodes
+     * @param showScriptFreeForm whether free-form script statements should be shown
+     * @param showScriptClass whether the generated script class should be shown
+     * @param showClosureClasses whether generated closure classes should be shown
+     */
     TreeNodeBuildingNodeOperation(ScriptToTreeNodeAdapter adapter, showScriptFreeForm, showScriptClass, showClosureClasses) {
         if (!adapter) throw new IllegalArgumentException('Null: adapter')
         this.adapter = adapter
@@ -297,6 +355,9 @@ class TreeNodeBuildingNodeOperation implements CompilationUnit.IPrimaryClassNode
         root = nodeMaker.makeNode('root')
     }
 
+    /**
+     * Adds the current class node and optional script statements to the tree.
+     */
     @Override
     void call(SourceUnit source, GeneratorContext context, ClassNode classNode) {
         // module node
@@ -326,6 +387,11 @@ class TreeNodeBuildingNodeOperation implements CompilationUnit.IPrimaryClassNode
         }
     }
 
+    /**
+     * Adds generated closure and lambda classes for the supplied outer class.
+     *
+     * @param classNode outer class being inspected
+     */
     protected void makeClosureClassTreeNodes(ClassNode classNode) {
         def compileUnit = classNode.compileUnit
         if (!compileUnit.generatedInnerClasses) return
@@ -463,6 +529,7 @@ class TreeNodeBuildingNodeOperation implements CompilationUnit.IPrimaryClassNode
 @PackageScope
 class TreeNodeBuildingVisitor extends CodeVisitorSupport {
 
+    /** Node currently being populated by the visitor. */
     def currentNode
     private final adapter
 
@@ -653,6 +720,8 @@ class TreeNodeBuildingVisitor extends CodeVisitorSupport {
 
     /**
      * Makes walking parameters look like others in the visitor.
+     *
+     * @param node parameter node to add
      */
     void visitParameter(Parameter node) {
         addNode(node, Parameter, { })
