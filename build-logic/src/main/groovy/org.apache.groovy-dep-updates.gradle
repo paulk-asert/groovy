@@ -44,6 +44,25 @@ def cappedTracks = [
 ]
 def capByCoord = cappedTracks.collectEntries { [("${it.group}:${it.name}".toString()): it.maxPrefix] }
 
+def findJira = { String term ->
+    def proc = ['git', '-C', rootDir.absolutePath,
+                'log', '--oneline', '-20', '--since=3 years ago', '-G', term].execute()
+    proc.waitFor()
+    for (line in proc.text.readLines()) {
+        def m = (line =~ /GROOVY-\d+/)
+        if (m.find()) return [ticket: m.group(), commit: line]
+    }
+    return null
+}
+
+def findJiraForDep = { String name ->
+    def hit = findJira(name)
+    if (!hit && name.contains('-')) {
+        hit = findJira(name.substring(0, name.indexOf('-')))
+    }
+    return hit
+}
+
 def majorJdk = { String v ->
     def m = (v =~ /(?:1\.)?(\d+)/)
     m ? m[0][1].toInteger() : 0
@@ -96,16 +115,6 @@ tasks.register('depUpHints') {
         def outdated = new groovy.json.JsonSlurper().parse(report).outdated?.dependencies ?: []
         if (!outdated) return
         def hintSkipGroups = ['org.apache.groovy', 'org.codehaus.groovy'] as Set
-        def findJira = { String term ->
-            def proc = ['git', '-C', rootDir.absolutePath,
-                        'log', '--oneline', '-20', '--since=3 years ago', '-G', term].execute()
-            proc.waitFor()
-            for (line in proc.text.readLines()) {
-                def m = (line =~ /GROOVY-\d+/)
-                if (m.find()) return [ticket: m.group(), commit: line]
-            }
-            return null
-        }
         println '\n--- depUpHints: latest prior bump + Jira link ---'
         outdated.each { d ->
             def newVer = d.available.release ?: d.available.milestone ?: d.available.integration
@@ -116,10 +125,7 @@ tasks.register('depUpHints') {
                 println "  (capped at ${cap}x \u2014 cross-track bump; in-track updates shown by :depUpCapped)"
                 return
             }
-            def hit = findJira(d.name)
-            if (!hit && d.name.contains('-')) {
-                hit = findJira(d.name.substring(0, d.name.indexOf('-')))
-            }
+            def hit = findJiraForDep(d.name)
             if (hit) {
                 println "  ${hit.commit}"
                 println "  Latest Jira:  https://issues.apache.org/jira/browse/${hit.ticket}"
@@ -164,6 +170,11 @@ tasks.register('depUpCapped') {
                         anyReported = true
                     }
                     println "  ${t.group}:${t.name}: ${t.current} \u2192 ${latest} (capped at ${t.maxPrefix}x)"
+                    def hit = findJiraForDep(t.name)
+                    if (hit) {
+                        println "    ${hit.commit}"
+                        println "    Latest Jira:  https://issues.apache.org/jira/browse/${hit.ticket}"
+                    }
                 }
             } catch (ignored) { /* skip: network/parse errors don't matter here */ }
         }
