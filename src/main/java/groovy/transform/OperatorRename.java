@@ -62,4 +62,28 @@ public @interface OperatorRename {
     String or() default Undefined.STRING;
     String xor() default Undefined.STRING;
     String compareTo() default Undefined.STRING;
+    /** GEP-15: rename the dedicated compound-assignment method for {@code +=}. */
+    String plusAssign() default Undefined.STRING;
+    /** GEP-15: rename the dedicated compound-assignment method for {@code -=}. */
+    String minusAssign() default Undefined.STRING;
+    /** GEP-15: rename the dedicated compound-assignment method for {@code *=}. */
+    String multiplyAssign() default Undefined.STRING;
+    /** GEP-15: rename the dedicated compound-assignment method for {@code /=}. */
+    String divAssign() default Undefined.STRING;
+    /** GEP-15: rename the dedicated compound-assignment method for {@code %=}. */
+    String remainderAssign() default Undefined.STRING;
+    /** GEP-15: rename the dedicated compound-assignment method for {@code **=}. */
+    String powerAssign() default Undefined.STRING;
+    /** GEP-15: rename the dedicated compound-assignment method for {@code <<=}. */
+    String leftShiftAssign() default Undefined.STRING;
+    /** GEP-15: rename the dedicated compound-assignment method for {@code >>=}. */
+    String rightShiftAssign() default Undefined.STRING;
+    /** GEP-15: rename the dedicated compound-assignment method for {@code >>>=}. */
+    String rightShiftUnsignedAssign() default Undefined.STRING;
+    /** GEP-15: rename the dedicated compound-assignment method for {@code &=}. */
+    String andAssign() default Undefined.STRING;
+    /** GEP-15: rename the dedicated compound-assignment method for {@code |=}. */
+    String orAssign() default Undefined.STRING;
+    /** GEP-15: rename the dedicated compound-assignment method for {@code ^=}. */
+    String xorAssign() default Undefined.STRING;
 }

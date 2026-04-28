@@ -22,6 +22,7 @@ import org.codehaus.groovy.GroovyBugError;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.Variable;
+import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.ArrayExpression;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
@@ -35,6 +36,7 @@ import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.PostfixExpression;
 import org.codehaus.groovy.ast.expr.PrefixExpression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
+import org.codehaus.groovy.ast.expr.StaticMethodCallExpression;
 import org.codehaus.groovy.ast.expr.TernaryExpression;
 import org.codehaus.groovy.ast.expr.TupleExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
@@ -205,7 +207,7 @@ public class BinaryExpressionHelper {
             break;
 
         case BITWISE_AND_EQUAL:
-            evaluateBinaryExpressionWithAssignment("and", expression);
+            evaluateCompoundAssign("andAssign", "and", expression);
             break;
 
         case BITWISE_OR:
@@ -213,7 +215,7 @@ public class BinaryExpressionHelper {
             break;
 
         case BITWISE_OR_EQUAL:
-            evaluateBinaryExpressionWithAssignment("or", expression);
+            evaluateCompoundAssign("orAssign", "or", expression);
             break;
 
         case BITWISE_XOR:
@@ -225,7 +227,7 @@ public class BinaryExpressionHelper {
             break;
 
         case BITWISE_XOR_EQUAL:
-            evaluateBinaryExpressionWithAssignment("xor", expression);
+            evaluateCompoundAssign("xorAssign", "xor", expression);
             break;
 
         case PLUS:
@@ -233,7 +235,7 @@ public class BinaryExpressionHelper {
             break;
 
         case PLUS_EQUAL:
-            evaluateBinaryExpressionWithAssignment("plus", expression);
+            evaluateCompoundAssign("plusAssign", "plus", expression);
             break;
 
         case MINUS:
@@ -241,7 +243,7 @@ public class BinaryExpressionHelper {
             break;
 
         case MINUS_EQUAL:
-            evaluateBinaryExpressionWithAssignment("minus", expression);
+            evaluateCompoundAssign("minusAssign", "minus", expression);
             break;
 
         case MULTIPLY:
@@ -249,7 +251,7 @@ public class BinaryExpressionHelper {
             break;
 
         case MULTIPLY_EQUAL:
-            evaluateBinaryExpressionWithAssignment("multiply", expression);
+            evaluateCompoundAssign("multiplyAssign", "multiply", expression);
             break;
 
         case DIVIDE:
@@ -259,7 +261,7 @@ public class BinaryExpressionHelper {
         case DIVIDE_EQUAL:
             //SPG don't use divide since BigInteger implements directly
             //and we want to dispatch through DefaultGroovyMethods to get a BigDecimal result
-            evaluateBinaryExpressionWithAssignment("div", expression);
+            evaluateCompoundAssign("divAssign", "div", expression);
             break;
 
         case INTDIV:
@@ -267,6 +269,7 @@ public class BinaryExpressionHelper {
             break;
 
         case INTDIV_EQUAL:
+            // GEP-15 explicitly excludes \= (no intdivAssign convention)
             evaluateBinaryExpressionWithAssignment("intdiv", expression);
             break;
 
@@ -275,7 +278,9 @@ public class BinaryExpressionHelper {
             break;
 
         case MOD_EQUAL:
-            evaluateBinaryExpressionWithAssignment("mod", expression);
+            // GEP-15 maps both MOD_EQUAL and REMAINDER_EQUAL to remainderAssign for consistency
+            // with getOperationName collapse, even though current parser only emits REMAINDER_EQUAL.
+            evaluateCompoundAssign("remainderAssign", "mod", expression);
             break;
 
         case REMAINDER:
@@ -283,7 +288,7 @@ public class BinaryExpressionHelper {
             break;
 
         case REMAINDER_EQUAL:
-            evaluateBinaryExpressionWithAssignment("remainder", expression);
+            evaluateCompoundAssign("remainderAssign", "remainder", expression);
             break;
 
         case POWER:
@@ -291,7 +296,7 @@ public class BinaryExpressionHelper {
             break;
 
         case POWER_EQUAL:
-            evaluateBinaryExpressionWithAssignment("power", expression);
+            evaluateCompoundAssign("powerAssign", "power", expression);
             break;
 
         case ELVIS_EQUAL:
@@ -303,7 +308,7 @@ public class BinaryExpressionHelper {
             break;
 
         case LEFT_SHIFT_EQUAL:
-            evaluateBinaryExpressionWithAssignment("leftShift", expression);
+            evaluateCompoundAssign("leftShiftAssign", "leftShift", expression);
             break;
 
         case RIGHT_SHIFT:
@@ -311,7 +316,7 @@ public class BinaryExpressionHelper {
             break;
 
         case RIGHT_SHIFT_EQUAL:
-            evaluateBinaryExpressionWithAssignment("rightShift", expression);
+            evaluateCompoundAssign("rightShiftAssign", "rightShift", expression);
             break;
 
         case RIGHT_SHIFT_UNSIGNED:
@@ -319,7 +324,7 @@ public class BinaryExpressionHelper {
             break;
 
         case RIGHT_SHIFT_UNSIGNED_EQUAL:
-            evaluateBinaryExpressionWithAssignment("rightShiftUnsigned", expression);
+            evaluateCompoundAssign("rightShiftUnsignedAssign", "rightShiftUnsigned", expression);
             break;
 
         case KEYWORD_INSTANCEOF:
@@ -749,6 +754,44 @@ public class BinaryExpressionHelper {
         evaluateBinaryExpression(method, expression);
 
         // br to leave a copy of rvalue on the stack; see also isPopRequired()
+        controller.getOperandStack().dup();
+        controller.getCompileStack().pushLHS(true);
+        leftExpression.visit(controller.getAcg());
+        controller.getCompileStack().popLHS();
+    }
+
+    /**
+     * GEP-15: dynamic-mode compound-assign codegen. Routes through
+     * {@link ScriptBytecodeAdapter#compoundAssign(Object, Object, String, String)}
+     * which dispatches to {@code assignName} when the receiver responds to it,
+     * and falls back to {@code baseName} otherwise. The caller stores the helper's
+     * return value into the LHS — for the in-place branch this is a no-op store
+     * of the receiver back to itself; for the fallback branch it is the usual
+     * "x = x.op(y)" assignment.
+     */
+    protected void evaluateCompoundAssign(final String assignName, final String baseName, final BinaryExpression expression) {
+        Expression leftExpression = expression.getLeftExpression();
+        if (leftExpression instanceof BinaryExpression bexp
+                && bexp.getOperation().getType() == LEFT_SQUARE_BRACKET) {
+            // Subscript LHS (e.g. a[i] += b) is intentionally out of scope for GEP-15;
+            // keep the legacy getAt/putAt-based path.
+            evaluateArrayAssignmentWithOperator(baseName, expression, bexp);
+            return;
+        }
+
+        StaticMethodCallExpression helperCall = new StaticMethodCallExpression(
+                ClassHelper.make(ScriptBytecodeAdapter.class),
+                "compoundAssign",
+                new ArgumentListExpression(new Expression[]{
+                        leftExpression,
+                        expression.getRightExpression(),
+                        new ConstantExpression(assignName),
+                        new ConstantExpression(baseName)
+                })
+        );
+        helperCall.setSourcePosition(expression);
+        helperCall.visit(controller.getAcg());
+
         controller.getOperandStack().dup();
         controller.getCompileStack().pushLHS(true);
         leftExpression.visit(controller.getAcg());
