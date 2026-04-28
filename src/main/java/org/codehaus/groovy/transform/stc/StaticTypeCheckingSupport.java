@@ -55,11 +55,13 @@ import org.codehaus.groovy.tools.GroovyClass;
 import org.codehaus.groovy.transform.trait.Traits;
 import org.objectweb.asm.Opcodes;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -1769,6 +1771,9 @@ public abstract class StaticTypeCheckingSupport {
         return type.getGenericsTypes();
     }
 
+    private static final ThreadLocal<Deque<GenericsTypeName>> EXPANDING_BOUNDS =
+            ThreadLocal.withInitial(ArrayDeque::new);
+
     static GenericsType[] applyGenericsContext(final Map<GenericsTypeName, GenericsType> spec, final GenericsType[] gts) {
         if (gts == null || spec == null || spec.isEmpty()) return gts;
 
@@ -1789,9 +1794,22 @@ public abstract class StaticTypeCheckingSupport {
             GenericsType specType = spec.get(name);
             if (specType != null) return specType;
             if (hasNonTrivialBounds(gt)) {
-                GenericsType newGT = new GenericsType(type, applyGenericsContext(spec, gt.getUpperBounds()), applyGenericsContext(spec, gt.getLowerBound()));
-                newGT.setPlaceholder(true);
-                return newGT;
+                // GROOVY-11022: avoid infinite recursion on F-bounded type
+                // parameters whose self-reference appears inside a wildcard
+                // bound (e.g. `<K extends Comparable<? super K>>`)
+                Deque<GenericsTypeName> expanding = EXPANDING_BOUNDS.get();
+                if (expanding.contains(name)) return gt;
+                expanding.push(name);
+                try {
+                    GenericsType newGT = new GenericsType(type, applyGenericsContext(spec, gt.getUpperBounds()), applyGenericsContext(spec, gt.getLowerBound()));
+                    newGT.setPlaceholder(true);
+                    return newGT;
+                } finally {
+                    expanding.pop();
+                    if (expanding.isEmpty()) {
+                        EXPANDING_BOUNDS.remove();
+                    }
+                }
             }
             return gt;
         }
