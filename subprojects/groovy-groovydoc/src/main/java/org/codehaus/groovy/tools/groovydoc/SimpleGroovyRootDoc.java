@@ -110,12 +110,20 @@ public class SimpleGroovyRootDoc extends SimpleGroovyDoc implements GroovyRootDo
         this.description = description;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Returns the root description text.
+     *
+     * @return the configured description
+     */
     public String description() {
         return description;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Returns the first-sentence summary derived from {@link #description()}.
+     *
+     * @return the first-sentence summary
+     */
     public String summary() {
         return SimpleGroovyDoc.calculateFirstSentence(description);
     }
