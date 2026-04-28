@@ -149,6 +149,12 @@ If you want to launch one unit test, use this. <TestClassName> is like `groovy.G
 
     gradlew :test --tests <TestClassName>
 
+To build a runnable local installation of Groovy with your changes applied, use:
+
+    gradlew :groovy-binary:installGroovy
+
+The installation is generated under `subprojects/groovy-binary/build/install`. Its `bin` directory contains the `groovy`, `groovysh`, and `groovyc` launchers, so you can invoke `subprojects/groovy-binary/build/install/bin/groovy <script>` to run a script against the build you just produced.
+
 To build from IntelliJ IDEA:
 
     gradlew jar idea

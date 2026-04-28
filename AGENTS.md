@@ -22,9 +22,15 @@
 Supplemental guidance for AI coding assistants (Claude Code, Codex, Cursor,
 Copilot, Gemini, Aider, and similar tools) contributing to Apache Groovy.
 
-This file **supplements** — it does not replace — `CONTRIBUTING.md`, the
-project website at <https://groovy.apache.org/>, and `README.adoc`. Human
-contributors should keep reading those; they remain the authoritative sources.
+This file **supplements** — it does not replace — the human-facing
+contributor docs at the repository root:
+[`README.adoc`](README.adoc),
+[`CONTRIBUTING.md`](CONTRIBUTING.md),
+[`ARCHITECTURE.md`](ARCHITECTURE.md),
+[`COMPATIBILITY.md`](COMPATIBILITY.md), and
+[`GOVERNANCE.md`](GOVERNANCE.md). Those, together with the project
+website at <https://groovy.apache.org/>, remain the authoritative
+sources; this file just layers AI-specific guidance on top.
 
 ## Licensing and provenance (read first)
 
@@ -39,10 +45,23 @@ In particular:
   (see the [ASF 3rd Party Licensing Policy](https://www.apache.org/legal/resolved.html)).
 - **Every new source file needs the ASF license header.** See any existing
   `.java` or `.groovy` file for the canonical form.
-- **Attribute generated work in commits.** When AI tooling authored a
-  non-trivial portion of a change, add a trailer to the commit message,
-  for example: `Generated-by: <tool name and version>`. This aligns with
-  the ASF's recommendation on AI provenance tracking.
+- **Attribute AI assistance in commits.** When AI tooling assisted on
+  a change, consider adding an `Assisted-by:` trailer naming the
+  tool(s) — for example:
+
+  ```
+  Assisted-by: <tool name and version>
+  ```
+
+  `Assisted-by:` is the default and reflects the ASF's stance that a
+  human contributor performs the final check on every change.
+  `Co-authored-by:` is conventionally used for human co-authors.
+  `Generated-by:` is reserved for special cases where AI tooling
+  produced a change with minimal human modification. The ASF's
+  [Generative Tooling guidance](https://www.apache.org/legal/generative-tooling.html)
+  is the authoritative source — the wording above reflects the
+  emerging consensus from the ASF AI working group, but follow the
+  guidance page if the two diverge.
 - **The contributor remains responsible for what they submit.** Review
   generated output for licensing, correctness, and style before committing.
 
@@ -64,8 +83,8 @@ do not invoke a system `gradle`.
 
 Follow what's already in the tree. Specifically:
 
-- Match the surrounding file's style (indentation, import ordering, brace
-  placement). Groovy source uses 4-space indent, no tabs; see `.editorconfig`.
+- Match the surrounding file's existing style. Groovy source uses
+  4-space indent, no tabs; see `.editorconfig`.
 - Prefer the narrowest scope. Do not add public API surface unless the change
   requires it; public API is covenanted and hard to remove.
 - Do not introduce new runtime dependencies without discussion — every new
@@ -85,6 +104,10 @@ For API/behaviour changes, add or update tests alongside the code change.
 
 ## What *not* to do
 
+- Don't reformat code outside the lines your change actually touches,
+  even if the surrounding style differs from your or the project's
+  preferred style elsewhere. Drive-by reformatting hides real changes
+  in review and is rejected by this project's review culture.
 - Don't rewrite files "for consistency" outside the scope of the task.
 - Don't invent APIs, flags, or methods; verify they exist (Groovy is a large
   codebase and hallucinated identifiers are a common failure mode).
@@ -92,6 +115,20 @@ For API/behaviour changes, add or update tests alongside the code change.
   backwards-compatibility shims the task doesn't call for.
 - Don't commit generated scratch files (answers.*, patches, HTML reports, etc.)
   — keep the working tree clean.
+
+## Skills
+
+Task-specific guidance lives under [`.agents/skills/`](.agents/skills/),
+each in its own directory with a `SKILL.md` describing when to use
+it, the recurring failure modes for that area, and a validation
+checklist. Load the relevant skill *before* writing or modifying code
+in its area — the skill is more focused than this file and points
+into the human-facing docs above.
+
+| Skill | Use for |
+|---|---|
+| [`groovy-internals`](.agents/skills/groovy-internals/SKILL.md) | Compiler and runtime work — parser, AST, type checker, transforms, class generation |
+| [`groovy-tests`](.agents/skills/groovy-tests/SKILL.md) | Adding or modifying tests, including JIRA regression tests and executable AsciiDoc examples |
 
 ## Where to ask
 
