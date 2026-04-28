@@ -4616,6 +4616,26 @@ class GenericsSTCTest extends StaticTypeCheckingTestCase {
         }
     }
 
+    // GROOVY-11770
+    @Test
+    void testNoStackOverflow3() {
+        // Cycle through a wrapper type: LUB(B, D) needs LUB(W<B>, W<D>),
+        // which needs LUB(B, D) again. Caught by structural cycle guard.
+        assertScript '''
+            class A<T> {}
+            class W<T> {}
+            class B extends A<W<B>> {}
+            class D extends A<W<D>> {}
+
+            @groovy.transform.TypeChecked
+            def test(boolean f) {
+                def x = f ? new B() : new D()
+                x.class.name
+            }
+            assert test(true) == 'B'
+        '''
+    }
+
     @Test
     void testRegressionInConstructorCheck() {
         assertScript '''
