@@ -113,7 +113,10 @@ import java.lang.annotation.Target
 @Documented
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.FIELD)
-@GroovyASTTransformationClass('groovy.beans.ListenerListASTTransformation')
+@GroovyASTTransformationClass([
+        'groovy.beans.ListenerListASTStubber',
+        'groovy.beans.ListenerListASTTransformation'
+])
 @interface ListenerList {
     /**
      * A suffix for creating the add, remove, and get methods

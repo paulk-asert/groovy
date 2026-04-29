@@ -198,12 +198,30 @@ class ASTTransformationCustomizer extends CompilationCustomizer implements Compi
         GroovyASTTransformationClass annotation = anAnnotationClass.getAnnotation(GroovyASTTransformationClass)
         if (annotation == null) throw new IllegalArgumentException("Provided class doesn't look like an AST @interface")
 
-        Class[] classes = annotation.classes()
-        String[] classesAsStrings = annotation.value()
-        if (classes.length + classesAsStrings.length > 1) {
+        ClassLoader loader = transformationClassLoader ?: anAnnotationClass.classLoader
+        List<Class> candidates = []
+        annotation.classes().each { Class c -> candidates << c }
+        annotation.value().each { String name -> candidates << Class.forName(name, true, loader) }
+
+        // GEP-21: when a Shape C-style split lists both a CONVERSION-phase
+        // stubber and a later authoritative transform, the CONVERSION sibling
+        // is only meaningful during joint compilation and shouldn't be picked
+        // here. Drop CONVERSION transforms only when at least one non-CONVERSION
+        // candidate exists, so customizer-only CONVERSION transforms (e.g. ones
+        // that have no later phase) still resolve.
+        List<Class> nonConversion = candidates.findAll { Class c ->
+            GroovyASTTransformation tx = c.getAnnotation(GroovyASTTransformation)
+            tx == null || tx.phase() != CompilePhase.CONVERSION
+        }
+        List<Class> applicable = nonConversion.isEmpty() ? candidates : nonConversion
+
+        if (applicable.size() > 1) {
             throw new IllegalArgumentException("AST transformation customizer doesn't support AST transforms with multiple classes")
         }
-        classes ? classes[0] : (Class) Class.forName(classesAsStrings[0], true, transformationClassLoader ?: anAnnotationClass.classLoader)
+        if (applicable.isEmpty()) {
+            throw new IllegalArgumentException("AST transformation customizer found no applicable AST transformation class")
+        }
+        applicable[0] as Class<ASTTransformation>
     }
 
     @SuppressWarnings('ClassForName')

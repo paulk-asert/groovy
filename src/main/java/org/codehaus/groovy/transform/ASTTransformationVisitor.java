@@ -93,6 +93,22 @@ public final class ASTTransformationVisitor extends ClassCodeVisitorSupport {
         this.context = context;
     }
 
+    /**
+     * Returns a primary class node operation that invokes any AST transformations
+     * registered for {@code phase} on each class. Intended for callers that need
+     * to drive transform invocation outside the standard phase wiring (for example,
+     * {@code JavaAwareCompilationUnit} runs CONVERSION-phase transforms before the
+     * stub generator emits stubs — see GEP-21).
+     */
+    public static org.codehaus.groovy.control.CompilationUnit.IPrimaryClassNodeOperation
+            invocationOperation(final CompilePhase phase, final ASTTransformationsContext context) {
+        return (source, generatorContext, classNode) -> {
+            ASTTransformationVisitor visitor = new ASTTransformationVisitor(phase, context);
+            visitor.source = source;
+            visitor.visitClass(classNode);
+        };
+    }
+
     @Override
     protected SourceUnit getSourceUnit() {
         return source;
@@ -247,11 +263,7 @@ public final class ASTTransformationVisitor extends ClassCodeVisitorSupport {
                     break;
 
                 default:
-                    compilationUnit.addPhaseOperation((final SourceUnit source, final GeneratorContext ignore, final ClassNode classNode) -> {
-                        ASTTransformationVisitor visitor = new ASTTransformationVisitor(phase, context);
-                        visitor.source = source;
-                        visitor.visitClass(classNode);
-                    }, phase.getPhaseNumber());
+                    compilationUnit.addPhaseOperation(invocationOperation(phase, context), phase.getPhaseNumber());
             }
         }
     }

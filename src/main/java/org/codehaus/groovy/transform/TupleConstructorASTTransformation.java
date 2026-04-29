@@ -132,6 +132,10 @@ public class TupleConstructorASTTransformation extends AbstractASTTransformation
 
         if (parent instanceof ClassNode cNode) {
             if (!checkNotInterface(cNode, MY_TYPE_NAME)) return;
+            // GEP-21 Shape C: discard any stubber-emitted placeholder constructors
+            // (added at CONVERSION so they appear in the joint-compilation stub).
+            // The full transform below is authoritative for the runtime surface.
+            cNode.getDeclaredConstructors().removeIf(StubberSupport::isStub);
             boolean includeFields = memberHasValue(anno, "includeFields", Boolean.TRUE);
             boolean includeProperties = !memberHasValue(anno, "includeProperties", Boolean.FALSE);
             boolean includeSuperFields = memberHasValue(anno, "includeSuperFields", Boolean.TRUE);
@@ -180,12 +184,7 @@ public class TupleConstructorASTTransformation extends AbstractASTTransformation
                                           final SourceUnit sourceUnit, final PropertyHandler handler, final ClosureExpression pre, final ClosureExpression post) {
         boolean namedVariant = xform.memberHasValue(anno, "namedVariant", Boolean.TRUE);
         boolean callSuper = xform.memberHasValue(anno, "callSuper", Boolean.TRUE);
-        DefaultsMode defaultsMode = maybeDefaultsMode(anno, "defaultsMode");
-        if (defaultsMode == null) {
-            boolean defaults = anno.getMember("defaults") == null
-                    || !xform.memberHasValue(anno, "defaults", Boolean.FALSE);
-            defaultsMode = defaults ? ON : OFF;
-        }
+        DefaultsMode defaultsMode = resolveDefaultsMode(anno, xform);
         boolean force = xform.memberHasValue(anno, "force", Boolean.TRUE);
         boolean makeImmutable = makeImmutable(cNode);
 
@@ -383,6 +382,22 @@ public class TupleConstructorASTTransformation extends AbstractASTTransformation
         boolean pojo = !cNode.getAnnotations(POJO_TYPE).isEmpty();
         block.addStatement(checkPropNamesS(namedArgs, pojo, props));
         return block;
+    }
+
+    /**
+     * Resolves the effective {@code DefaultsMode} for a {@code @TupleConstructor}-style
+     * annotation, honouring {@code defaultsMode} first and falling back to the
+     * legacy {@code defaults} boolean. Shared between the full transform and
+     * {@link TupleConstructorASTStubber}.
+     */
+    static DefaultsMode resolveDefaultsMode(final AnnotationNode anno, final AbstractASTTransformation xform) {
+        DefaultsMode mode = maybeDefaultsMode(anno, "defaultsMode");
+        if (mode == null) {
+            boolean defaults = anno.getMember("defaults") == null
+                    || !xform.memberHasValue(anno, "defaults", Boolean.FALSE);
+            mode = defaults ? ON : OFF;
+        }
+        return mode;
     }
 
     private static DefaultsMode maybeDefaultsMode(final AnnotationNode node, final String name) {

@@ -111,7 +111,10 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
-@GroovyASTTransformationClass("org.codehaus.groovy.transform.NamedVariantASTTransformation")
+@GroovyASTTransformationClass({
+        "org.codehaus.groovy.transform.NamedVariantASTStubber",
+        "org.codehaus.groovy.transform.NamedVariantASTTransformation"
+})
 public @interface NamedVariant {
     /**
      * If specified, must match the optional "id" attribute in an applicable {@code VisibilityOptions} annotation.

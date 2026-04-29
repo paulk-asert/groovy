@@ -68,7 +68,10 @@ import static org.codehaus.groovy.transform.BuilderASTTransformation.BuilderStra
 @Documented
 @Retention(RetentionPolicy.SOURCE)
 @Target({ ElementType.TYPE, ElementType.CONSTRUCTOR, ElementType.METHOD})
-@GroovyASTTransformationClass("org.codehaus.groovy.transform.BuilderASTTransformation")
+@GroovyASTTransformationClass({
+        "groovy.transform.builder.BuilderASTStubber",
+        "org.codehaus.groovy.transform.BuilderASTTransformation"
+})
 public @interface Builder {
 
     /**

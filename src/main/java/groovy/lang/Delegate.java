@@ -131,7 +131,10 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.METHOD})
-@GroovyASTTransformationClass("org.codehaus.groovy.transform.DelegateASTTransformation")
+@GroovyASTTransformationClass({
+        "org.codehaus.groovy.transform.DelegateASTStubber",
+        "org.codehaus.groovy.transform.DelegateASTTransformation"
+})
 public @interface Delegate {
     /**
      * @return true if owner class should implement interfaces implemented by delegate type

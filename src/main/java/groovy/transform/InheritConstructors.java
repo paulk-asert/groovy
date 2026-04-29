@@ -149,7 +149,10 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
-@GroovyASTTransformationClass("org.codehaus.groovy.transform.InheritConstructorsASTTransformation")
+@GroovyASTTransformationClass({
+        "org.codehaus.groovy.transform.InheritConstructorsASTStubber",
+        "org.codehaus.groovy.transform.InheritConstructorsASTTransformation"
+})
 public @interface InheritConstructors {
     /**
      * Whether to carry over annotations on the copied constructors.

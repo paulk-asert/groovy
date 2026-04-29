@@ -217,7 +217,10 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
-@GroovyASTTransformationClass("org.codehaus.groovy.transform.TupleConstructorASTTransformation")
+@GroovyASTTransformationClass({
+        "org.codehaus.groovy.transform.TupleConstructorASTStubber",
+        "org.codehaus.groovy.transform.TupleConstructorASTTransformation"
+})
 public @interface TupleConstructor {
     /**
      * List of field and/or property names to exclude from the constructor.
