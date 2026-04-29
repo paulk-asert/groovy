@@ -20,12 +20,15 @@ package groovy.yaml;
 
 import groovy.lang.GroovyRuntimeException;
 
+import java.io.Serial;
+
 /**
  * Represents a runtime exception raised while parsing or building YAML.
  *
  * @since 3.0.0
  */
 public class YamlRuntimeException extends GroovyRuntimeException {
+    @Serial
     private static final long serialVersionUID = -6071053120162025455L;
 
     /**

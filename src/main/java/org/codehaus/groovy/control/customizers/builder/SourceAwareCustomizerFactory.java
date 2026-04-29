@@ -28,6 +28,7 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.customizers.CompilationCustomizer;
 import org.codehaus.groovy.control.customizers.SourceAwareCustomizer;
 
+import java.io.Serial;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -126,6 +127,7 @@ public class SourceAwareCustomizerFactory extends AbstractFactory implements Pos
         Closure<Boolean> extensionValidator = data.extensionValidator;
         if (extensionValidator==null && !extensions.isEmpty()) {
             extensionValidator = new Closure<Boolean>(sourceAwareCustomizer) {
+                @Serial
                 private static final long serialVersionUID = 925642730835101872L;
 
                 @Override
@@ -143,6 +145,7 @@ public class SourceAwareCustomizerFactory extends AbstractFactory implements Pos
         Closure<Boolean> basenameValidator = data.basenameValidator;
         if (basenameValidator==null && !basenames.isEmpty()) {
             basenameValidator = new Closure<Boolean>(sourceAwareCustomizer) {
+                @Serial
                 private static final long serialVersionUID = 7714937867958607043L;
 
                 @Override

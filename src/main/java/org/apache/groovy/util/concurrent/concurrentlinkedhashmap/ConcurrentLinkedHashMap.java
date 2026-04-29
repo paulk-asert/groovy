@@ -1473,6 +1473,7 @@ public final class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V>
       return super.setValue(value);
     }
 
+    @Serial
     Object writeReplace() {
       return new SimpleEntry<>(this);
     }
@@ -1495,6 +1496,7 @@ public final class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V>
       return weight;
     }
 
+    @Serial
     Object writeReplace() {
       return weigher;
     }
@@ -1521,10 +1523,12 @@ public final class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V>
 
     @Serial private static final long serialVersionUID = 1;
 
+  @Serial
   Object writeReplace() {
     return new SerializationProxy<>(this);
   }
 
+  @Serial
   private void readObject(ObjectInputStream stream) throws InvalidObjectException {
     throw new InvalidObjectException("Proxy required");
   }
@@ -1551,6 +1555,7 @@ public final class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V>
       weigher = map.weigher;
     }
 
+    @Serial
     Object readResolve() {
       ConcurrentLinkedHashMap<K, V> map = new Builder<K, V>()
           .concurrencyLevel(concurrencyLevel)

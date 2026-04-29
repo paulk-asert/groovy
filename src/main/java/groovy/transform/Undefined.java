@@ -20,6 +20,8 @@ package groovy.transform;
 
 import org.codehaus.groovy.ast.ClassNode;
 
+import java.io.Serial;
+
 /**
  * Java doesn't allow you to have null as an attribute value. It wants you to indicate what you really
  * mean by null, so that is what we do here - as ugly as it is.
@@ -29,6 +31,7 @@ public final class Undefined {
     public static final String STRING = "<DummyUndefinedMarkerString-DoNotUse>";
     public static final class CLASS {}
     public static final class EXCEPTION extends RuntimeException {
+        @Serial
         private static final long serialVersionUID = -3960500360386581172L;
     }
     public static boolean isUndefined(String other) { return STRING.equals(other); }

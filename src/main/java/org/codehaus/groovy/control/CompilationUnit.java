@@ -58,6 +58,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serial;
 import java.net.URL;
 import java.security.CodeSource;
 import java.util.ArrayList;
@@ -1037,6 +1038,7 @@ public class CompilationUnit extends ProcessingUnit {
     private static boolean hasInnerClassWithClosure(final ClassNode cn) {
         for (var it = cn.getInnerClasses(); it.hasNext(); ) {
             class ClosureFound extends RuntimeException {
+                @Serial
                 private static final long serialVersionUID = 1;
                 @Override public Throwable fillInStackTrace() {
                     return this;

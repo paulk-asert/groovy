@@ -146,6 +146,7 @@ public class MethodClosure extends Closure {
         return InvokerHelper.invokeMethod(getOwner(), getMethod(), arguments);
     }
 
+    @Serial
     private void readObject(final java.io.ObjectInputStream stream) throws java.io.IOException, ClassNotFoundException {
         if (ALLOW_RESOLVE) {
             stream.defaultReadObject();
@@ -153,6 +154,7 @@ public class MethodClosure extends Closure {
         throw new UnsupportedOperationException();
     }
 
+    @Serial
     private Object readResolve() {
         if (ALLOW_RESOLVE) {
             return this;

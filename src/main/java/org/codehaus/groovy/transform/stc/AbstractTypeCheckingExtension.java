@@ -42,6 +42,7 @@ import org.codehaus.groovy.classgen.asm.InvocationWriter;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.objectweb.asm.Opcodes;
 
+import java.io.Serial;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -430,6 +431,7 @@ public class AbstractTypeCheckingExtension extends TypeCheckingExtension {
     //--------------------------------------------------------------------------
 
     public static class TypeCheckingScope extends LinkedHashMap<String, Object> {
+        @Serial
         private static final long serialVersionUID = 7607331333917615144L;
         private final AbstractTypeCheckingExtension.TypeCheckingScope parent;
 

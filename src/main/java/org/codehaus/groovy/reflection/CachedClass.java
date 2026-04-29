@@ -31,6 +31,7 @@ import org.codehaus.groovy.util.FastArray;
 import org.codehaus.groovy.util.LazyReference;
 import org.codehaus.groovy.util.ReferenceBundle;
 
+import java.io.Serial;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Member;
 import java.util.ArrayList;
@@ -65,6 +66,7 @@ public class CachedClass {
     }
 
     private final LazyReference<CachedField[]> fields = new LazyReference<CachedField[]>(softBundle) {
+        @Serial
         private static final long serialVersionUID = 5450437842165410025L;
 
         @Override
@@ -76,6 +78,7 @@ public class CachedClass {
     };
 
     private final LazyReference<CachedConstructor[]> constructors = new LazyReference<CachedConstructor[]>(softBundle) {
+        @Serial
         private static final long serialVersionUID = -5834446523983631635L;
 
         @Override
@@ -89,6 +92,7 @@ public class CachedClass {
     };
 
     private final LazyReference<CachedMethod[]> methods = new LazyReference<CachedMethod[]>(softBundle) {
+        @Serial
         private static final long serialVersionUID = 6347586066597418308L;
 
         @Override
@@ -130,6 +134,7 @@ public class CachedClass {
     };
 
     private final LazyReference<CallSiteClassLoader> callSiteClassLoader = new LazyReference<CallSiteClassLoader>(softBundle) {
+        @Serial
         private static final long serialVersionUID = 4410385968428074090L;
 
         @Override
@@ -139,6 +144,7 @@ public class CachedClass {
     };
 
     private final LazyReference<Collection<ClassInfo>> hierarchy = new LazyReference<Collection<ClassInfo>>(softBundle) {
+        @Serial
         private static final long serialVersionUID = 7166687623678851596L;
 
         @Override
@@ -161,6 +167,7 @@ public class CachedClass {
     };
 
     private final LazyReference<Set<CachedClass>> declaredInterfaces = new LazyReference<Set<CachedClass>>(softBundle) {
+        @Serial
         private static final long serialVersionUID = 2139190436931329873L;
 
         @Override
@@ -175,6 +182,7 @@ public class CachedClass {
     };
 
     private final LazyReference<Set<CachedClass>> interfaces = new LazyReference<Set<CachedClass>>(softBundle) {
+        @Serial
         private static final long serialVersionUID = 4060471819464086940L;
 
         @Override
@@ -201,6 +209,7 @@ public class CachedClass {
     };
 
     private final LazyReference<CachedClass> superClass = new LazyReference<CachedClass>(softBundle) {
+        @Serial
         private static final long serialVersionUID = -4663740963306806058L;
 
         @Override

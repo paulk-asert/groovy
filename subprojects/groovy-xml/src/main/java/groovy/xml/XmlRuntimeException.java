@@ -21,6 +21,8 @@ package groovy.xml;
 import groovy.lang.GroovyRuntimeException;
 import org.apache.groovy.lang.annotation.Incubating;
 
+import java.io.Serial;
+
 /**
  * Represents a runtime exception that occurred when parsing or building XML.
  *
@@ -28,6 +30,7 @@ import org.apache.groovy.lang.annotation.Incubating;
  */
 @Incubating
 public class XmlRuntimeException extends GroovyRuntimeException {
+    @Serial
     private static final long serialVersionUID = 7858720024082487492L;
 
     /**

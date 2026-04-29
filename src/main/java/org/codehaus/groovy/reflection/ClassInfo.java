@@ -51,6 +51,7 @@ import org.codehaus.groovy.util.ManagedReference;
 import org.codehaus.groovy.util.ReferenceBundle;
 import org.codehaus.groovy.vmplugin.VMPluginFactory;
 
+import java.io.Serial;
 import java.lang.ref.WeakReference;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -423,6 +424,7 @@ public class ClassInfo implements Finalizable {
     }
 
     private static class LazyCachedClassRef extends LazyReference<CachedClass> {
+        @Serial
         private static final long serialVersionUID = -1400274148849287400L;
         private final ClassInfo info;
 
@@ -438,6 +440,7 @@ public class ClassInfo implements Finalizable {
     }
 
     private static class LazyClassLoaderRef extends LazyReference<ClassLoaderForClassArtifacts> {
+        @Serial
         private static final long serialVersionUID = 1639196133085420609L;
         private final ClassInfo info;
 

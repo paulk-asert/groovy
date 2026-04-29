@@ -25,6 +25,7 @@ import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
+import java.io.Serial;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -52,6 +53,7 @@ public class TreeContext {
     final Map<Object, List<Object>> userdata = MapWithDefault.newInstance(
             new HashMap<Object, List<Object>>(),
             new Closure<List<Object>>(this) {
+                @Serial
                 private static final long serialVersionUID = -4694773031569936343L;
 
                 /**

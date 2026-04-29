@@ -15,6 +15,7 @@
  */
 package org.apache.groovy.util.concurrent.concurrentlinkedhashmap;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
@@ -182,6 +183,7 @@ public final class Weighers {
   }
 
   static final class EntryWeigherView<K, V> implements EntryWeigher<K, V>, Serializable {
+    @Serial
     private static final long serialVersionUID = 1;
     final Weigher<? super V> weigher;
 

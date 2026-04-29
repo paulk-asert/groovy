@@ -1237,6 +1237,7 @@ public class ConcurrentReaderHashMap
    * for each key-value mapping represented by the ConcurrentReaderHashMap
    * The key-value mappings are emitted in no particular order.
    */
+  @Serial
   private synchronized void writeObject(java.io.ObjectOutputStream s)
     throws IOException  {
     // Write out the threshold, loadfactor, and any hidden stuff
@@ -1267,6 +1268,7 @@ public class ConcurrentReaderHashMap
    *
    * @param s the stream
    */
+  @Serial
   private synchronized void readObject(java.io.ObjectInputStream s)
     throws IOException, ClassNotFoundException  {
     // Read in the threshold, loadfactor, and any hidden stuff

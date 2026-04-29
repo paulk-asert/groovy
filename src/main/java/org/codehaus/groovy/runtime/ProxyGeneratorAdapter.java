@@ -40,6 +40,7 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
+import java.io.Serial;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -900,6 +901,7 @@ public class ProxyGeneratorAdapter extends ClassVisitor {
     }
 
     private static class ReturnValueWrappingClosure<V> extends Closure<V>{
+        @Serial
         private static final long serialVersionUID = 1313135457715304501L;
         private final V value;
 

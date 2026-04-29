@@ -25,6 +25,7 @@ import groovy.lang.MetaProperty;
 import groovy.lang.MissingPropertyException;
 import org.codehaus.groovy.runtime.InvokerHelper;
 
+import java.io.Serial;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -77,6 +78,7 @@ public class ObjectGraphBuilder extends FactoryBuilderSupport {
         referenceResolver = new DefaultReferenceResolver();
 
         addPostNodeCompletionDelegate(new Closure(this, this) {
+            @Serial
             private static final long serialVersionUID = 7282290918368141309L;
 
             public void doCall(ObjectGraphBuilder builder, Object parent, Object node) {

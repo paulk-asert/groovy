@@ -26,6 +26,7 @@ import javax.swing.text.Position;
 import javax.swing.text.Segment;
 import javax.swing.text.Style;
 import javax.swing.text.StyleContext;
+import java.io.Serial;
 import java.io.Serializable;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
@@ -619,6 +620,7 @@ public class StructuredSyntaxDocumentFilter extends DocumentFilter {
 
     private static class MLComparator implements Comparator<Object>, Serializable {
 
+        @Serial
         private static final long serialVersionUID = -4210196728719411217L;
 
         @Override

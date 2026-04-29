@@ -21,6 +21,8 @@ package groovy.csv;
 import groovy.lang.GroovyRuntimeException;
 import org.apache.groovy.lang.annotation.Incubating;
 
+import java.io.Serial;
+
 /**
  * Represents runtime exception occurred when parsing or building CSV
  *
@@ -28,6 +30,7 @@ import org.apache.groovy.lang.annotation.Incubating;
  */
 @Incubating
 public class CsvRuntimeException extends GroovyRuntimeException {
+    @Serial
     private static final long serialVersionUID = 2809672072790437945L;
 
     /**

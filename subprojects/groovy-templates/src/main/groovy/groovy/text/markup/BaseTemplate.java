@@ -27,6 +27,7 @@ import org.codehaus.groovy.control.io.NullWriter;
 import org.codehaus.groovy.runtime.ResourceGroovyMethods;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.io.StringReader;
 import java.io.Writer;
 import java.net.URL;
@@ -458,6 +459,7 @@ public abstract class BaseTemplate implements Writable {
      */
     public Closure contents(final Closure cl) {
         return new Closure(cl.getOwner(), cl.getThisObject()) {
+            @Serial
             private static final long serialVersionUID = -5733727697043906478L;
 
             /**

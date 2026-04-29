@@ -37,6 +37,7 @@ import org.codehaus.groovy.syntax.SyntaxException;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.Reader;
+import java.io.Serial;
 import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -260,6 +261,7 @@ public class StreamingTemplateEngine extends TemplateEngine {
         String scriptSource;
 
         private static class FinishedReadingException extends Exception {
+            @Serial
             private static final long serialVersionUID = -3786157136157691230L;
         }
 

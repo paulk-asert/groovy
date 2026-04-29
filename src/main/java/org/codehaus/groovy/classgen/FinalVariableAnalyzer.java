@@ -47,6 +47,7 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.transform.stc.StaticTypeCheckingSupport;
 
+import java.io.Serial;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -541,6 +542,7 @@ public class FinalVariableAnalyzer extends ClassCodeVisitorSupport {
     }
 
     private static class StateMap extends HashMap<Variable, VariableState> {
+        @Serial
         private static final long serialVersionUID = -5881634573411342092L;
 
         @Override

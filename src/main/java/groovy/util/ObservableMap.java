@@ -23,6 +23,7 @@ import groovy.lang.Closure;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -337,6 +338,7 @@ public class ObservableMap implements Map {
     }
 
     public abstract static class PropertyEvent extends PropertyChangeEvent {
+        @Serial
         private static final long serialVersionUID = -8328412226044328674L;
         private ChangeType type;
 
@@ -359,6 +361,7 @@ public class ObservableMap implements Map {
     }
 
     public static class PropertyAddedEvent extends PropertyEvent {
+        @Serial
         private static final long serialVersionUID = -5761685843732329868L;
 
         public PropertyAddedEvent(Object source, String propertyName, Object newValue) {
@@ -367,6 +370,7 @@ public class ObservableMap implements Map {
     }
 
     public static class PropertyUpdatedEvent extends PropertyEvent {
+        @Serial
         private static final long serialVersionUID = -1104637722950032690L;
 
         public PropertyUpdatedEvent(Object source, String propertyName, Object oldValue, Object newValue) {
@@ -375,6 +379,7 @@ public class ObservableMap implements Map {
     }
 
     public static class PropertyRemovedEvent extends PropertyEvent {
+        @Serial
         private static final long serialVersionUID = 1882656655856158470L;
 
         public PropertyRemovedEvent(Object source, String propertyName, Object oldValue) {
@@ -383,6 +388,7 @@ public class ObservableMap implements Map {
     }
 
     public static class PropertyClearedEvent extends PropertyEvent {
+        @Serial
         private static final long serialVersionUID = -1472110679547513634L;
         private Map values = new HashMap();
 
@@ -401,6 +407,7 @@ public class ObservableMap implements Map {
     public static class MultiPropertyEvent extends PropertyEvent {
         public static final String MULTI_PROPERTY = "groovy_util_ObservableMap_MultiPropertyEvent_MULTI";
         private static final PropertyEvent[] EMPTY_PROPERTY_EVENTS = new PropertyEvent[0];
+        @Serial
         private static final long serialVersionUID = 3925136810810084267L;
 
         private final PropertyEvent[] events;

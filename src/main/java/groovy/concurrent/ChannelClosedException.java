@@ -18,6 +18,8 @@
  */
 package groovy.concurrent;
 
+import java.io.Serial;
+
 /**
  * Thrown when an {@link AsyncChannel} operation is attempted after the channel
  * has been closed.
@@ -52,6 +54,7 @@ package groovy.concurrent;
  */
 public class ChannelClosedException extends IllegalStateException {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     /**

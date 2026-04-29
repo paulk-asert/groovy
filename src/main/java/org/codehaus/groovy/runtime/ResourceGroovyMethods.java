@@ -53,6 +53,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.Serial;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.MalformedURLException;
@@ -139,6 +140,7 @@ public class ResourceGroovyMethods extends DefaultGroovyMethodsSupport {
         final long[] size = {0L};
 
         eachFileRecurse(self, FileType.FILES, new Closure<Void>(null) {
+            @Serial
             private static final long serialVersionUID = 7688764529326404277L;
 
             public void doCall(Object[] args) {

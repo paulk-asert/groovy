@@ -28,6 +28,7 @@ import org.codehaus.groovy.runtime.FormatHelper;
 import org.codehaus.groovy.runtime.InvokerHelper;
 
 import java.io.PrintStream;
+import java.io.Serial;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -366,6 +367,7 @@ public class Inspector {
     }
 
     public static class MemberComparator implements Comparator<Object>, Serializable {
+        @Serial
         private static final long serialVersionUID = -7691851726606749541L;
 
         @Override
@@ -388,6 +390,7 @@ public class Inspector {
     }
 
     public static class MemberComparatorWithValue implements Comparator<Object>, Serializable {
+        @Serial
         private static final long serialVersionUID = 294298614093394525L;
         private static final MemberComparator delegate = new MemberComparator();
 

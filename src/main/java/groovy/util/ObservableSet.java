@@ -23,6 +23,7 @@ import groovy.lang.Closure;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -361,6 +362,7 @@ public class ObservableSet<E> implements Set<E> {
     }
 
     public abstract static class ElementEvent extends PropertyChangeEvent {
+        @Serial
         private static final long serialVersionUID = -7140793925623806823L;
         private final ChangeType type;
 
@@ -383,6 +385,7 @@ public class ObservableSet<E> implements Set<E> {
     }
 
     public static class ElementAddedEvent extends ElementEvent {
+        @Serial
         private static final long serialVersionUID = 4678444473287170956L;
 
         public ElementAddedEvent(Object source, Object newValue) {
@@ -391,6 +394,7 @@ public class ObservableSet<E> implements Set<E> {
     }
 
     public static class ElementRemovedEvent extends ElementEvent {
+        @Serial
         private static final long serialVersionUID = 5934658331755545227L;
 
         public ElementRemovedEvent(Object source, Object value) {
@@ -399,6 +403,7 @@ public class ObservableSet<E> implements Set<E> {
     }
 
     public static class ElementClearedEvent extends ElementEvent {
+        @Serial
         private static final long serialVersionUID = 6075523774365623231L;
         private List values = new ArrayList();
 
@@ -415,6 +420,7 @@ public class ObservableSet<E> implements Set<E> {
     }
 
     public static class MultiElementAddedEvent extends ElementEvent {
+        @Serial
         private static final long serialVersionUID = 575204921472897312L;
         private List values = new ArrayList();
 
@@ -431,6 +437,7 @@ public class ObservableSet<E> implements Set<E> {
     }
 
     public static class MultiElementRemovedEvent extends ElementEvent {
+        @Serial
         private static final long serialVersionUID = 8894701122065438905L;
         private List values = new ArrayList();
 

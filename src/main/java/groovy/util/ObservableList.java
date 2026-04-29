@@ -23,6 +23,7 @@ import groovy.lang.Closure;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -502,6 +503,7 @@ public class ObservableList implements List {
 
     public abstract static class ElementEvent extends PropertyChangeEvent {
 
+        @Serial
         private static final long serialVersionUID = -218253929030274352L;
         private final ChangeType type;
         private final int index;
@@ -530,6 +532,7 @@ public class ObservableList implements List {
     }
 
     public static class ElementAddedEvent extends ElementEvent {
+        @Serial
         private static final long serialVersionUID = -6594847306176480596L;
 
         public ElementAddedEvent(Object source, Object newValue, int index) {
@@ -538,6 +541,7 @@ public class ObservableList implements List {
     }
 
     public static class ElementUpdatedEvent extends ElementEvent {
+        @Serial
         private static final long serialVersionUID = 1116018076124047485L;
 
         public ElementUpdatedEvent(Object source, Object oldValue, Object newValue, int index) {
@@ -546,6 +550,7 @@ public class ObservableList implements List {
     }
 
     public static class ElementRemovedEvent extends ElementEvent {
+        @Serial
         private static final long serialVersionUID = 9017470261231004168L;
 
         public ElementRemovedEvent(Object source, Object value, int index) {
@@ -554,6 +559,7 @@ public class ObservableList implements List {
     }
 
     public static class ElementClearedEvent extends ElementEvent {
+        @Serial
         private static final long serialVersionUID = -2754983590419383972L;
         private List values = new ArrayList();
 
@@ -570,6 +576,7 @@ public class ObservableList implements List {
     }
 
     public static class MultiElementAddedEvent extends ElementEvent {
+        @Serial
         private static final long serialVersionUID = 443060557109693114L;
         private List values = new ArrayList();
 
@@ -586,6 +593,7 @@ public class ObservableList implements List {
     }
 
     public static class MultiElementRemovedEvent extends ElementEvent {
+        @Serial
         private static final long serialVersionUID = 2590238951081945868L;
         private List values = new ArrayList();
 
