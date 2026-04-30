@@ -176,24 +176,7 @@ collection methods (`collect`, `findAll`, `take`, etc.) work out of the box:
 include::../test/AsyncAwaitSpecTest.groovy[tags=generator_regular_for,indent=0]
 ----
 
-[[async-channels]]
-== Channels
-
-Channels provide Go-style inter-task communication. A producer sends values
-into a channel; a consumer receives them as they arrive. The channel handles
-synchronization and optional buffering — no shared mutable state needed:
-
-[source,groovy]
-----
-include::../test/AsyncAwaitSpecTest.groovy[tags=channel,indent=0]
-----
-
-Channels support unbuffered (rendezvous, `create()`) and buffered (`create(n)`)
-modes. Sending blocks when the buffer is full; receiving blocks when empty.
-With virtual threads, this blocking is essentially free.
-
-Since channels implement `Iterable`, they also work with regular `for` loops
-and Groovy collection methods.
+include::_core-async-channels.adoc[]
 
 [[async-defer]]
 == Deferred Cleanup with `defer`
@@ -282,7 +265,7 @@ loop works identically.
 The JDK's `Flow.Publisher` is supported out of the box — no adapter module
 needed. This means streams exposed by built-in sources such as
 `Agent.changes()` (see xref:actors-agent[]) and `BroadcastChannel.asPublisher()`
-(see xref:dataflow-broadcast[]), or any third-party publisher using the JDK
+(see xref:async-broadcast-channel[]), or any third-party publisher using the JDK
 interfaces, compose directly with `for await` and `await`:
 
 [source,groovy]
