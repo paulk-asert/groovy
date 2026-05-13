@@ -28,3 +28,12 @@ out/
 verification-metadata.dryrun.xml
 
 .claude/
+
+# apache-steward (spike adoption) — see .apache-steward.lock for pin
+/.apache-steward/
+/.apache-steward.local.lock
+/.claude/skills/issue-*
+/.claude/skills/security-*
+/.claude/skills/pr-management-*
+/.claude/skills/setup-isolated-setup-*
+/.claude/skills/setup-shared-config-sync
