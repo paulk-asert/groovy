@@ -1,0 +1,12 @@
+# .apache-steward.lock — committed; the project's pin.
+# Edited only by /setup-steward; do not modify by hand.
+#
+# SPIKE NOTE: this is a local-fork experiment, not a real adoption.
+# The url below points at the operator's local clone of the steward
+# fork, NOT the canonical apache/airflow-steward repository.
+# Do NOT commit this file to apache/groovy master without revising
+# the url to https://github.com/apache/airflow-steward.git.
+
+method: local-spike
+url:    file:///Users/paulk/working/airflow-steward
+ref:    magpieSpike
