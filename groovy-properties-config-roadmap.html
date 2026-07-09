@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Groovy Properties &amp; Configuration Roadmap</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 960px; margin: 0 auto; padding: 2rem; }
+  h1 { color: #1a5276; border-bottom: 3px solid #2e86c1; padding-bottom: 0.5rem; }
+  h2 { color: #1a5276; margin-top: 2.5rem; border-bottom: 1px solid #d5d8dc; padding-bottom: 0.3rem; }
+  h3 { color: #2e4053; margin-top: 1.5rem; }
+  h4 { color: #2e86c1; margin-top: 1.2rem; }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+  th, td { border: 1px solid #d5d8dc; padding: 0.5rem 0.75rem; text-align: left; }
+  th { background-color: #eaf2f8; color: #1a5276; }
+  tr:nth-child(even) { background-color: #f8f9fa; }
+  code { background-color: #f0f3f5; padding: 0.15rem 0.4rem; border-radius: 3px; font-size: 0.9em; }
+  pre { background-color: #f0f3f5; padding: 1rem; border-radius: 5px; overflow-x: auto; border-left: 3px solid #2e86c1; }
+  pre code { background: none; padding: 0; }
+  .layer { background: #fdfefe; border: 1px solid #d5d8dc; border-radius: 8px; padding: 1.2rem 1.5rem; margin: 1.5rem 0; }
+  .layer h4 { margin-top: 0; }
+  .layer-num { display: inline-block; background: #2e86c1; color: white; width: 1.8rem; height: 1.8rem; border-radius: 50%; text-align: center; line-height: 1.8rem; font-weight: bold; margin-right: 0.5rem; font-size: 0.9em; }
+  .note { background: #fef9e7; border-left: 4px solid #f1c40f; padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 0 4px 4px 0; }
+  .summary-box { background: #eaf2f8; border: 1px solid #aed6f1; border-radius: 6px; padding: 1rem 1.5rem; margin: 1rem 0; }
+  ul { padding-left: 1.5rem; }
+  li { margin-bottom: 0.3rem; }
+  .tag { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 3px; font-size: 0.8em; font-weight: 600; }
+  .tag-small { background: #d5f5e3; color: #1e8449; }
+  .tag-medium { background: #fdebd0; color: #ca6f1e; }
+  .tag-large { background: #fadbd8; color: #c0392b; }
+</style>
+</head>
+<body>
+
+<h1>Groovy Properties &amp; Configuration Roadmap</h1>
+<p><em>Exploring what Groovy could offer for property files and configuration — from simple format handling to a full config framework.</em></p>
+
+<h2>The Landscape Today</h2>
+
+<h3>What Groovy Has</h3>
+<ul>
+  <li><strong>ConfigSlurper</strong> (core, <code>groovy.util</code>) — Groovy DSL-based configuration with environment support. Returns <code>ConfigObject</code> (a nested Map). Mature but has known issues: not thread-safe, no type safety, no hyphenated keys, reserved word conflicts, dot/block notation bugs.</li>
+  <li><strong>ConfigObject</strong> — <code>Map</code> implementation with auto-creating nested access, <code>flatten()</code>, <code>toProperties()</code>, <code>merge()</code>, <code>writeTo()</code>.</li>
+  <li><strong>groovy-json / yaml / toml / csv</strong> — format-specific parsing including typed <code>parseAs</code> support, but no config-layer semantics (no merging, profiles, or expressions).</li>
+</ul>
+
+<h3>What Groovy Doesn't Have</h3>
+<ul>
+  <li>Typed config binding (POJO/record from properties)</li>
+  <li>Multi-source merging with precedence</li>
+  <li>Expression evaluation (<code>${ENV_VAR:default}</code>)</li>
+  <li>Hot reload</li>
+  <li>Standard <code>.properties</code> file ↔ typed object conversion</li>
+  <li>Thread-safe config parsing</li>
+</ul>
+
+<h3>External Libraries Considered</h3>
+<table>
+  <tr><th>Library</th><th>Strengths</th><th>Relevance to Groovy</th></tr>
+  <tr>
+    <td><strong>Jackson Properties</strong><br><code>jackson-dataformat-properties</code></td>
+    <td>Typed binding of <code>.properties</code> files to POJOs via Jackson databinding. Hierarchical key expansion (<code>a.b.c</code> → nested objects). Array support via indexes. All Jackson annotations work.</td>
+    <td>High — fits the established <code>parseAs</code> pattern used in other Groovy format modules.</td>
+  </tr>
+  <tr>
+    <td><strong>Avaje Config</strong></td>
+    <td>Lightweight, standalone. Multi-format (properties, YAML, TOML). Profiles, expression evaluation, file watching, events. Simple API (<code>Config.get("key")</code>). No framework coupling.</td>
+    <td>Good design reference for a config-loading layer. Simple and focused.</td>
+  </tr>
+  <tr>
+    <td><strong>Typesafe/HOCON</strong></td>
+    <td>Powerful format with substitutions, includes, fallbacks. Pure Java, no deps. Widely used (Akka/Pekko, Play).</td>
+    <td>Format inspiration, but Groovy's DSL already offers similar expressiveness.</td>
+  </tr>
+  <tr>
+    <td><strong>Spring Boot Config</strong></td>
+    <td>Most comprehensive: 14+ source levels, <code>@ConfigurationProperties</code>, relaxed binding, profiles, validation.</td>
+    <td>Design reference for typed binding and relaxed key matching. Too coupled to Spring to use directly.</td>
+  </tr>
+  <tr>
+    <td><strong>SmallRye Config</strong></td>
+    <td>Interface-based <code>@ConfigMapping</code>, profiles via <code>%dev.key</code> syntax, expression expansion, Bean Validation.</td>
+    <td>Interface-based mapping is appealing for Groovy — natural fit with traits and AST transforms.</td>
+  </tr>
+</table>
+
+<h3>ConfigSlurper's Known Issues</h3>
+<table>
+  <tr><th>Issue</th><th>Description</th></tr>
+  <tr><td>Thread safety</td><td>Not safe for concurrent use. PermGen leaks reported.</td></tr>
+  <tr><td>No hyphenated keys</td><td>Can't handle <code>server-host</code> style keys, incompatible with Spring Boot conventions.</td></tr>
+  <tr><td>Reserved word conflicts</td><td>Property named <code>main</code> causes <code>MissingMethodException</code>.</td></tr>
+  <tr><td>Dot vs block conflicts</td><td>Mixing <code>a.b.c = x</code> with <code>a { b { ... } }</code> causes errors.</td></tr>
+  <tr><td>Dollar sign parsing</td><td><code>$</code> in property values breaks parsing.</td></tr>
+  <tr><td>No type safety</td><td>ConfigObject is just a <code>LinkedHashMap</code> — no validation, no schema.</td></tr>
+  <tr><td>Mutable</td><td>No freeze/lock mechanism; config can be modified after load.</td></tr>
+</table>
+
+<div class="note">
+  <strong>Grails context:</strong> Grails has been working around ConfigSlurper's limitations for a decade. It built <code>NavigableMap</code>, <code>PropertySourcesConfig</code>, and dual-format merging infrastructure as band-aids — and is now deprecating those custom layers to converge on Spring Boot's configuration system. A well-designed Groovy config module could reduce the custom infrastructure both Grails and other Groovy frameworks need to maintain.
+</div>
+
+<h2>Potential Functionality — Four Layers</h2>
+
+<div class="layer">
+  <h4><span class="layer-num">1</span> <code>groovy-properties</code> — Typed Properties Format Module</h4>
+  <p>A new module for reading/writing <code>.properties</code> files with typed support, consistent with what csv/toml/yaml now offer. Pure format handling, not config management.</p>
+
+  <table>
+    <tr><th>Capability</th><th>Approach</th></tr>
+    <tr><td>Read <code>.properties</code> → nested Map</td><td>JDK <code>Properties</code> + hierarchical key expansion (<code>a.b.c</code> → nested map). Zero dependencies.</td></tr>
+    <tr><td>Read <code>.properties</code> → typed object</td><td>Jackson <code>jackson-dataformat-properties</code> (optional, reflective — like XML <code>parseAs</code>)</td></tr>
+    <tr><td>Write typed object → <code>.properties</code></td><td>Jackson <code>jackson-dataformat-properties</code></td></tr>
+    <tr><td><code>PropertiesSlurper</code></td><td>Returns nested <code>Map</code> from flat properties. Supports dotted key expansion, list conventions (<code>key.0</code>, <code>key.1</code>). Zero deps.</td></tr>
+    <tr><td><code>PropertiesBuilder</code></td><td>Writes nested structure to flat <code>.properties</code> format.</td></tr>
+  </table>
+
+  <p>This gives Groovy a <code>.properties</code> module on par with TOML/YAML/CSV. The key innovation over <code>java.util.Properties</code> is hierarchical key expansion and typed binding.</p>
+
+  <p><strong>Potential API:</strong></p>
+<pre><code>// Zero-dep: hierarchical parsing
+def props = new PropertiesSlurper().parseText('server.host=localhost\nserver.port=8080')
+assert props == [server: [host: 'localhost', port: '8080']]
+
+// Typed parsing (requires jackson-dataformat-properties)
+def config = new PropertiesSlurper().parseTextAs(ServerConfig, 'server.host=localhost\nserver.port=8080')
+assert config.host == 'localhost'
+assert config.port == 8080
+</code></pre>
+</div>
+
+<div class="layer">
+  <h4><span class="layer-num">2</span> Format-Agnostic Config Loading</h4>
+  <p>Build on top of existing format modules to load configuration from any supported format into a unified model. This is where Avaje-style functionality lives.</p>
+
+  <table>
+    <tr><th>Capability</th><th>Approach</th></tr>
+    <tr><td>Auto-detect format by extension</td><td><code>.properties</code>, <code>.yml</code>/<code>.yaml</code>, <code>.toml</code>, <code>.json</code>, <code>.groovy</code></td></tr>
+    <tr><td>Load from classpath, file, URL</td><td>Standard resource loading with configurable classloader</td></tr>
+    <tr><td>Merge multiple sources</td><td>Ordered list with last-wins precedence</td></tr>
+    <tr><td>Profile/environment support</td><td><code>application-{profile}.properties</code> convention</td></tr>
+    <tr><td>Expression evaluation</td><td><code>${env.VAR:default}</code>, <code>${sys.prop}</code>, cross-references</td></tr>
+  </table>
+
+  <p><strong>Potential API:</strong></p>
+<pre><code>def config = ConfigLoader.builder()
+    .addSource('application.properties')          // classpath
+    .addSource('application.yaml')                 // classpath
+    .addSource("application-${profile}.yaml")      // profile-specific
+    .addSystemProperties()                          // java -Dfoo=bar
+    .addEnvironment()                               // env vars
+    .build()
+
+assert config.server.host == 'localhost'
+assert config.server.port == '8080'
+</code></pre>
+
+  <p>Could return a <code>ConfigObject</code> (backward compat), a new immutable <code>Configuration</code> type, or simply a nested <code>Map</code>.</p>
+</div>
+
+<div class="layer">
+  <h4><span class="layer-num">3</span> Typed Config Binding</h4>
+  <p>Bind a loaded configuration to typed objects — the Groovy equivalent of Spring's <code>@ConfigurationProperties</code> or SmallRye's <code>@ConfigMapping</code>.</p>
+
+  <table>
+    <tr><th>Approach</th><th>Notes</th></tr>
+    <tr><td>POJO/record-based (Spring style)</td><td>Bind config subtree to a class. Jackson's <code>convertValue</code> already does this — established pattern from XML work.</td></tr>
+    <tr><td>Interface-based (SmallRye style)</td><td>Define interface, get implementation auto-generated. Natural fit for Groovy with AST transforms.</td></tr>
+    <tr><td>Groovy-native: <code>@Immutable</code> + binding</td><td>Leverage Groovy's existing AST transforms for immutable config objects.</td></tr>
+    <tr><td>Relaxed binding</td><td><code>serverHost</code>, <code>server-host</code>, <code>server_host</code>, <code>SERVER_HOST</code> all match the same property.</td></tr>
+  </table>
+
+  <p><strong>Potential API:</strong></p>
+<pre><code>// POJO/record binding (simplest, uses Jackson convertValue)
+def serverConfig = config.getAs(ServerConfig, 'server')
+
+// Or with an annotation-driven approach
+@ConfigMapping(prefix = 'server')
+record ServerConfig(String host, int port, boolean debug) {}
+
+def config = ConfigLoader.load('application.yaml')
+def server = config.bind(ServerConfig)
+</code></pre>
+</div>
+
+<div class="layer">
+  <h4><span class="layer-num">4</span> ConfigSlurper Evolution</h4>
+  <p>What to do with ConfigSlurper itself:</p>
+
+  <table>
+    <tr><th>Option</th><th>Trade-offs</th></tr>
+    <tr><td><strong>A: Leave in core, deprecate nothing</strong></td><td>No breakage, but users continue hitting known bugs.</td></tr>
+    <tr><td><strong>B: Move to groovy-properties</strong></td><td>Package change breaks imports. Could provide <code>groovy.util.ConfigSlurper</code> stub that delegates.</td></tr>
+    <tr><td><strong>C: New <code>ConfigSlurper2</code> in groovy-properties</strong></td><td>Fix known issues (thread safety, hyphenated keys, reserved words). Old one stays for compat.</td></tr>
+    <tr><td><strong>D: Deprecate in favour of Layer 2</strong></td><td>If the format-agnostic loader is good enough, ConfigSlurper's DSL becomes just one format option among many.</td></tr>
+  </table>
+
+  <div class="note">
+    ConfigSlurper's unique value is the Groovy DSL syntax (closures, expressions, environments). If a new config loader can handle <code>.groovy</code> config files as one of its formats — delegating to a fixed ConfigSlurper internally — then the public API shifts to the loader and ConfigSlurper becomes an implementation detail.
+  </div>
+</div>
+
+<h2>Suggested Priorities</h2>
+<table>
+  <tr><th>Priority</th><th>Item</th><th>Value</th><th>Effort</th></tr>
+  <tr>
+    <td><strong>1</strong></td>
+    <td><code>groovy-properties</code> with <code>PropertiesSlurper</code> (hierarchical key expansion, no deps)</td>
+    <td>Fills an obvious gap; consistent with other format modules</td>
+    <td><span class="tag tag-small">Small</span></td>
+  </tr>
+  <tr>
+    <td><strong>2</strong></td>
+    <td><code>parseAs</code> for properties via Jackson</td>
+    <td>Consistent typed parsing story across all formats</td>
+    <td><span class="tag tag-small">Small</span></td>
+  </tr>
+  <tr>
+    <td><strong>3</strong></td>
+    <td>Multi-format <code>ConfigLoader</code> with source merging + profiles</td>
+    <td>The real config story; enables frameworks to standardise</td>
+    <td><span class="tag tag-medium">Medium</span></td>
+  </tr>
+  <tr>
+    <td><strong>4</strong></td>
+    <td>Typed config binding with relaxed key matching</td>
+    <td>The developer experience win</td>
+    <td><span class="tag tag-medium">Medium</span></td>
+  </tr>
+  <tr>
+    <td><strong>5</strong></td>
+    <td>ConfigSlurper thread-safety fix or replacement</td>
+    <td>Addresses long-standing bugs</td>
+    <td><span class="tag tag-large">Medium–Large</span></td>
+  </tr>
+  <tr>
+    <td><strong>6</strong></td>
+    <td>Expression evaluation (<code>${VAR:default}</code>)</td>
+    <td>Expected by modern developers</td>
+    <td><span class="tag tag-medium">Small–Medium</span></td>
+  </tr>
+  <tr>
+    <td><strong>7</strong></td>
+    <td>Hot reload / file watching</td>
+    <td>Nice-to-have, not essential for v1</td>
+    <td><span class="tag tag-medium">Medium</span></td>
+  </tr>
+</table>
+
+<h2>Key Design Questions</h2>
+<ol>
+  <li><strong>Should <code>groovy-properties</code> be purely a format module (like csv/toml/yaml), or also the home for config-loading logic?</strong> Starting as a format module and adding config-loading later — possibly as a separate <code>groovy-config</code> module — keeps things focused.</li>
+  <li><strong>What's the return type for config loading?</strong> <code>ConfigObject</code> (backward compat, mutable), a new immutable <code>Configuration</code> type, or just <code>Map</code>? ConfigObject's auto-creating behaviour (<code>config.foo.bar</code> creates intermediate entries on read) is convenient but also a source of bugs.</li>
+  <li><strong>Should Grails be consulted on the design?</strong> They're deprecating their custom config infrastructure and converging on Spring. They might welcome a Groovy-native config module that reduces their custom code — or they might be too far down the Spring path to benefit.</li>
+  <li><strong>Where does <code>groovy-config</code> end and frameworks begin?</strong> Expression evaluation, profile conventions, and source precedence are opinionated. How much should live in Groovy vs. be left to Grails/Micronaut/etc.?</li>
+</ol>
+
+<hr>
+<p style="color: #888; font-size: 0.9em;"><em>Generated 2026-04-13. For discussion purposes.</em></p>
+
+</body>
+</html>

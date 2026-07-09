@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Assessment: Hardening Closure Deserialization Against Reference-Cycle DoS</title>
+<style>
+  :root {
+    --bg: #fdfdfd;
+    --fg: #222;
+    --accent: #2563eb;
+    --accent-light: #dbeafe;
+    --green: #16a34a;
+    --green-light: #dcfce7;
+    --red: #dc2626;
+    --red-light: #fee2e2;
+    --amber: #d97706;
+    --amber-light: #fef3c7;
+    --gray: #64748b;
+    --gray-light: #f1f5f9;
+    --border: #e2e8f0;
+    --code-bg: #f8fafc;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    color: var(--fg);
+    background: var(--bg);
+    line-height: 1.65;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+  h1 { font-size: 1.75rem; margin-bottom: .25rem; }
+  h2 { font-size: 1.35rem; margin-top: 2.5rem; margin-bottom: .75rem; border-bottom: 2px solid var(--accent); padding-bottom: .3rem; }
+  h3 { font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: .5rem; }
+  p, li { margin-bottom: .5rem; }
+  ul, ol { padding-left: 1.5rem; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: .88em;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: .1em .35em;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1rem;
+    overflow-x: auto;
+    font-size: .85rem;
+    line-height: 1.5;
+    margin: .75rem 0 1rem;
+  }
+  pre code { border: none; padding: 0; background: none; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: .75rem 0 1rem;
+    font-size: .9rem;
+  }
+  th, td {
+    text-align: left;
+    padding: .45rem .6rem;
+    border: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th { background: var(--gray-light); font-weight: 600; }
+  td.ok { color: var(--green); font-weight: 600; }
+  td.bad { color: var(--red); font-weight: 600; }
+  .subtitle { color: var(--gray); font-size: .95rem; margin-bottom: 1.5rem; }
+  .badge {
+    display: inline-block;
+    font-size: .75rem;
+    font-weight: 600;
+    padding: .15em .55em;
+    border-radius: 4px;
+    vertical-align: middle;
+  }
+  .badge-green { background: var(--green-light); color: var(--green); }
+  .badge-red   { background: var(--red-light);   color: var(--red); }
+  .badge-amber { background: var(--amber-light); color: var(--amber); }
+  .badge-blue  { background: var(--accent-light); color: var(--accent); }
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: var(--accent-light);
+    padding: .75rem 1rem;
+    margin: 1rem 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .callout-amber { border-left-color: var(--amber); background: var(--amber-light); }
+  .callout-green { border-left-color: var(--green); background: var(--green-light); }
+  .verdict {
+    display: inline-block;
+    padding: .6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin: .5rem 0;
+  }
+  .verdict-proposed { background: var(--amber-light); color: var(--amber); }
+  .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
+  .summary-card { border: 1px solid var(--border); border-radius: 8px; padding: 1rem; }
+  .summary-card h4 { margin-bottom: .4rem; font-size: .95rem; }
+  .section-anchor { scroll-margin-top: 1rem; }
+  @media (max-width: 640px) {
+    .summary-grid { grid-template-columns: 1fr; }
+    table { font-size: .8rem; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Hardening <code>Closure</code> Deserialization Against Reference-Cycle DoS</h1>
+<p class="subtitle">
+  Security assessment &middot;
+  Originating report: private disclosure &ldquo;CurriedClosure deserialization DoS&rdquo; (researcher &ldquo;sonomon&rdquo;) &middot;
+  Affects: Apache Groovy &le; 5.0.3 (and current) &middot;
+  27 June 2026
+</p>
+
+<div class="callout callout-amber">
+  <strong>Status:</strong>
+  <span class="verdict verdict-proposed">Proposed &mdash; pending team review</span><br>
+  The patch and tests below are implemented and green locally, but the decision to ship
+  (and the precise rejection message / changelog wording) is not yet ratified by the team.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="summary" class="section-anchor">1. Summary</h2>
+
+<p>A security researcher reported that a hand-crafted serialized <code>CurriedClosure</code> whose
+<code>owner</code>/<code>delegate</code> point at itself triggers a <code>StackOverflowError</code> when
+deserialized-and-invoked, proposing it as a Denial-of-Service vulnerability. The PoC reuses
+the <em>ysoserial</em> toolkit and pivots through the JDK-internal
+<code>AnnotationInvocationHandler</code> gadget.</p>
+
+<div class="summary-grid">
+  <div class="summary-card">
+    <h4>Is it a CVE?</h4>
+    <p><span class="badge badge-red">No</span> &mdash; consistent with the team consensus.
+    Exploitation requires an application that deserializes <em>untrusted</em> Java-serialized
+    data, which is itself the root vulnerability. The closure is merely one more gadget.</p>
+  </div>
+  <div class="summary-card">
+    <h4>Should we harden anyway?</h4>
+    <p><span class="badge badge-green">Yes</span> &mdash; as defense-in-depth, <em>if</em> it can be
+    done without breaking legitimate closure serialization. This assessment shows it can.</p>
+  </div>
+</div>
+
+<p>The recommended fix rejects, <strong>at deserialization time</strong>, any closure whose
+<code>owner</code>/<code>delegate</code>/<code>thisObject</code> references form a cycle through other
+closures &mdash; the precise condition that causes the runaway recursion. It is invisible to all
+legitimate closures, including curried closures and the <code>dehydrate()</code>/<code>rehydrate()</code>
+round-trip.</p>
+
+<!-- ============================================================ -->
+<h2 id="rootcause" class="section-anchor">2. Root cause (confirmed)</h2>
+
+<p>Reproduced against <code>groovy-5.0.6</code>. A <code>CurriedClosure</code> allocated via
+<code>Unsafe</code> (bypassing the constructor) with <code>owner = this</code>:</p>
+
+<ul>
+  <li><strong>serializes cleanly</strong> (507 bytes) and <strong>deserializes cleanly</strong>;</li>
+  <li>the failure is on the first <strong>invocation</strong>:
+      <code>CurriedClosure.call &rarr; getOwner().call &rarr; (owner is self) &rarr; call &rarr; &hellip;</code>
+      &rarr; <code>StackOverflowError</code>.</li>
+</ul>
+
+<p>This is the same shape as Jochen&rsquo;s pure-Groovy example &mdash; a cyclic owner/delegate graph
+that recurses forever through the MOP:</p>
+
+<pre><code>class Obj { def delegate; def invokeMethod(String n, args){ delegate."$n"(*args) } }
+def o = new Obj(); o.delegate = o; o.foo()   // StackOverflowError</code></pre>
+
+<div class="callout">
+  The leverage point is <strong>serialization</strong>, not the MOP. A depth check or visited-set in
+  the MOP would either be a band-aid or impose a cost on the hot path; and as Jochen noted, a
+  self-only check is trivially defeated by &ldquo;one more closure in between&rdquo;. The only place an
+  attacker can <em>build</em> the cycle without writing Groovy is by forging a serialized stream, so
+  that is where the cycle should be rejected.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="rejected" class="section-anchor">3. Options that were ruled out</h2>
+
+<p>Two structural options were floated on the security thread. Both break behaviour that the test
+suite explicitly guarantees, so neither satisfies the &ldquo;don&rsquo;t break legitimate
+serialization&rdquo; constraint.</p>
+
+<table>
+  <tr><th>Option</th><th>Why it fails the constraint</th></tr>
+  <tr>
+    <td>(1) Remove <code>Serializable</code> from <code>Closure</code></td>
+    <td>Breaks all closure serialization, including real-world users (distributed caches/compute
+        frameworks) and the suite&rsquo;s own round-trip tests.</td>
+  </tr>
+  <tr>
+    <td>(2) Make <code>owner</code>/<code>delegate</code>/<code>thisObject</code> <code>transient</code>
+        (require a rehydrated closure)</td>
+    <td>They would deserialize as <code>null</code>. But <code>Groovy11272.testSerialVersionUID_2/3</code>
+        serialize a closure <em>without</em> <code>dehydrate()</code> and require it to be callable after
+        the round-trip. <code>dehydrate()</code>/<code>rehydrate()</code> exist (since 1.8.5) but are
+        <em>opt-in</em>; we cannot make them mandatory without breaking those tests.</td>
+  </tr>
+</table>
+
+<!-- ============================================================ -->
+<h2 id="fix" class="section-anchor">4. Recommended fix</h2>
+
+<p>Expose a <strong><code>static</code></strong> helper
+<code>Closure.checkForReferenceCycle(Closure)</code> that runs a depth-first search over the <em>raw</em>
+<code>owner</code>/<code>delegate</code>/<code>thisObject</code> fields, following only
+<code>Closure</code>-valued links, and throws <code>InvalidObjectException</code> on any reference cycle.
+Groovy&rsquo;s built-in serializable gadget closures &mdash; both <code>final</code> &mdash; call it from
+their own <code>private readResolve()</code>:</p>
+
+<pre><code>// in Closure (static; not inheritable, so no impact on subclasses)
+protected static void checkForReferenceCycle(Closure&lt;?&gt; root) throws InvalidObjectException {
+    // iterative grey/black DFS over raw owner/delegate/thisObject; throws on a cycle
+}
+
+// in CurriedClosure and ComposedClosure (both final)
+@Serial
+private Object readResolve() throws ObjectStreamException {
+    Closure.checkForReferenceCycle(this);
+    return this;
+}</code></pre>
+
+<h3>4.1 Four design points that matter</h3>
+<table>
+  <tr><th>Decision</th><th>Reason</th></tr>
+  <tr>
+    <td>A <code>static</code> helper + per-class <code>private readResolve()</code>, <strong>not</strong> a
+        hook on <code>Closure</code> itself.</td>
+    <td>A hook on <code>Closure</code> would have to be <code>protected</code> to be inherited by generated
+        subclasses, which forces every external subclass declaring the idiomatic
+        <code>private readResolve()</code> (the <em>Effective Java</em>-recommended form) to widen its
+        visibility and <strong>fail to compile</strong>. A <code>static</code> method is never inherited or
+        overridden, so it carries no such risk; the gadget closures are <code>final</code>, so their
+        <code>private readResolve()</code> needs no inheritance. <em>(This is the change made in response to
+        the Copilot review &mdash; see &sect;6.)</em></td>
+  </tr>
+  <tr>
+    <td>Use <code>readResolve</code>, <strong>not</strong> <code>readObject</code>.</td>
+    <td>A custom <code>readObject</code> interposes a core-loaded frame on the stack <em>while the
+        closure&rsquo;s fields are read</em>, shifting <code>ObjectInputStream</code>&rsquo;s
+        <code>latestUserDefinedLoader()</code> from the script&rsquo;s <code>GroovyClassLoader</code> to the
+        core loader &mdash; breaking deserialization of any closure whose captured field references a
+        dynamically-generated type (caught by <code>IntersectionClosureLiteralTest</code>).
+        <code>readResolve</code> runs <em>after</em> fields are read, so it does not affect class
+        resolution.</td>
+  </tr>
+  <tr>
+    <td>Walk the <strong>raw fields</strong>, not the getters.</td>
+    <td><code>CurriedClosure.getDelegate()</code> calls <code>getOwner().getDelegate()</code>; using the
+        getters on the malicious graph would itself <code>StackOverflow</code>. The helper lives in
+        <code>Closure</code>, so it reads the private fields of every node directly, bypassing subclass
+        overrides.</td>
+  </tr>
+  <tr>
+    <td>Use <strong>grey/black DFS coloring</strong>, not a plain &ldquo;visited&rdquo; set.</td>
+    <td>A curried closure&rsquo;s <code>owner</code> and <code>delegate</code> point at the <em>same</em>
+        wrapped clone (a shared reference / diamond, not a cycle). A naive &ldquo;revisited &rArr;
+        cycle&rdquo; rule gives a <strong>false positive</strong> on every curried closure; path-coloring
+        distinguishes a back-edge (real cycle) from a shared reference.</td>
+  </tr>
+</table>
+
+<p>The walk is iterative (explicit stack) so a very long non-cyclic closure chain cannot blow the
+check&rsquo;s own stack. It traverses only closure-valued links, so cost is proportional to the closure
+graph and zero on the runtime hot path. Because <code>readResolve</code> throwing aborts the entire
+deserialization, it is sufficient for <em>any one</em> node on a cycle to detect it &mdash; and the
+outermost cycle participant (whose links are all wired by the time its <code>readResolve</code> runs)
+always does.</p>
+
+<div class="callout callout-green">
+  This answers Jochen&rsquo;s objection directly: it catches arbitrary-length closure cycles
+  (A&harr;B, A&rarr;B&rarr;C&rarr;A, &hellip;), not just direct self-reference.
+</div>
+
+<h3>4.2 Coverage and the opt-in for other subclasses</h3>
+<p>The check is wired into the two portable, classpath-guaranteed gadget closures
+(<code>CurriedClosure</code> &mdash; the reported one &mdash; and <code>ComposedClosure</code>).
+<code>MethodClosure</code> already hard-blocks deserialization (it throws unless <code>ALLOW_RESOLVE</code>
+&mdash; the CVE-2015-3253 fix; under <code>ALLOW_RESOLVE</code> it now also runs the cycle check).
+Compiler-generated and external <code>Closure</code> subclasses are <em>not</em> auto-checked, but those are
+not portable gadgets (an attacker needs an app-specific class they already know), and any such subclass can
+opt in with the same one-line <code>private readResolve()</code>. This is the deliberate trade-off that keeps
+the change <strong>fully source-compatible</strong> for existing <code>Closure</code> subclasses.</p>
+
+<!-- ============================================================ -->
+<h2 id="validation" class="section-anchor">5. Validation</h2>
+
+<h3>5.1 Algorithm behaviour (empirically verified)</h3>
+<table>
+  <tr><th>Graph</th><th>Detected as cycle?</th><th>Desired</th></tr>
+  <tr><td>self-cycle (<code>owner = this</code>) &mdash; the published PoC</td><td class="ok">yes</td><td>yes</td></tr>
+  <tr><td>A&harr;B two-closure cycle (&ldquo;one more in between&rdquo;)</td><td class="ok">yes</td><td>yes</td></tr>
+  <tr><td>legit simple closure (<code>owner</code> = enclosing object)</td><td class="ok">no</td><td>no</td></tr>
+  <tr><td>legit curried closure (<code>owner</code>/<code>delegate</code> share a clone)</td><td class="ok">no</td><td>no</td></tr>
+</table>
+
+<h3>5.2 Tests added</h3>
+<p>New <code>groovy.lang.ClosureSerializationCycleTest</code> (6 tests):</p>
+<ul>
+  <li>self-referential <code>CurriedClosure</code> &rarr; <code>InvalidObjectException</code> on deserialize;</li>
+  <li>mutual (A&harr;B) cycle &rarr; <code>InvalidObjectException</code> on deserialize;</li>
+  <li>self-referential <code>ComposedClosure</code> &rarr; <code>InvalidObjectException</code> on deserialize;</li>
+  <li>legitimate closure round-trips and remains callable;</li>
+  <li>legitimate <em>curried</em> closure round-trips and remains callable (the diamond case);</li>
+  <li>legitimate <em>composed</em> closure round-trips and remains callable.</li>
+</ul>
+
+<h3>5.3 Regression</h3>
+<p>The serialization/closure regression sweep
+(<code>Groovy11272</code>, <code>IntersectionClosureLiteralTest</code>, <code>ClosureComposeTest</code>,
+<code>ClosureCurryTest</code>, <code>ClosureTest</code>, <code>ReferenceSerializationTest</code>,
+<code>MethodClosure</code> tests) plus the new class: <strong>all green</strong> (1231 in the combined run).</p>
+
+<!-- ============================================================ -->
+<h2 id="review" class="section-anchor">6. Review response (Copilot)</h2>
+<p>The automated review raised three points; all were actioned.</p>
+<table>
+  <tr><th>Comment</th><th>Verdict</th><th>Action</th></tr>
+  <tr>
+    <td><em>A <code>protected readResolve</code> on the widely-subclassed <code>Closure</code> breaks any
+        subclass that declares the idiomatic <code>private readResolve()</code>.</em></td>
+    <td><span class="badge badge-green">Valid</span> (the suggested private-on-<code>Closure</code> remedy was
+        unworkable &mdash; a private hook isn&rsquo;t inherited, so it would never run for real, generated
+        closures)</td>
+    <td>Redesigned: no hook on <code>Closure</code> at all. A non-overridable <code>static</code> helper
+        plus <code>private readResolve()</code> on the <code>final</code> gadget classes. Fully
+        source-compatible. (&sect;4.1)</td>
+  </tr>
+  <tr>
+    <td><em><code>MethodClosure.readResolve</code> bypasses the cycle check when <code>ALLOW_RESOLVE</code>
+        is set.</em></td>
+    <td><span class="badge badge-green">Valid</span> (minor)</td>
+    <td>Under <code>ALLOW_RESOLVE</code>, <code>MethodClosure.readResolve</code> now calls
+        <code>Closure.checkForReferenceCycle(this)</code> before returning.</td>
+  </tr>
+  <tr>
+    <td><em>The <code>grey</code> structure is used only as a key-set; use an identity <code>Set</code>.</em></td>
+    <td><span class="badge badge-green">Valid</span> (trivial)</td>
+    <td>Changed to <code>Collections.newSetFromMap(new IdentityHashMap&lt;&gt;())</code>, matching
+        <code>black</code>.</td>
+  </tr>
+</table>
+
+<!-- ============================================================ -->
+<h2 id="residual" class="section-anchor">7. Residual risk (by design)</h2>
+
+<p>This does <strong>not</strong> prevent a pure-Groovy self-inflicted infinite recursion
+(<code>cl.delegate = cl; cl()</code>). That is not a vulnerability &mdash; it is user code recursing on
+itself &mdash; and trying to block it in the MOP is the rabbit hole the team already declined to enter.
+Likewise, compiler-generated and external <code>Closure</code> subclasses are not auto-checked (see
+&sect;4.2); they are not portable gadgets and can opt in. The hardening is scoped precisely to the
+attacker-controlled vector: deserialization of the built-in gadget closures.</p>
+
+<!-- ============================================================ -->
+<h2 id="files" class="section-anchor">8. Change inventory</h2>
+<table>
+  <tr><th>File</th><th>Change</th></tr>
+  <tr><td><code>src/main/java/groovy/lang/Closure.java</code></td>
+      <td><code>protected static checkForReferenceCycle(Closure)</code> helper (iterative grey/black DFS) + private <code>Marker</code> sentinel; 5 new imports. No instance hook &mdash; no subclass impact.</td></tr>
+  <tr><td><code>src/main/java/org/codehaus/groovy/runtime/CurriedClosure.java</code></td>
+      <td><code>private readResolve()</code> calling the helper</td></tr>
+  <tr><td><code>src/main/java/org/codehaus/groovy/runtime/ComposedClosure.java</code></td>
+      <td><code>private readResolve()</code> calling the helper</td></tr>
+  <tr><td><code>src/main/java/org/codehaus/groovy/runtime/MethodClosure.java</code></td>
+      <td><code>readResolve</code> stays <code>private</code>; now runs the cycle check under <code>ALLOW_RESOLVE</code></td></tr>
+  <tr><td><code>src/test/groovy/groovy/lang/ClosureSerializationCycleTest.groovy</code> <span class="badge badge-blue">NEW</span></td>
+      <td>6 tests covering rejection of malicious cycles and round-trip of legitimate closures</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<h2 id="recommendation" class="section-anchor">9. Recommendation</h2>
+<ol>
+  <li>Confirm the &ldquo;not a CVE&rdquo; classification back to the reporter, with thanks; the
+      hardening ships as defense-in-depth, not a security release.</li>
+  <li>Adopt the <code>static</code>-helper design over an inheritable hook on <code>Closure</code>: it
+      closes the A&harr;B variant, keeps the change source-compatible for all existing subclasses, and
+      offers the same opt-in to any other serializable closure subclass.</li>
+  <li>Decide the user-facing wording of the <code>InvalidObjectException</code> and whether a changelog
+      note is warranted.</li>
+</ol>
+
+<p class="subtitle" style="margin-top:2rem;">All calls in this document are proposed pending team review.</p>
+
+</body>
+</html>

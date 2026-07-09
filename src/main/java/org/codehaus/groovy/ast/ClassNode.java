@@ -1820,23 +1820,19 @@ faces:  if (method == null && asBoolean(getInterfaces())) { // GROOVY-11323
     }
 
     private void visitMethods(GroovyClassVisitor visitor) {
-        // create snapshot of the method list to avoid ConcurrentModificationException
-        List<MethodNode> methodList = new ArrayList<>(getMethods());
-        for (MethodNode mn : methodList) {
-            visitor.visitMethod(mn);
-        }
-
-        // visit the method nodes added while iterating,
-        // e.g. synthetic method for constructor reference
-        final List<MethodNode> newMethodList = getMethods();
-        if (newMethodList.size() > methodList.size()) { // if the newly added method nodes found, visit them
-            List<MethodNode> changedMethodList = new ArrayList<>(newMethodList);
-            boolean changed = changedMethodList.removeAll(methodList);
-            if (changed) {
-                for (MethodNode mn : changedMethodList) {
-                    visitor.visitMethod(mn);
-                }
+        // Visit methods to a fixpoint: visiting a method (e.g. code generation) may itself add further
+        // methods to this class — a synthetic method for a constructor reference, or a hoisted method
+        // that in turn hoists nested ones — so keep visiting newly added methods until none remain.
+        List<MethodNode> visited = new ArrayList<>();
+        List<MethodNode> pending = new ArrayList<>(getMethods()); // snapshot avoids ConcurrentModificationException
+        int guard = 0;
+        while (!pending.isEmpty() && guard++ < 1_000_000) {
+            for (MethodNode mn : pending) {
+                visitor.visitMethod(mn);
+                visited.add(mn);
             }
+            pending = new ArrayList<>(getMethods());
+            pending.removeAll(visited); // identity-based; MethodNode uses default equals
         }
     }
 

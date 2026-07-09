@@ -1,0 +1,28 @@
+Subject: [PATCH] switchExpressionEnum
+---
+Index: src/main/java/org/codehaus/groovy/control/CompilationUnit.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/org/codehaus/groovy/control/CompilationUnit.java b/src/main/java/org/codehaus/groovy/control/CompilationUnit.java
+--- a/src/main/java/org/codehaus/groovy/control/CompilationUnit.java	(revision daabca58aafc64f42cf6a4679e57e66f66354889)
++++ b/src/main/java/org/codehaus/groovy/control/CompilationUnit.java	(date 1744720585502)
+@@ -31,6 +31,7 @@
+ import org.codehaus.groovy.ast.InnerClassNode;
+ import org.codehaus.groovy.ast.ModuleNode;
+ import org.codehaus.groovy.ast.expr.Expression;
++import org.codehaus.groovy.ast.expr.MethodCallExpression;
+ import org.codehaus.groovy.ast.expr.VariableExpression;
+ import org.codehaus.groovy.classgen.AsmClassGenerator;
+ import org.codehaus.groovy.classgen.ClassCompletionVerifier;
+@@ -372,6 +373,9 @@
+                             setSourcePosition(propertyExpression, expression);
+                             return propertyExpression;
+                         }
++                    } else if (expression instanceof MethodCallExpression) {
++                        expression.visit(this);
++                        return expression;
+                     }
+                     return expression;
+                 }

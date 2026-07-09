@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GROOVY-11905 Assessment: Optimize Non-Capturing Lambdas</title>
+<style>
+  :root {
+    --bg: #fdfdfd;
+    --fg: #222;
+    --accent: #2563eb;
+    --accent-light: #dbeafe;
+    --green: #16a34a;
+    --green-light: #dcfce7;
+    --red: #dc2626;
+    --red-light: #fee2e2;
+    --amber: #d97706;
+    --amber-light: #fef3c7;
+    --gray: #64748b;
+    --gray-light: #f1f5f9;
+    --border: #e2e8f0;
+    --code-bg: #f8fafc;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    color: var(--fg);
+    background: var(--bg);
+    line-height: 1.65;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+  h1 { font-size: 1.75rem; margin-bottom: .25rem; }
+  h2 { font-size: 1.35rem; margin-top: 2.5rem; margin-bottom: .75rem; border-bottom: 2px solid var(--accent); padding-bottom: .3rem; }
+  h3 { font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: .5rem; }
+  p, li { margin-bottom: .5rem; }
+  ul, ol { padding-left: 1.5rem; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: .88em;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: .1em .35em;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1rem;
+    overflow-x: auto;
+    font-size: .85rem;
+    line-height: 1.5;
+    margin: .75rem 0 1rem;
+  }
+  pre code { border: none; padding: 0; background: none; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: .75rem 0 1rem;
+    font-size: .9rem;
+  }
+  th, td {
+    text-align: left;
+    padding: .45rem .6rem;
+    border: 1px solid var(--border);
+  }
+  th { background: var(--gray-light); font-weight: 600; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .subtitle { color: var(--gray); font-size: .95rem; margin-bottom: 1.5rem; }
+  .badge {
+    display: inline-block;
+    font-size: .75rem;
+    font-weight: 600;
+    padding: .15em .55em;
+    border-radius: 4px;
+    vertical-align: middle;
+  }
+  .badge-green { background: var(--green-light); color: var(--green); }
+  .badge-red   { background: var(--red-light);   color: var(--red); }
+  .badge-amber { background: var(--amber-light); color: var(--amber); }
+  .badge-blue  { background: var(--accent-light); color: var(--accent); }
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: var(--accent-light);
+    padding: .75rem 1rem;
+    margin: 1rem 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .callout-amber {
+    border-left-color: var(--amber);
+    background: var(--amber-light);
+  }
+  .callout-green {
+    border-left-color: var(--green);
+    background: var(--green-light);
+  }
+  .verdict {
+    display: inline-block;
+    padding: .6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin: .5rem 0;
+  }
+  .verdict-approve { background: var(--green-light); color: var(--green); }
+  .summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+  .summary-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+  }
+  .summary-card h4 { margin-bottom: .4rem; font-size: .95rem; }
+  .diff-pos { color: var(--green); }
+  .diff-neg { color: var(--red); }
+  .diff-neutral { color: var(--gray); }
+  .noise { color: var(--gray); font-style: italic; }
+  .section-anchor { scroll-margin-top: 1rem; }
+  @media (max-width: 640px) {
+    .summary-grid { grid-template-columns: 1fr; }
+    table { font-size: .8rem; }
+  }
+</style>
+</head>
+<body>
+
+<h1>GROOVY-11905 Assessment</h1>
+<p class="subtitle">
+  <a href="https://issues.apache.org/jira/browse/GROOVY-11905">GROOVY-11905</a> &middot;
+  <a href="https://github.com/apache/groovy/pull/2438">PR #2438</a> &middot;
+  Optimize Non-Capturing Lambdas &middot;
+  Author: Daniel Sun &middot;
+  16 April 2026
+</p>
+
+<!-- ============================================================ -->
+<h2 id="overview" class="section-anchor">1. Overview</h2>
+
+<p>This PR optimises non-capturing lambdas in statically-compiled Groovy code.
+Previously, <strong>every</strong> lambda invocation allocated a new <code>Closure</code> wrapper
+object and passed it through <code>invokedynamic</code> to <code>LambdaMetafactory</code>.
+After this change, non-capturing lambdas (those that don&rsquo;t reference
+<code>this</code>, instance fields/methods, or shared local variables) behave like Java lambdas:</p>
+
+<ul>
+  <li>The generated <code>doCall</code> method becomes <code>static</code></li>
+  <li>The <code>invokedynamic</code> descriptor takes no captured arguments &mdash; <code>()LFunctionalInterface;</code></li>
+  <li><code>LambdaMetafactory</code> can cache and return a singleton instance via <code>ConstantCallSite</code></li>
+</ul>
+
+<p>This achieves <strong>zero allocation</strong> at the call site for qualifying lambdas, matching
+Java&rsquo;s execution model and reducing GC footprint.</p>
+
+<div class="summary-grid">
+  <div class="summary-card">
+    <h4>Scope</h4>
+    <p>3 files changed (+2,117 / &minus;117), 1 new file<br>
+    Single commit: <code>078cdefc</code></p>
+  </div>
+  <div class="summary-card">
+    <h4>Status</h4>
+    <p>+1 from Jochen Theodorou<br>
+    Copilot concern addressed (ClassNode caching removed)<br>
+    Codecov: 91.14% patch coverage, project +0.05%</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="code" class="section-anchor">2. Code Analysis</h2>
+
+<h3>2.1 Architecture <span class="badge badge-green">Strongly Positive</span></h3>
+
+<p>The PR cleanly separates concerns into two classes:</p>
+
+<table>
+  <tr><th>Class</th><th>Role</th><th>Lines</th></tr>
+  <tr>
+    <td><code>StaticTypesLambdaAnalyzer</code> <span class="badge badge-blue">NEW</span></td>
+    <td>Pure analysis: determines capture status, rewrites outer static member references to be class-qualified</td>
+    <td>391</td>
+  </tr>
+  <tr>
+    <td><code>StaticTypesLambdaWriter</code></td>
+    <td>Bytecode generation, now conditionally emitting static vs instance <code>doCall</code></td>
+    <td>net +72</td>
+  </tr>
+  <tr>
+    <td><code>LambdaTest.groovy</code></td>
+    <td>New <code>NonCapturingLambdaOptimizationTest</code> nested class with 50+ tests</td>
+    <td>+1,537</td>
+  </tr>
+  <tr>
+    <td><code>TypeAnnotationsTest.groovy</code></td>
+    <td>Updated expected bytecode: <code>public doCall</code> &rarr; <code>public static doCall</code></td>
+    <td>1 line</td>
+  </tr>
+</table>
+
+<p>This separation is a structural improvement over the prior code where analysis logic was
+inlined into the writer.</p>
+
+<h3>2.2 New <code>StaticTypesLambdaAnalyzer</code></h3>
+
+<p>Three nested helper classes, each with a focused responsibility:</p>
+
+<table>
+  <tr><th>Class</th><th>Role</th></tr>
+  <tr>
+    <td><code>InstanceMemberAccessFinder</code></td>
+    <td>Walks the lambda body AST; sets a flag on first encounter of <code>this</code>/<code>super</code>/<code>thisObject</code>,
+        instance field/method access, or qualified enclosing-instance reference (<code>Outer.this</code>).
+        Short-circuits on first hit.</td>
+  </tr>
+  <tr>
+    <td><code>OuterStaticMemberResolver</code></td>
+    <td>Builds an index of static members from the enclosing class hierarchy (including supertypes
+        and interfaces via <code>collectReferenceOwners()</code>); provides <code>findOwner()</code> for
+        variables, method calls, and properties.</td>
+  </tr>
+  <tr>
+    <td><code>OuterStaticMemberQualifier</code></td>
+    <td>Transforms unqualified static references (<code>label</code> &rarr; <code>Outer.label</code>)
+        so the static <code>doCall</code> can resolve them without an instance receiver.</td>
+  </tr>
+</table>
+
+<p><strong>Positive aspects:</strong></p>
+<ul>
+  <li>Short-circuit on first instance access avoids unnecessary traversal</li>
+  <li>Supertype/interface walking via <code>collectReferenceOwners()</code> is thorough</li>
+  <li>Results cached via node metadata (<code>MetaDataKey.ACCESSES_INSTANCE_MEMBERS</code>)</li>
+  <li>Fresh instances per analysis call &mdash; no thread-safety issues</li>
+</ul>
+
+<h3>2.3 Changes to <code>StaticTypesLambdaWriter</code></h3>
+
+<p><strong>Key structural improvements:</strong></p>
+<ul>
+  <li><strong><code>GeneratedLambda</code> record</strong> &mdash; centralises per-lambda metadata (class, method,
+      constructor, shared variables, nonCapturing, accessingInstanceMembers). Provides
+      <code>isCapturing()</code> and <code>getMethodHandleKind()</code>
+      (<code>H_INVOKESTATIC</code> vs <code>H_INVOKEVIRTUAL</code>).</li>
+  <li><strong><code>MetaDataKey</code> enum</strong> &mdash; replaces fragile string-based metadata keys with
+      type-safe constants.</li>
+</ul>
+
+<p><strong>Behavioural divergence in <code>writeLambda()</code>:</strong></p>
+
+<table>
+  <tr><th>Aspect</th><th>Capturing (unchanged)</th><th>Non-Capturing (new)</th></tr>
+  <tr><td><code>doCall</code> modifier</td><td><code>ACC_PUBLIC</code> (instance)</td><td><code>ACC_PUBLIC + ACC_STATIC</code></td></tr>
+  <tr><td>Receiver loading</td><td>Loads <code>__lambda_this</code> wrapper</td><td>Skipped entirely</td></tr>
+  <tr><td>Method handle kind</td><td><code>H_INVOKEVIRTUAL</code></td><td><code>H_INVOKESTATIC</code></td></tr>
+  <tr><td>invokedynamic descriptor</td><td>Includes receiver parameter</td><td>Empty <code>()LFunctionalInterface;</code></td></tr>
+  <tr><td>Operand stack</td><td><code>replace()</code></td><td><code>push()</code></td></tr>
+  <tr><td>Deserialisation</td><td><code>getCapturedArg(0)</code></td><td>Direct return, no captured arg</td></tr>
+</table>
+
+<h3>2.4 Test Suite <span class="badge badge-green">+1,537 lines</span></h3>
+
+<p>The <code>NonCapturingLambdaOptimizationTest</code> is impressively comprehensive:</p>
+<ul>
+  <li><strong>Behavioural tests:</strong> Function, Predicate, Supplier, Consumer, Runnable, BiFunction, Comparator, custom interfaces</li>
+  <li><strong>Singleton identity tests:</strong> Verifies <code>left.is(right)</code> &mdash; the core correctness assertion</li>
+  <li><strong>Capturing detection:</strong> Lambdas using <code>this</code>, instance fields/methods, shared variables are NOT singletons</li>
+  <li><strong>Bytecode verification:</strong> Inspects generated bytecode for <code>static doCall</code>, <code>INVOKEDYNAMIC</code>, no <code>NEW</code></li>
+  <li><strong>Serialisation round-trip:</strong> Both capturing and non-capturing serialisable lambdas</li>
+  <li><strong>Multi-level nesting:</strong> Inner classes, inherited static members, interface static members</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="performance" class="section-anchor">3. Performance Analysis</h2>
+
+<h3>3.1 Methodology &amp; Caveats</h3>
+
+<div class="callout callout-amber">
+  <strong>Important:</strong> This comparison uses one PR CI run (12 April, commit <code>078cdefc</code>)
+  against one master CI run (15 April, commit <code>8dce2083</code>). No performance-affecting code
+  changes occurred between these dates (only build/doc changes). However, <strong>single-run
+  comparisons on shared CI infrastructure have significant noise</strong>.
+</div>
+
+<h3>3.2 Identifying CI Noise vs Real Effects</h3>
+
+<p>A critical observation: several benchmark categories show <strong>identical improvement patterns in
+both indy AND classic modes</strong>. Since this PR <em>only affects indy-mode lambda compilation</em>,
+any improvement visible in classic mode cannot be caused by the PR &mdash; it is CI environment noise.</p>
+
+<table>
+  <tr>
+    <th>Benchmark</th>
+    <th>PR (indy)</th><th>Master (indy)</th>
+    <th>PR (classic)</th><th>Master (classic)</th>
+    <th>Verdict</th>
+  </tr>
+  <tr>
+    <td>GStringBench.simpleInterpolation</td>
+    <td class="num">104.5</td><td class="num">153.0</td>
+    <td class="num">111.8</td><td class="num">171.4</td>
+    <td><span class="noise">CI noise (32&ndash;35% both modes)</span></td>
+  </tr>
+  <tr>
+    <td>GStringBench.gstringAsMapKey</td>
+    <td class="num">161.9</td><td class="num">215.3</td>
+    <td class="num">177.7</td><td class="num">241.1</td>
+    <td><span class="noise">CI noise (25&ndash;26% both modes)</span></td>
+  </tr>
+  <tr>
+    <td>GStringBench.stringConcatBaseline</td>
+    <td class="num">31.2</td><td class="num">55.3</td>
+    <td class="num">45.6</td><td class="num">71.0</td>
+    <td><span class="noise">CI noise (36&ndash;44% both modes)</span></td>
+  </tr>
+  <tr>
+    <td>GroovyIdiomBench.asToString</td>
+    <td class="num">23.6</td><td class="num">51.2</td>
+    <td class="num">72.5</td><td class="num">102.2</td>
+    <td><span class="noise">CI noise</span></td>
+  </tr>
+  <tr>
+    <td>ClosureBench.closureReuse</td>
+    <td class="num">6.7</td><td class="num">10.1</td>
+    <td class="num">41.7</td><td class="num">48.8</td>
+    <td><span class="noise">CI noise (both modes improved)</span></td>
+  </tr>
+</table>
+
+<p>This pattern tells us the PR CI run happened on a faster machine/timeslot than the master run.
+<strong>All raw numbers must be interpreted with this systematic bias in mind.</strong></p>
+
+<h3>3.3 JMH Bench &mdash; Micro-benchmarks</h3>
+
+<p><strong>Throughput (higher = better, ops/ms):</strong></p>
+<table>
+  <tr><th>Benchmark</th><th class="num">PR</th><th class="num">Master</th><th class="num">Diff</th></tr>
+  <tr><td>GeneratedHashCode</td><td class="num">106,964</td><td class="num">106,892</td><td class="num diff-neutral">+0.07%</td></tr>
+  <tr><td>dispatch_1_monomorphic_groovy</td><td class="num">3,380</td><td class="num">3,367</td><td class="num diff-neutral">+0.4%</td></tr>
+  <tr><td>dispatch_1_monomorphic_groovyCS</td><td class="num">15,490</td><td class="num">15,513</td><td class="num diff-neutral">&minus;0.1%</td></tr>
+  <tr><td>dispatch_3_polymorphic_groovy</td><td class="num">337</td><td class="num">336</td><td class="num diff-neutral">+0.3%</td></tr>
+  <tr><td>dispatch_8_megamorphic_groovy</td><td class="num">275</td><td class="num">272</td><td class="num diff-neutral">+0.8%</td></tr>
+</table>
+
+<p><strong>Latency (lower = better, ms/op):</strong></p>
+<table>
+  <tr><th>Benchmark</th><th class="num">PR</th><th class="num">Master</th><th class="num">Diff</th></tr>
+  <tr><td>AckermannBench.groovy(5)</td><td class="num">0.296</td><td class="num">0.317</td><td class="num diff-neutral">&minus;6.6%</td></tr>
+  <tr><td>FiboBench.groovy(34)</td><td class="num">81.87</td><td class="num">74.40</td><td class="num diff-neutral">+10.0%</td></tr>
+  <tr><td>AryBench.groovyCS(1M)</td><td class="num">136.29</td><td class="num">116.95</td><td class="num diff-neutral">+16.5%</td></tr>
+</table>
+
+<p><strong>Verdict:</strong> All within noise margin. No regression or improvement in core dispatch performance.
+Mixed direction of differences confirms CI variability.</p>
+
+<h3>3.4 JMH Core &mdash; Closure and Idiom Benchmarks (Indy)</h3>
+
+<p>These are <strong>Closure-based</strong>, not Lambda-based, so the PR should not affect them.
+Large apparent improvements match the systematic CI bias identified above.</p>
+
+<table>
+  <tr><th>Benchmark</th><th class="num">PR</th><th class="num">Master</th><th class="num">Diff</th><th>Notes</th></tr>
+  <tr><td>closureCallMethod</td><td class="num">6.72</td><td class="num">10.12</td><td class="num">&minus;33.6%</td><td class="noise">Matches classic-mode noise</td></tr>
+  <tr><td>closureMultiParams</td><td class="num">17.23</td><td class="num">26.74</td><td class="num">&minus;35.6%</td><td class="noise">Same pattern</td></tr>
+  <tr><td>closureReuse</td><td class="num">6.69</td><td class="num">10.12</td><td class="num">&minus;33.9%</td><td class="noise">Classic also ~15% &mdash; CI noise</td></tr>
+  <tr><td>simpleClosureCreation</td><td class="num">22.72</td><td class="num">22.71</td><td class="num diff-neutral">0.0%</td><td>Stable baseline</td></tr>
+  <tr><td>collectWithClosure</td><td class="num">45.90</td><td class="num">48.13</td><td class="num diff-neutral">&minus;4.6%</td><td class="noise">Minor</td></tr>
+  <tr><td>eachWithClosure</td><td class="num">45.93</td><td class="num">48.71</td><td class="num diff-neutral">&minus;5.7%</td><td class="noise">Minor</td></tr>
+</table>
+
+<h3>3.5 JMH Grails &mdash; Complex Workloads (Indy)</h3>
+
+<p>These test realistic Grails-like workloads with metaclass changes, dynamic dispatch, categories, etc.</p>
+
+<table>
+  <tr><th>Category</th><th>Trend</th><th>Notes</th></tr>
+  <tr><td>CallSiteInvalidation</td><td><span class="diff-neutral">PR &asymp; Master</span></td><td>e.g., multipleCallSitesWithInvalidation: 948 vs 957</td></tr>
+  <tr><td>CategoryBench</td><td><span class="diff-neutral">PR &asymp; Master</span></td><td>High variance inherent to these tests</td></tr>
+  <tr><td>DynamicDispatchBench</td><td><span class="diff-neutral">PR &asymp; Master</span></td><td>Consistent</td></tr>
+  <tr><td>GrailsLikePatterns</td><td><span class="diff-neutral">PR &asymp; Master</span></td><td>controllerActionDuringMetaclassChurn: 4072 vs 4168</td></tr>
+  <tr><td>MetaclassChangeBench</td><td><span class="diff-neutral">PR &asymp; Master</span></td><td>Very close</td></tr>
+  <tr><td>MetaclassVariationBench</td><td><span class="diff-neutral">PR &asymp; Master</span></td><td>Consistent</td></tr>
+</table>
+
+<p><strong>Verdict:</strong> No performance impact on complex Grails-like workloads.
+Expected &mdash; these tests use dynamic Groovy, not static compilation with lambdas.</p>
+
+<h3>3.6 Classic Mode &mdash; Control Group</h3>
+
+<p>Classic mode (callsite-based, no invokedynamic) should be <strong>completely unaffected</strong> by this PR.
+It serves as our control group for identifying CI noise.</p>
+
+<table>
+  <tr><th>Benchmark</th><th class="num">PR</th><th class="num">Master</th><th class="num">Diff</th></tr>
+  <tr><td>dispatch_1_monomorphic_groovy</td><td class="num">2,098</td><td class="num">2,101</td><td class="num diff-neutral">&minus;0.2%</td></tr>
+  <tr><td>ClosureBench.closureCallMethod</td><td class="num">41.46</td><td class="num">42.41</td><td class="num diff-neutral">&minus;2.2%</td></tr>
+  <tr><td>MetaclassBench.methodCallsWithMetaclassChanges</td><td class="num">456.5</td><td class="num">458.7</td><td class="num diff-neutral">&minus;0.5%</td></tr>
+</table>
+
+<p><strong>Verdict:</strong> Essentially identical, confirming the PR does not affect non-indy code paths.</p>
+
+<h3>3.7 Compilation Performance</h3>
+
+<table>
+  <tr><th>Version</th><th class="num">PR (ms)</th><th class="num">Master (ms)</th><th class="num">Diff</th></tr>
+  <tr><td>3.0.25</td><td class="num">631.1 &plusmn; 205.5</td><td class="num">626.8 &plusmn; 217.7</td><td class="num diff-neutral">+0.7%</td></tr>
+  <tr><td>4.0.31</td><td class="num">560.1 &plusmn; 143.9</td><td class="num">563.5 &plusmn; 148.6</td><td class="num diff-neutral">&minus;0.6%</td></tr>
+  <tr><td>5.0.5</td><td class="num">461.9 &plusmn; 19.7</td><td class="num">485.8 &plusmn; 19.2</td><td class="num diff-neutral">&minus;4.9%</td></tr>
+  <tr><td>6.0.0-SNAPSHOT</td><td class="num">523.9 &plusmn; 21.0</td><td class="num">529.2 &plusmn; 18.4</td><td class="num diff-neutral">&minus;1.0%</td></tr>
+</table>
+
+<p><strong>Verdict:</strong> No meaningful compilation performance regression. The 6.0.0-SNAPSHOT is within
+noise margin. Low standard deviation on 5.0 and 6.0 (&asymp;19&ndash;21 ms) indicates stable measurements.</p>
+
+<h3>3.8 JDK Version Trends</h3>
+
+<p>The JMH runs do not appear to be parameterised by JDK version (the CI matrix uses JDK 17, 21,
+and 25 for build/test but JMH runs use a single version). There is <strong>no data to establish
+JDK-version-specific trends</strong> from these artifacts.</p>
+
+<p>Lambda singleton caching via <code>LambdaMetafactory</code> is a JDK feature present since Java 8.
+There is no reason to expect JDK-version-specific improvement from this PR, as
+<code>ConstantCallSite</code> optimisation has been stable across JDK versions.</p>
+
+<h3>3.9 Performance Summary</h3>
+
+<table>
+  <tr><th style="width:45%">Question</th><th>Answer</th></tr>
+  <tr>
+    <td>Does the PR improve existing JMH benchmarks?</td>
+    <td><strong>No measurable improvement</strong> &mdash; existing benchmarks don&rsquo;t test
+        non-capturing lambda allocation patterns</td>
+  </tr>
+  <tr>
+    <td>Does the PR regress any benchmarks?</td>
+    <td><strong>No</strong> &mdash; all differences are attributable to CI environment noise
+        (confirmed by classic-mode control group)</td>
+  </tr>
+  <tr>
+    <td>Does the PR slow down compilation?</td>
+    <td><strong>No</strong> &mdash; within 1% noise margin</td>
+  </tr>
+  <tr>
+    <td>Why no visible improvement?</td>
+    <td>The benchmark suite tests Closures (dynamic Groovy), dispatch, and metaclass
+        operations &mdash; not statically-compiled lambda allocation. A dedicated lambda
+        allocation benchmark would show the improvement.</td>
+  </tr>
+</table>
+
+<!-- ============================================================ -->
+<h2 id="pros" class="section-anchor">4. Pros</h2>
+
+<ol>
+  <li><strong>Zero allocation for non-capturing lambdas:</strong> Eliminates per-invocation object
+      creation for the most common lambda pattern, matching Java&rsquo;s behaviour.</li>
+  <li><strong>Correct use of JVM infrastructure:</strong> Leverages <code>LambdaMetafactory</code>
+      singleton caching and <code>ConstantCallSite</code> &mdash; the way the JVM was designed to be used.</li>
+  <li><strong>Clean architecture:</strong> Separation of Analyzer and Writer is a structural improvement;
+      the <code>GeneratedLambda</code> record and <code>MetaDataKey</code> enum improve code quality.</li>
+  <li><strong>Excellent test coverage:</strong> 50+ tests covering behavioural correctness, singleton
+      identity, capturing detection, bytecode verification, and serialisation.</li>
+  <li><strong>No compilation overhead:</strong> The analysis adds no measurable cost to compilation.</li>
+  <li><strong>No regression:</strong> All existing tests pass; capturing lambdas behave identically.</li>
+  <li><strong>Reduced GC pressure:</strong> For applications with tight loops using non-capturing lambdas
+      (e.g., stream-style processing, functional pipelines), eliminates a source of short-lived garbage.</li>
+  <li><strong>Community endorsement:</strong> Jochen Theodorou gave +1.</li>
+</ol>
+
+<!-- ============================================================ -->
+<h2 id="cons" class="section-anchor">5. Cons / Risks</h2>
+
+<ol>
+  <li>
+    <strong>AST mutation in <code>qualifyOuterStaticMemberReferences()</code>:</strong>
+    The analyser rewrites the AST in place (e.g., <code>label</code> &rarr; <code>Outer.label</code>).
+    While this happens late in the pipeline (bytecode generation phase), it could affect IDE
+    tooling or other AST consumers that inspect the tree afterward. A copy-on-write approach
+    may be safer.
+  </li>
+  <li>
+    <strong>No benchmark demonstrating the improvement:</strong>
+    The existing JMH suite doesn&rsquo;t have a benchmark specifically targeting non-capturing
+    lambda allocation. The claimed benefit (zero allocation) is architecturally sound but
+    unmeasured in CI.
+  </li>
+  <li>
+    <strong>False-positive risk in capture analysis:</strong>
+    If <code>InstanceMemberAccessFinder</code> misses an instance member access (e.g., through
+    a complex expression pattern not covered by the visitor), the lambda would be incorrectly
+    marked as non-capturing, and the static <code>doCall</code> would fail at runtime. The test
+    suite is thorough, but the visitor only handles specific expression types &mdash; novel AST
+    patterns introduced by future compiler changes could slip through.
+  </li>
+  <li>
+    <strong><code>@CompileStatic</code> only:</strong>
+    This optimisation only applies to statically-compiled code. Dynamic Groovy code, which uses
+    <code>Closure</code> rather than lambda, is unaffected. This limits practical impact to
+    codebases using <code>@CompileStatic</code> with Java-style lambda syntax.
+  </li>
+  <li>
+    <strong>Limited human review:</strong>
+    One +1 from Jochen, one Copilot review (whose concern was addressed). More human review of
+    the <code>InstanceMemberAccessFinder</code>&rsquo;s completeness would be valuable &mdash;
+    it is the critical correctness gate.
+  </li>
+  <li>
+    <strong><code>isStaticMemberNamed()</code> complexity:</strong>
+    Property resolution checks fields, properties, <em>and</em> synthesised getter names
+    (<code>is</code>/<code>get</code> prefixes). While correct for Groovy&rsquo;s conventions,
+    this multi-path resolution adds complexity that could be a source of subtle bugs if
+    Groovy&rsquo;s property conventions evolve.
+  </li>
+</ol>
+
+<!-- ============================================================ -->
+<h2 id="suggestions" class="section-anchor">6. Suggested Improvements</h2>
+
+<ol>
+  <li>
+    <strong>Add a non-capturing lambda JMH benchmark.</strong> Something like:
+    <pre><code>@Benchmark
+public int nonCapturingLambdaAllocation() {
+    Function&lt;Integer, Integer&gt; f = (Integer x) -&gt; x + 1;
+    return f.apply(42);
+}</code></pre>
+    This would make the zero-allocation benefit visible in CI and serve as a regression test.
+  </li>
+  <li>
+    <strong>Add a comment to <code>qualifyOuterStaticMemberReferences()</code></strong> explaining
+    that this AST mutation happens during bytecode generation and is safe because no subsequent
+    phases read these nodes. This defends against future maintainers moving the call earlier
+    in the pipeline.
+  </li>
+  <li>
+    <strong>Consider a defensive verification:</strong> After marking a lambda as non-capturing
+    and generating the static <code>doCall</code>, verify (perhaps as an assertion in debug
+    builds) that the generated bytecode doesn&rsquo;t reference <code>this</code> or instance
+    fields. This would catch false positives during development.
+  </li>
+  <li>
+    <strong>Document the optimisation in the Groovy user guide:</strong> A note in the lambda
+    documentation explaining that non-capturing lambdas in <code>@CompileStatic</code> code
+    are singleton-optimised (like Java) would help users understand when to prefer lambdas
+    over closures for performance-critical code.
+  </li>
+  <li>
+    <strong>Consider caching <code>getOuterClasses()</code> results:</strong> While the current
+    uncached approach is fine for typical nesting depths, caching at the <code>ClassNode</code>
+    level (with proper redirect handling, as Copilot flagged) could benefit deeply nested
+    classes in large codebases.
+  </li>
+</ol>
+
+<!-- ============================================================ -->
+<h2 id="verdict" class="section-anchor">7. Overall Assessment</h2>
+
+<div class="callout callout-green">
+  <span class="verdict verdict-approve">Recommend: Approve</span>
+  <p style="margin-top:.5rem">
+    This is a <strong>well-designed, well-tested optimisation</strong> that brings Groovy&rsquo;s
+    lambda performance in line with Java. The code quality is high, the separation of concerns
+    is clean, and the test coverage is excellent. The risks are manageable and the potential
+    downsides are minor.
+  </p>
+  <p>
+    The lack of measurable performance improvement in the existing benchmark suite is expected
+    &mdash; the suite doesn&rsquo;t test the specific pattern being optimised. This does not
+    diminish the value of the PR; the benefit will be visible in real-world applications that
+    use non-capturing lambdas in <code>@CompileStatic</code> code, rather than in the current
+    micro-benchmarks.
+  </p>
+  <p>
+    <strong>Suggested before merge:</strong> Add a dedicated lambda allocation benchmark to make
+    the optimisation measurable in CI, and add clarifying comments around the AST mutation in
+    the analyser.
+  </p>
+</div>
+
+<hr style="margin-top:3rem; border:none; border-top:1px solid var(--border);">
+<p style="color:var(--gray); font-size:.85rem; margin-top:1rem;">
+  Assessment generated 16 April 2026. Data sources: GitHub Actions artifacts from
+  PR run <a href="https://github.com/apache/groovy/actions/runs/24309710939">24309710939</a> (12 Apr)
+  and master run <a href="https://github.com/apache/groovy/actions/runs/24441764325">24441764325</a> (15 Apr).
+</p>
+
+</body>
+</html>

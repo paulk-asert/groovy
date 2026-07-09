@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GEP-22 Progression Analysis: Trait Static Members</title>
+<style>
+  :root {
+    --bg: #fdfdfd; --fg: #222; --accent: #2563eb; --accent-light: #dbeafe;
+    --green: #16a34a; --green-light: #dcfce7; --red: #dc2626; --red-light: #fee2e2;
+    --amber: #d97706; --amber-light: #fef3c7; --gray: #64748b; --gray-light: #f1f5f9;
+    --border: #e2e8f0; --code-bg: #f8fafc;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    color: var(--fg); background: var(--bg); line-height: 1.65;
+    max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem 4rem;
+  }
+  h1 { font-size: 1.75rem; margin-bottom: .25rem; }
+  h2 { font-size: 1.35rem; margin-top: 2.5rem; margin-bottom: .75rem; border-bottom: 2px solid var(--accent); padding-bottom: .3rem; }
+  h3 { font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: .5rem; }
+  p, li { margin-bottom: .5rem; }
+  ul, ol { padding-left: 1.5rem; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: .88em; background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: 3px; padding: .1em .35em;
+  }
+  pre {
+    background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px;
+    padding: 1rem; overflow-x: auto; font-size: .85rem; line-height: 1.5; margin: .75rem 0 1rem;
+  }
+  pre code { border: none; padding: 0; background: none; }
+  table { width: 100%; border-collapse: collapse; margin: .75rem 0 1rem; font-size: .88rem; }
+  th, td { text-align: left; padding: .45rem .6rem; border: 1px solid var(--border); vertical-align: top; }
+  th { background: var(--gray-light); font-weight: 600; }
+  td.c { text-align: center; }
+  .subtitle { color: var(--gray); font-size: .95rem; margin-bottom: 1.5rem; }
+  .badge { display: inline-block; font-size: .72rem; font-weight: 600; padding: .15em .55em; border-radius: 4px; vertical-align: middle; white-space: nowrap; }
+  .badge-green { background: var(--green-light); color: var(--green); }
+  .badge-red   { background: var(--red-light);   color: var(--red); }
+  .badge-amber { background: var(--amber-light); color: var(--amber); }
+  .badge-blue  { background: var(--accent-light); color: var(--accent); }
+  .badge-gray  { background: var(--gray-light);   color: var(--gray); }
+  .callout { border-left: 4px solid var(--accent); background: var(--accent-light); padding: .75rem 1rem; margin: 1rem 0; border-radius: 0 6px 6px 0; }
+  .callout-amber { border-left-color: var(--amber); background: var(--amber-light); }
+  .callout-green { border-left-color: var(--green); background: var(--green-light); }
+  .callout-red   { border-left-color: var(--red);   background: var(--red-light); }
+  .verdict { display: inline-block; padding: .6rem 1.2rem; border-radius: 8px; font-weight: 700; font-size: 1.05rem; margin: .5rem 0; }
+  .verdict-proposed { background: var(--amber-light); color: var(--amber); }
+  .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
+  .summary-card { border: 1px solid var(--border); border-radius: 8px; padding: 1rem; }
+  .summary-card h4 { margin-bottom: .4rem; font-size: .95rem; }
+  blockquote { border-left: 3px solid var(--gray); margin: .6rem 0; padding: .2rem 0 .2rem 1rem; color: #444; font-style: italic; }
+  .who { font-style: normal; font-weight: 600; color: var(--gray); font-size: .82rem; }
+  .section-anchor { scroll-margin-top: 1rem; }
+  .tag { font-size: .7rem; color: var(--gray); }
+  @media (max-width: 640px) { .summary-grid { grid-template-columns: 1fr; } table { font-size: .78rem; } }
+</style>
+</head>
+<body>
+
+<h1>GEP-22 Progression Analysis</h1>
+<p class="subtitle">
+  Trait static members &mdash; closing the &ldquo;open design point&rdquo; before Groovy&nbsp;6 final &middot;
+  <a href="https://groovy.apache.org/wiki/GEP-22.html">GEP-22</a> &middot;
+  <a href="https://issues.apache.org/jira/browse/GROOVY-11985">GROOVY-11985</a> &middot;
+  <a href="https://github.com/apache/groovy/pull/2529">PR&nbsp;#2529</a> &middot;
+  18&nbsp;May&nbsp;2026
+</p>
+
+<div class="callout callout-amber">
+  <strong>Status of this document.</strong> This is a working analysis to feed the GEP-22
+  discussion. Every design verdict below is <strong>proposed pending team review</strong> &mdash;
+  the JIRA thread is active and GEP-22 is not ratified. Nothing here is a decision; it is a
+  structured restatement of the case space, the thread&rsquo;s objections, and an empirical
+  coverage map, so the team can agree definitions rather than behaviours.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="overview" class="section-anchor">1. Overview</h2>
+
+<p>Groovy is the only one of the four JVM trait-like systems (Java, Kotlin, Scala, Groovy) that
+gives <em>each implementing class its own copy</em> of a trait&rsquo;s static members. That is what
+enables patterns such as overriding static defaults from the implementing class &mdash; the
+canonical real-world consumer being Grails&rsquo; <code>Validateable</code>. GEP-22 documents this
+but explicitly flags <strong>static-member / static-method dispatch as an open design point</strong>.
+The goal now is to close that point with solid definitions before Groovy&nbsp;6 final.</p>
+
+<p>The trigger is concrete: a silent behaviour regression between Groovy&nbsp;4 and Groovy&nbsp;5/6
+(<a href="https://issues.apache.org/jira/browse/GROOVY-11985">GROOVY-11985</a>), discovered during
+the Grails&nbsp;8 / Groovy&nbsp;5 migration, with a fix proposed in
+<a href="https://github.com/apache/groovy/pull/2529">PR&nbsp;#2529</a>. The thread shows that even
+experienced Groovy developers disagree on what the <em>correct</em> behaviour is &mdash; which is
+precisely why principle-level definitions are needed, not another point fix.</p>
+
+<div class="summary-grid">
+  <div class="summary-card">
+    <h4>The regression</h4>
+    <p>GROOVY-8854 (Sep 2023) changed <code>TraitReceiverTransformer</code> so that
+    <code>this.staticMethod()</code> in a trait body routes through the trait helper instead of
+    dispatching dynamically. An implementer&rsquo;s static override became silently invisible to
+    trait code &mdash; no error, no warning.</p>
+  </div>
+  <div class="summary-card">
+    <h4>Empirical state (verified)</h4>
+    <p>Reproduced live on <code>6.0.0-SNAPSHOT</code>. PR&nbsp;#2529 (branch
+    <code>groovy11985</code>, commit <code>1e0b4be7de</code>) <strong>fixes the static-method
+    form</strong> (7/7 tests pass, dynamic + <code>@CompileStatic</code>). The static-<em>field</em>
+    form is <strong>not</strong> fixed &mdash; characterised on the same branch.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="regression" class="section-anchor">2. The regression and the fix</h2>
+
+<h3>2.1 What changed across versions</h3>
+<table>
+  <tr><th>Call</th><th>Groovy 4.0.27</th><th>Groovy 5.0.5 / 6.0.0-SNAPSHOT</th></tr>
+  <tr><td>Direct <code>Impl.defaultNullable()</code></td><td class="c">true (override)</td><td class="c">true (override)</td></tr>
+  <tr><td><code>this.defaultNullable()</code> from trait body</td><td class="c"><span class="badge badge-green">true</span></td><td class="c"><span class="badge badge-red">false &mdash; override lost</span></td></tr>
+</table>
+<p>Root cause: GROOVY-8854 rewrote the trait helper&rsquo;s receiver from <code>aload_0</code> (the
+implementing class &mdash; dynamic dispatch finds the override) to a hard-coded
+<code>ldc&nbsp;Validateable$Trait$Helper.class</code> (the implementing class demoted to an argument
+&mdash; dispatch always lands on the lowered trait default). The failure is silent and was not
+called out in the Groovy&nbsp;5 release notes. Grails shipped a reflection workaround
+(<code>Validateable.resolveDefaultNullable(Class)</code>) that bypasses the transformer entirely.</p>
+
+<h3>2.2 PR #2529 mechanism</h3>
+<p>In <code>TraitReceiverTransformer.transformMethodCallOnThis</code>: when the resolved callee is a
+<strong>public, non-private static</strong> trait method, called unqualified or
+<code>this.</code>-qualified, and <strong>not inside a closure</strong>, the call is emitted against
+the implementing class &mdash; <code>((Class)$self.getClass()).m(args)</code> tagged
+<code>DO_DYNAMIC</code> &mdash; restoring runtime dispatch to the implementer&rsquo;s override.
+Private statics and closure context retain the old trait-helper path. It is the static-method
+analogue of the GROOVY-11907 field-reference fix (route through the implementer&rsquo;s runtime
+class, mark <code>DO_DYNAMIC</code>), <em>not</em> literally the same transform.</p>
+
+<div class="callout callout-green">
+  <strong>Empirical verification.</strong> Built branch <code>groovy11985</code> in an isolated
+  worktree and ran the targeted suite:
+  <code>org.codehaus.groovy.transform.traitx.Groovy11985</code> &rarr; <strong>7 tests,
+  0&nbsp;failures</strong> (dynamic, <code>@CompileStatic</code>, instance-method-calls-static,
+  overload-resolution-still-works). The static-method override scenario behaves like Groovy&nbsp;4
+  again.
+</div>
+<div class="callout callout-red">
+  <strong>Scope boundary, also verified.</strong> A bare static <em>field</em> reference inside a
+  trait method still binds to the trait template even on the PR branch
+  (<code>direct=class&nbsp;viaTrait=trait</code>). PR&nbsp;#2529 touches method dispatch only; the
+  static-field override path is unchanged and remains undefined. This matters directly to the
+  Grails migration: the method-based default (<code>defaultNullable()</code>) is unblocked; any
+  reliance on a static-<em>field</em> override is not.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="cases" class="section-anchor">3. The case space</h2>
+
+<p>Every disputed example in the thread is a point in an eight-dimensional space. The thread&rsquo;s
+own tables varied only a few axes and labelled the result a &ldquo;rewritten form.&rdquo; The
+analysis below re-pivots on <strong>the capability each case exists to support</strong>, which is
+what GEP-22 must reason about.</p>
+
+<ol>
+  <li><strong>Member kind</strong> &mdash; static method &middot; static field/property &middot; (instance method, as baseline)</li>
+  <li><strong>Where declared</strong> &mdash; in trait <code>T</code> &middot; only on implementer/super &middot; both</li>
+  <li><strong>Callee visibility</strong> &mdash; public &middot; private</li>
+  <li><strong>Call form</strong> &mdash; <code>m()</code> &middot; <code>this.m()</code> &middot; <code>T.m()</code> &middot; external <code>Impl.m()</code></li>
+  <li><strong>Call site</strong> &mdash; trait method body &middot; inside a closure in a trait method</li>
+  <li><strong>Compilation</strong> &mdash; dynamic &middot; <code>@CompileStatic</code></li>
+  <li><strong>Inheritance</strong> &mdash; direct implementer <code>A</code> &middot; <code>B extends A</code> &middot; trait-static vs inherited-instance clash</li>
+  <li><strong>Override vs overload</strong> &mdash; same signature &middot; sub-type signature (Jochen&rsquo;s <code>X1/X2</code>)</li>
+</ol>
+
+<!-- ============================================================ -->
+<h2 id="table" class="section-anchor">4. Master case table</h2>
+
+<p>Verdict legend:
+<span class="badge badge-green">Support</span> behaviour we intend to guarantee &middot;
+<span class="badge badge-red">Compile error</span> argued should be rejected, not silently dispatched &middot;
+<span class="badge badge-amber">Open</span> genuinely undecided.
+All verdicts <em>proposed pending team review</em>.</p>
+
+<table>
+  <tr>
+    <th>#</th><th>Case</th><th>Scenario / trait feature it supports</th>
+    <th>G4</th><th>G5</th><th>+#2529</th><th>Proposed verdict</th>
+  </tr>
+  <tr>
+    <td>1</td><td>static / in&nbsp;T / public / <code>m()</code>&middot;<code>this.m()</code> / trait body &mdash; <strong>impl overrides</strong></td>
+    <td>Overridable static defaults &mdash; Grails <code>Validateable.defaultNullable</code> (the canary)</td>
+    <td class="c">dyn&rarr;impl</td><td class="c">helper</td><td class="c">dyn&rarr;impl</td>
+    <td><span class="badge badge-green">Support</span> PR restores G4</td>
+  </tr>
+  <tr>
+    <td>1&prime;</td><td>&hellip;same, <strong>no override</strong> (trait default)</td>
+    <td>Trait supplies a working static default</td>
+    <td class="c">ok</td><td class="c">ok</td><td class="c">ok</td>
+    <td><span class="badge badge-green">Support</span> uncontested</td>
+  </tr>
+  <tr>
+    <td>2</td><td>static / in&nbsp;T / public &mdash; <strong>inside a closure</strong></td>
+    <td>#1 where the call sits in a closure (<code>.collect{ m() }</code>)</td>
+    <td class="c">helper</td><td class="c">helper</td><td class="c">helper</td>
+    <td><span class="badge badge-amber">Open</span> Jochen: no principled reason vs&nbsp;#1. <strong>Correction (verified 4.0.27 &amp; 6.0.0):</strong> helper-bound on <em>every</em> version &mdash; the #1/#2 asymmetry is <strong>long-standing, not a 5/6 regression</strong>, so P2 parity is a behaviour change on Groovy&nbsp;4 too, not a restoration.</td>
+  </tr>
+  <tr>
+    <td>3</td><td><strong>private</strong> static called from trait</td>
+    <td>Trait-internal helper the implementer cannot hijack (encapsulated invariant)</td>
+    <td class="c">helper*</td><td class="c">helper</td><td class="c">helper</td>
+    <td><span class="badge badge-green">Support</span> but define mixed-overload behaviour</td>
+  </tr>
+  <tr>
+    <td>4&nbsp;/&nbsp;5</td><td>name <strong>not in&nbsp;T</strong> (only on impl/super, or runtime-resolved)</td>
+    <td>Dynamically-resolved target on the implementer &mdash; identical to a missing method on any plain dynamic class</td>
+    <td class="c">dyn&rarr;impl</td><td class="c">dyn&rarr;impl</td><td class="c">dyn&rarr;impl</td>
+    <td><span class="badge badge-green">Support</span> dynamic (works today, all versions); <span class="badge badge-red">compile error</span> under <code>@CompileStatic</code> &mdash; the ordinary resolvability rule, <em>not</em> a trait-specific one. <code>abstract</code> in&nbsp;T is optional sugar to regain static-checkability, not a requirement.</td>
+  </tr>
+  <tr>
+    <td>6</td><td>instance method, trait body (baseline)</td>
+    <td>Normal template-method override</td>
+    <td class="c">dyn&rarr;impl</td><td class="c">dyn&rarr;impl</td><td class="c">dyn&rarr;impl</td>
+    <td><span class="badge badge-green">Support</span> the model others should match</td>
+  </tr>
+  <tr>
+    <td>7</td><td>static / in&nbsp;T / public / <code>T.m()</code> trait-qualified, inside trait</td>
+    <td>Force the trait&rsquo;s own default, bypassing any override (a &ldquo;super&rdquo;-like escape)</td>
+    <td class="c">throws</td><td class="c">throws</td><td class="c">throws</td>
+    <td><span class="badge badge-amber">Open / unimplemented</span> <strong>Correction (verified 4.0.27 &amp; 6.0.0):</strong> <code>T.m()</code> from trait code throws <code>MissingMethodException</code> on <em>every</em> version (the trait interface carries no statics) &mdash; the &ldquo;force trait default&rdquo; escape is a <em>desired</em> end-state met on no version, not a supported &ldquo;helper&rdquo; path. Was incorrectly listed as Support.</td>
+  </tr>
+  <tr>
+    <td>8</td><td>external <code>Impl.m()</code>; external <code>T.m()</code></td>
+    <td>External callers reading a trait&rsquo;s static surface</td>
+    <td class="c">ok&nbsp;/&nbsp;n/a</td><td class="c">ok&nbsp;/&nbsp;n/a</td><td class="c">ok&nbsp;/&nbsp;n/a</td>
+    <td><span class="badge badge-green">Support</span> <code>Impl.m()</code>; <span class="badge badge-amber">Open</span> whether trait statics go on the interface</td>
+  </tr>
+  <tr>
+    <td>9</td><td>static <strong>field/property</strong> / in&nbsp;T / public, impl overrides</td>
+    <td>Per-implementer overridable static <em>data</em> (a <code>constraints</code>/config default)</td>
+    <td class="c">template</td><td class="c">template</td><td class="c">template</td>
+    <td><span class="badge badge-amber">Open</span> mirror&nbsp;#1 or explicitly reject (use an accessor)</td>
+  </tr>
+  <tr>
+    <td>10</td><td><code>B extends A implements T</code>, B overrides only</td>
+    <td>Subclass refines a trait static default</td>
+    <td class="c">anchors&nbsp;A</td><td class="c">anchors&nbsp;A</td><td class="c">anchors&nbsp;A</td>
+    <td><span class="badge badge-green">Support</span> as a <em>defined</em> limitation (per direct implementer)</td>
+  </tr>
+  <tr>
+    <td>11</td><td>trait static vs <strong>inherited instance</strong> <code>m()</code> (Eric&rsquo;s <code>D extends C implements T</code>)</td>
+    <td>(no coherent scenario &mdash; name collision)</td>
+    <td class="c">prints&nbsp;T</td><td class="c">prints&nbsp;T</td><td class="c">prints&nbsp;T</td>
+    <td><span class="badge badge-red">Compile error</span> Jochen: &ldquo;should be a compilation error&rdquo;</td>
+  </tr>
+  <tr>
+    <td>12</td><td><strong>overload</strong> <code>m(X1)</code> in&nbsp;T vs <code>m(X2)</code> on impl, <code>@CompileStatic</code></td>
+    <td>Overloaded trait statics specialised by the implementer</td>
+    <td class="c">21</td><td class="c">22</td><td class="c">21 (&rarr;&nbsp;G4)</td>
+    <td><span class="badge badge-amber">Open</span> must follow compilation mode. <strong>Correction (verified):</strong> #2529 is <em>not</em> row-1-only &mdash; it also moves Groovy&nbsp;6 from <code>22</code> back to Groovy&nbsp;4&rsquo;s <code>21</code> for this overload. The matrix test catches this. (Cells show the single observed value from the matrix probe; Jochen&rsquo;s original report used a two-call <code>21/21</code> vs <code>22/22</code> pairing.)</td>
+  </tr>
+</table>
+<p class="tag">* G4 fails compilation on certain mixed private/public overloads (Jochen); G5 compiles then fails at runtime.</p>
+
+<!-- ============================================================ -->
+<h2 id="objections" class="section-anchor">5. Objections from the thread</h2>
+
+<p><span class="who">Jochen Theodorou &mdash; the #1 vs #2 asymmetry.</span></p>
+<blockquote>&ldquo;&hellip;this is documentation of what is the case with that PR, not what should be the case
+concept wise, right? &hellip; for what reason are #1 and #2 different? If the trait has the method m,
+then compile time checking is possible.&rdquo;</blockquote>
+
+<p><span class="who">Jochen &mdash; #4 standalone-compilability.</span></p>
+<blockquote>&ldquo;If the method exists on A, but not T, doesn&rsquo;t that mean static compilation
+must fail to compile T, if done without A? &hellip; This is not possible to express in bytecode and
+then requires a meta class path&hellip; with the big problem that the metaclass path may follow
+different rules than a direct call.&rdquo;</blockquote>
+
+<p><span class="who">Jochen &mdash; overloads, not just overrides (the <code>X1/X2</code> case).</span> Under
+<code>@CompileStatic</code> he expects <code>22</code> (the trait, compiled standalone, cannot see
+A); dynamic he expects <code>21</code> (A has a more specific method for <code>X2</code>).
+Groovy&nbsp;4 gives <code>21/21</code>, Groovy&nbsp;5 gives <code>22/22</code> &mdash; &ldquo;Both are
+imho wrong.&rdquo;</p>
+
+<p><span class="who">Jochen &mdash; Eric&rsquo;s inherited-instance case (#11).</span> On
+<code>trait T{ static m() }</code>, <code>class C{ def m() }</code>,
+<code>class D extends C implements T</code> printing <code>"T"</code>:
+<blockquote>&ldquo;In my opinion this should be a compilation error.&rdquo;</blockquote></p>
+
+<p><span class="who">Eric Milles &mdash; static implies final.</span></p>
+<blockquote>&ldquo;I really wish traits never added static for its members&hellip; if you want allow
+<code>defaultNullable()</code> to be overridden, then it should not be static. Essentially static
+implies final.&rdquo;</blockquote>
+<p>This is the <strong>radical option</strong>: do not support overriding trait statics at all;
+make redeclaration a warning/error and steer consumers (Validateable) to instance/non-static
+members. GEP-22 should explicitly accept or reject this, not adopt &ldquo;virtual statics&rdquo; by
+implication of merging&nbsp;#2529.</p>
+
+<p><span class="who">Jochen &mdash; private statics &amp; the interface.</span> Wants a hard guarantee a
+private trait static is callable from trait code regardless of the class; and noted the trait
+static method &ldquo;is not added to the interface. That should be a bug.&rdquo;</p>
+
+<!-- ============================================================ -->
+<h2 id="coverage" class="section-anchor">6. Test-coverage assessment</h2>
+
+<p>Repo-wide scan of <code>src/test</code> on the working branch. <strong>The contested rows are
+exactly the untested rows</strong> &mdash; the absence of tests is why the semantics drifted
+3&rarr;4&rarr;5 unnoticed.</p>
+
+<div class="callout callout-red">
+  <strong>Headline.</strong> No test anywhere on master exercises the override-on-implementer
+  scenario (a trait method calling a public static the implementer redeclares, asserting the
+  override wins). The only such test, <code>traitx/Groovy11985.groovy</code>, exists
+  <strong>only on the PR branch</strong>. That void is the direct cause of the silent regression.
+</div>
+
+<table>
+  <tr><th>Row</th><th>Existing coverage</th><th>Verdict</th></tr>
+  <tr><td>1 (override)</td><td>none on master; <code>Groovy11985</code> on PR branch only</td><td><span class="badge badge-red">Uncovered on master</span></td></tr>
+  <tr><td>1&prime; (no override)</td><td><code>TraitASTTransformationTest.testTraitStaticMethod</code> (GROOVY-7322), <code>testShouldCompileTraitMethodStatically</code></td><td><span class="badge badge-green">Covered</span></td></tr>
+  <tr><td>2 (closure)</td><td>none asserts the closure-static behaviour either way</td><td><span class="badge badge-red">Uncovered</span></td></tr>
+  <tr><td>3 (private)</td><td><code>testTraitStaticMethod</code> (GROOVY-8854) &mdash; private from instance, no-override only</td><td><span class="badge badge-amber">Partial</span> mixed-overload uncovered</td></tr>
+  <tr><td>4 / 5</td><td>none</td><td><span class="badge badge-red">Uncovered</span></td></tr>
+  <tr><td>6 (instance)</td><td><code>testTraitStaticMethod</code> (GROOVY-7191), <code>testStaticMethodsIgnoredWhenExistingInstanceMethodsFound</code></td><td><span class="badge badge-green">Covered</span></td></tr>
+  <tr><td>7 (<code>T.m()</code>)</td><td>none explicit</td><td><span class="badge badge-red">Uncovered</span></td></tr>
+  <tr><td>8 (external)</td><td><code>testTraitStaticMethod</code> (<code>C.foo()</code>/<code>D.foo()</code>); <code>Groovy6862Bug</code></td><td><span class="badge badge-amber">Partial</span> &ldquo;<code>T.m()</code> unsupported&rdquo; not asserted</td></tr>
+  <tr><td>9 (field override)</td><td><code>testTraitStaticField</code>/<code>Property</code> (7255, 9678), <code>Groovy11968</code> &mdash; default/update only</td><td><span class="badge badge-amber">Partial</span> override-by-impl uncovered</td></tr>
+  <tr><td>10 (B extends A)</td><td><code>testTraitAccessToInheritedStaticMethods1&ndash;4</code> &mdash; trait-extends-trait, no override</td><td><span class="badge badge-red">Uncovered</span> for override+anchor</td></tr>
+  <tr><td>11 (Eric&rsquo;s D)</td><td>adjacent only; exact inherited-instance case pasted in a comment, not committed</td><td><span class="badge badge-red">Uncovered &amp; contested</span></td></tr>
+  <tr><td>12 (overloads)</td><td><code>Groovy11776.testTraitMethodOverloads</code> &mdash; instance, no impl specialization</td><td><span class="badge badge-red">Uncovered</span> for Jochen&rsquo;s case</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<h2 id="principles" class="section-anchor">7. Proposed governing principles</h2>
+
+<p>Rather than ratify a table of behaviours, derive every row from a small principle set.
+Unresolvable cases are rejected only where the language already rejects them (under
+<code>@CompileStatic</code>), not by a trait-specific rule. <em>All proposed pending team review.</em></p>
+
+<table>
+  <tr><th></th><th>Principle</th><th>Resolves</th></tr>
+  <tr><td><strong>P1&prime;</strong></td><td><strong>Dispatch consistency, not self-containment.</strong> A name called from a trait body resolves and dispatches by the <em>same</em> rule whether it is declared in the trait, on the implementer, or only at runtime &mdash; and that rule matches how the same call behaves in a plain class under the same compilation mode. Dynamic traits permit missing/runtime-resolved targets exactly as dynamic classes do; <code>@CompileStatic</code> traits inherit the ordinary <code>@CompileStatic</code> resolvability requirement (no trait-specific rule, no <code>abstract</code>-in-<code>T</code> mandate). The defect to prevent is a direct-call path and a metaclass path following <em>different</em> rules &mdash; not the existence of dynamic resolution.</td><td>Rows 4/5 (split by mode); feeds row 12 (overload/mode consistency)</td></tr>
+  <tr><td><strong>P2</strong></td><td><strong>Trait members behave like class members of the implementer.</strong> Public in-trait statics dispatch through the implementer at runtime (override wins), identically in method bodies and closures.</td><td>Rows 1, 2, 6 unified (closure carve-out dropped or justified)</td></tr>
+  <tr><td><strong>P3</strong></td><td><strong>Two explicit escapes.</strong> <code>private</code> trait statics and <code>T.m()</code>-qualified calls are defined as non-virtual, trait-anchored.</td><td>Rows 3, 7</td></tr>
+  <tr><td><strong>P4</strong></td><td><strong>Composition is per direct implementer.</strong> <code>B extends A</code> does not recompose; specified, not a bug. A trait static colliding with an inherited instance member is a compile error.</td><td>Rows 10, 11</td></tr>
+  <tr><td><strong>P5</strong></td><td><strong>Typed dispatch follows the compilation mode.</strong> <code>@CompileStatic</code> uses the statically-resolved signature; dynamic uses MOP &mdash; consistently.</td><td>Row 12</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<h2 id="decisions" class="section-anchor">8. Decisions to resolve before Groovy 6 final</h2>
+
+<ol>
+  <li><strong>The radical option (Eric).</strong> Accept or explicitly reject &ldquo;static implies
+  final &mdash; trait statics are not overridable.&rdquo; Merging&nbsp;#2529 implicitly chooses
+  &ldquo;virtual statics&rdquo;; that choice should be deliberate. <span class="badge badge-amber">Blocking &mdash; changes the public contract</span></li>
+  <li><strong>Static-field form (row 9).</strong> Empirically <em>not</em> fixed by #2529. Either
+  extend the dynamic-through-implementer treatment to field reads, or document that static-data
+  defaults are not overridable and Grails must use an accessor.
+  <span class="badge badge-amber">Blocking &mdash; affects Grails migration path</span></li>
+  <li><strong>#1 vs #2 (closure parity).</strong> Justify the closure carve-out or remove it (P2).</li>
+  <li><strong>#4/#5.</strong> <span class="badge badge-blue">Resolved in this revision</span> Not a trait-specific decision: dynamic = Support (works today), <code>@CompileStatic</code> = compile error via the ordinary resolvability rule (P1&prime;). <code>abstract</code>-in-<code>T</code> is optional sugar only.</li>
+  <li><strong>#11.</strong> Adopt Jochen&rsquo;s compile-error position or define the precedence.</li>
+  <li><strong>#12.</strong> Pick the overload rule for each compilation mode (P5).</li>
+  <li><strong>Interface exposure.</strong> Decide whether trait statics become real interface
+  <code>static</code> methods (fixes external <code>T.m()</code>, unifies the model) or are
+  formally erased.</li>
+  <li><strong>Tests as decisions.</strong> Every contested row needs a characterization test that
+  encodes the chosen verdict &mdash; a dynamic positive test plus a <code>@CompileStatic</code>
+  compilation-failure test for rows&nbsp;4/5, and a <code>shouldFail</code> test for row&nbsp;11,
+  not only &ldquo;works&rdquo; tests.</li>
+</ol>
+
+<!-- ============================================================ -->
+<h2 id="verdict" class="section-anchor">9. Recommendation</h2>
+
+<div class="callout callout-amber">
+  <span class="verdict verdict-proposed">Proposed pending team review</span>
+  <p style="margin-top:.5rem">
+    <strong>Merge PR&nbsp;#2529 to unblock the Grails&nbsp;8 / Groovy&nbsp;5 migration</strong>
+    (it restores Groovy&nbsp;4 semantics for the canary, row&nbsp;1, with no regression in the
+    97k-test suite), <strong>but treat it as the first of P1&prime;&ndash;P5, not the resolution.</strong>
+    The PR decisively fixes row&nbsp;1/10 and &mdash; verified by the matrix test &mdash; also
+    shifts row&nbsp;12 (overload) from <code>22</code> back to Groovy&nbsp;4&rsquo;s <code>21</code>;
+    it deliberately leaves row&nbsp;2 (closures) and the row&nbsp;9/11 gaps untouched. The
+    &ldquo;open design point&rdquo; is the remaining rows, and they were almost entirely untested
+    &mdash; the same gap that let the original regression ship silently, now closed by the
+    companion matrix test.
+  </p>
+  <p>
+    Concretely: adopt P1&prime;&ndash;P5 as GEP-22 text, resolve the two blocking decisions (the
+    &ldquo;static implies final&rdquo; question and the static-field form) on dev@, and land a
+    characterization test per contested row &mdash; including compile-error tests &mdash; so the
+    definitions are enforced, not just written. Only then is the point genuinely
+    &ldquo;closed.&rdquo;
+  </p>
+</div>
+
+<hr style="margin-top:3rem; border:none; border-top:1px solid var(--border);">
+<p style="color:var(--gray); font-size:.85rem; margin-top:1rem;">
+  Analysis generated 18&nbsp;May&nbsp;2026. Sources:
+  <a href="https://groovy.apache.org/wiki/GEP-22.html">GEP-22</a>;
+  <a href="https://issues.apache.org/jira/browse/GROOVY-11985">GROOVY-11985</a> (25 comments, to 17&nbsp;May&nbsp;2026);
+  <a href="https://github.com/apache/groovy/pull/2529">PR&nbsp;#2529</a> (commit <code>1e0b4be7de</code>);
+  empirical runs on a built worktree of branch <code>groovy11985</code> (targeted suite + a
+  static-field characterization) and a live reproduction on <code>6.0.0-SNAPSHOT</code>;
+  repo-wide test-coverage scan of <code>src/test</code>. All design verdicts are
+  <strong>proposed pending team review</strong> and reflect the thread state at time of writing.
+</p>
+
+</body>
+</html>

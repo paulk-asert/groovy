@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>groovy-contracts Graduation Assessment (Groovy 6)</title>
+<style>
+  :root {
+    --bg: #fdfdfd;
+    --fg: #222;
+    --accent: #2563eb;
+    --accent-light: #dbeafe;
+    --green: #16a34a;
+    --green-light: #dcfce7;
+    --red: #dc2626;
+    --red-light: #fee2e2;
+    --amber: #d97706;
+    --amber-light: #fef3c7;
+    --gray: #64748b;
+    --gray-light: #f1f5f9;
+    --border: #e2e8f0;
+    --code-bg: #f8fafc;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    color: var(--fg);
+    background: var(--bg);
+    line-height: 1.65;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+  h1 { font-size: 1.75rem; margin-bottom: .25rem; }
+  h2 { font-size: 1.35rem; margin-top: 2.5rem; margin-bottom: .75rem; border-bottom: 2px solid var(--accent); padding-bottom: .3rem; }
+  h3 { font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: .5rem; }
+  h4 { font-size: .98rem; margin-top: 1rem; margin-bottom: .35rem; color: var(--gray); text-transform: uppercase; letter-spacing: .03em; }
+  p, li { margin-bottom: .5rem; }
+  ul, ol { padding-left: 1.5rem; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: .88em;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: .1em .35em;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1rem;
+    overflow-x: auto;
+    font-size: .85rem;
+    line-height: 1.5;
+    margin: .75rem 0 1rem;
+  }
+  pre code { border: none; padding: 0; background: none; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: .75rem 0 1rem;
+    font-size: .9rem;
+  }
+  th, td {
+    text-align: left;
+    padding: .45rem .6rem;
+    border: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th { background: var(--gray-light); font-weight: 600; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .subtitle { color: var(--gray); font-size: .95rem; margin-bottom: 1.5rem; }
+  .badge {
+    display: inline-block;
+    font-size: .72rem;
+    font-weight: 600;
+    padding: .12em .55em;
+    border-radius: 4px;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+  .badge-green { background: var(--green-light); color: var(--green); }
+  .badge-red   { background: var(--red-light);   color: var(--red); }
+  .badge-amber { background: var(--amber-light); color: var(--amber); }
+  .badge-blue  { background: var(--accent-light); color: var(--accent); }
+  .badge-gray  { background: var(--gray-light);  color: var(--gray); }
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: var(--accent-light);
+    padding: .75rem 1rem;
+    margin: 1rem 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .callout-amber { border-left-color: var(--amber); background: var(--amber-light); }
+  .callout-green { border-left-color: var(--green); background: var(--green-light); }
+  .callout-gray  { border-left-color: var(--gray);  background: var(--gray-light); }
+  .verdict {
+    display: inline-block;
+    padding: .6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin: .5rem 0;
+  }
+  .verdict-approve { background: var(--green-light); color: var(--green); }
+  .verdict-mixed   { background: var(--amber-light); color: var(--amber); }
+  .summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+  .summary-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+  }
+  .summary-card h4 { margin-bottom: .4rem; font-size: .95rem; color: var(--fg); text-transform: none; letter-spacing: 0; }
+  .section-anchor { scroll-margin-top: 1rem; }
+  .proposed { color: var(--amber); font-weight: 600; font-style: italic; font-size: .85em; }
+  hr.spacer { border: none; height: 1px; background: var(--border); margin: 1.5rem 0; }
+  @media (max-width: 640px) {
+    .summary-grid { grid-template-columns: 1fr; }
+    table { font-size: .8rem; }
+  }
+</style>
+</head>
+<body>
+
+<h1>groovy-contracts Graduation Assessment</h1>
+<p class="subtitle">
+  Module: <code>subprojects/groovy-contracts</code> &middot;
+  Target release: Groovy 6.0.0 &middot;
+  Proposed JIRA: <code>GROOVY-XXXXX: Graduate groovy-contracts from incubating to stable</code> &middot;
+  Author: Paul King &middot; 24 May 2026
+</p>
+
+<div class="callout callout-gray">
+  <strong>Status of decisions in this document.</strong>
+  Per-annotation graduation calls are <span class="proposed">proposed pending team review</span> &mdash;
+  the cleanest split (graduate the original GContracts trio + their <code>@Repeatable</code> containers, keep
+  the brand-new 6.0 frame-condition / loop-variant pair on probation) is laid out below with rationale, and
+  alternatives are spelled out so the call can be revised in one place.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="overview" class="section-anchor">1. Overview &amp; Recommendation</h2>
+
+<p>The <code>groovy-contracts</code> module ships ten public annotations in the
+<code>groovy.contracts</code> package, nine of them currently bearing <code>@Incubating</code>.
+The module itself has been part of Groovy since the 2020 absorption of the GContracts project
+(<a href="https://issues.apache.org/jira/browse/GROOVY-9671">GROOVY-9671</a>); the core trio
+(<code>@Requires</code>, <code>@Ensures</code>, <code>@Invariant</code>) plus the unmarked
+<code>@Contracted</code> are five years old and stable. Three brand-new annotations land for the
+first time in 6.0.0: <code>@Modifies</code>, <code>@ModifiesConditions</code>, and
+<code>@Decreases</code>. The three <code>@Repeatable</code> container types
+(<code>@RequiresConditions</code>, <code>@EnsuresConditions</code>, <code>@Invariants</code>)
+were added in 2024 (<a href="https://issues.apache.org/jira/browse/GROOVY-11443">GROOVY-11443</a>)
+and are essentially JVM plumbing, not surface that users hand-author.</p>
+
+<p>The precedent set by the two graduations earlier this week is informative:
+<a href="https://issues.apache.org/jira/browse/GROOVY-12030">GROOVY-12030</a> (PropertyHandler)
+graduated cleanly; <a href="https://issues.apache.org/jira/browse/GROOVY-12026">GROOVY-12026</a>
+(JavaShell) graduated the class but <em>kept method-level <code>@Incubating</code></em>
+on two new overloads whose signatures &ldquo;may evolve in a subsequent 6.x release based on usage
+feedback.&rdquo; That mixed approach is the right template here.</p>
+
+<div class="verdict verdict-mixed">Recommendation: graduate the stable seven, keep the brand-new three on probation.</div>
+
+<div class="summary-grid">
+  <div class="summary-card">
+    <h4>Graduate now (7 annotations)</h4>
+    <p><code>@Requires</code>, <code>@Ensures</code>, <code>@Invariant</code>,
+       <code>@RequiresConditions</code>, <code>@EnsuresConditions</code>,
+       <code>@Invariants</code>, plus <code>@Contracted</code> (already
+       not <code>@Incubating</code> &mdash; treat as a no-op confirmation).</p>
+  </div>
+  <div class="summary-card">
+    <h4>Stay incubating in 6.0.0 (3 annotations)</h4>
+    <p><code>@Modifies</code>, <code>@ModifiesConditions</code>, <code>@Decreases</code>.
+       Re-evaluate for 6.1 or 7.0 once there is user feedback on the frame-condition
+       semantics, the <code>ModifiesChecker</code> interaction, and the loop-variant rules.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="inventory" class="section-anchor">2. Current State Inventory</h2>
+
+<h3>2.1 Public annotations in <code>groovy.contracts</code></h3>
+
+<table>
+  <tr>
+    <th>Annotation</th>
+    <th><code>@Incubating</code></th>
+    <th>Added</th>
+    <th>Role</th>
+    <th>User-authored?</th>
+  </tr>
+  <tr>
+    <td><code>@Requires</code></td>
+    <td><span class="badge badge-amber">yes</span></td>
+    <td>2020 (GROOVY-9671)</td>
+    <td>Method precondition</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><code>@Ensures</code></td>
+    <td><span class="badge badge-amber">yes</span></td>
+    <td>2020 (GROOVY-9671)</td>
+    <td>Method postcondition (with <code>result</code> / <code>old</code>)</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><code>@Invariant</code></td>
+    <td><span class="badge badge-amber">yes</span></td>
+    <td>2020 (GROOVY-9671)</td>
+    <td>Class invariant + loop invariant (via <code>@ExtendedTarget</code>)</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><code>@Contracted</code></td>
+    <td><span class="badge badge-green">no</span></td>
+    <td>2020 (GROOVY-9671)</td>
+    <td>Package / class enable marker</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><code>@RequiresConditions</code></td>
+    <td><span class="badge badge-amber">yes</span></td>
+    <td>2024 (GROOVY-11443)</td>
+    <td><code>@Repeatable</code> container for <code>@Requires</code></td>
+    <td>No (JVM plumbing)</td>
+  </tr>
+  <tr>
+    <td><code>@EnsuresConditions</code></td>
+    <td><span class="badge badge-amber">yes</span></td>
+    <td>2024 (GROOVY-11443)</td>
+    <td><code>@Repeatable</code> container for <code>@Ensures</code></td>
+    <td>No (JVM plumbing)</td>
+  </tr>
+  <tr>
+    <td><code>@Invariants</code></td>
+    <td><span class="badge badge-amber">yes</span></td>
+    <td>2024 (GROOVY-11443)</td>
+    <td><code>@Repeatable</code> container for <code>@Invariant</code></td>
+    <td>No (JVM plumbing)</td>
+  </tr>
+  <tr>
+    <td><code>@Modifies</code></td>
+    <td><span class="badge badge-amber">yes</span></td>
+    <td>2026 (GROOVY-11909)</td>
+    <td>Frame condition (declarative; compile-time validated)</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td><code>@ModifiesConditions</code></td>
+    <td><span class="badge badge-amber">yes</span></td>
+    <td>2026 (GROOVY-11909)</td>
+    <td><code>@Repeatable</code> container for <code>@Modifies</code></td>
+    <td>No (JVM plumbing)</td>
+  </tr>
+  <tr>
+    <td><code>@Decreases</code></td>
+    <td><span class="badge badge-amber">yes</span></td>
+    <td>2026 (GROOVY-11890)</td>
+    <td>Loop termination measure (variant)</td>
+    <td>Yes</td>
+  </tr>
+</table>
+
+<h3>2.2 Implementation surface (out of scope for graduation; reference only)</h3>
+
+<p>The AST transforms in <code>org.apache.groovy.contracts.ast</code> (e.g.
+<code>GContractsASTTransformation</code>, <code>ClosureExpressionEvaluationASTTransformation</code>,
+<code>LoopInvariantASTTransformation</code>, <code>LoopVariantASTTransformation</code>,
+<code>ModifiesASTTransformation</code>, <code>ModifiesEnsuresValidationTransformation</code>) carry
+no <code>@Incubating</code> markers and aren&rsquo;t part of the public API contract &mdash; they are
+SPI consumed via <code>META-INF/services/org.codehaus.groovy.transform.ASTTransformation</code>.
+They need no graduation action. Likewise the lifecycle and processor classes under
+<code>org.apache.groovy.contracts.common</code> are SPI; they should remain plain (or be
+marked <code>@Internal</code>, separate exercise).</p>
+
+<p>The <code>ModifiesChecker</code> type-checking extension lives in the separate
+<code>groovy-typecheckers</code> subproject. Its graduation status is a sibling question
+out of scope here; note only that it is the runtime/body-level companion to <code>@Modifies</code>
+and shares its fate &mdash; if <code>@Modifies</code> stays incubating, <code>ModifiesChecker</code>
+likely should too.</p>
+
+<!-- ============================================================ -->
+<h2 id="per-annotation" class="section-anchor">3. Per-Annotation Decision Matrix</h2>
+
+<h3>3.1 Graduate now <span class="badge badge-green">recommended</span></h3>
+
+<table>
+  <tr><th>Annotation</th><th>Why graduate</th><th>Risk</th></tr>
+  <tr>
+    <td><code>@Requires</code></td>
+    <td>5 years stable; semantics fixed (precondition, weakened by override via OR); inherited from GContracts which predated Groovy absorption. Public API surface unchanged.</td>
+    <td>None foreseen.</td>
+  </tr>
+  <tr>
+    <td><code>@Ensures</code></td>
+    <td>5 years stable; <code>result</code> / <code>old</code> closure-parameter contract is well-established and documented. New <code>@Modifies</code> integration is additive (it tightens what <code>old</code> can reference; doesn&rsquo;t change the postcondition surface itself).</td>
+    <td>None foreseen.</td>
+  </tr>
+  <tr>
+    <td><code>@Invariant</code></td>
+    <td>5 years stable as a class invariant. Loop invariant extension via <code>@ExtendedTarget</code> shipped earlier (GROOVY-11878) and is documented. The annotation declaration itself is stable.</td>
+    <td>Low. Loop-invariant usage on uncommon loop shapes is the main &ldquo;new&rdquo; surface, and it&rsquo;s been in master long enough to feel done.</td>
+  </tr>
+  <tr>
+    <td><code>@Contracted</code></td>
+    <td>Already not <code>@Incubating</code>. Confirm intent and add a formal user-guide section so its status is visible (currently only appears in an example).</td>
+    <td>None &mdash; documentation only.</td>
+  </tr>
+  <tr>
+    <td><code>@RequiresConditions</code><br><code>@EnsuresConditions</code><br><code>@Invariants</code></td>
+    <td>Pure <code>@Repeatable</code> container types. Users almost never write them by hand &mdash; the compiler synthesizes them from stacked annotations. Their shape is dictated by JLS rules for <code>@Repeatable</code>, so there is nothing left to refine.</td>
+    <td>Effectively zero. The only thing that could change is which annotation they contain, and that would be a breaking change either way.</td>
+  </tr>
+</table>
+
+<h3>3.2 Keep incubating in 6.0.0 <span class="badge badge-amber">proposed</span></h3>
+
+<table>
+  <tr><th>Annotation</th><th>Why hold</th><th>What would unblock graduation</th></tr>
+  <tr>
+    <td><code>@Modifies</code></td>
+    <td>First release. Semantics carry real depth: it constrains what <code>old</code> may reference in a paired <code>@Ensures</code>, it interacts with <code>ModifiesChecker</code>, and the &ldquo;field reference vs parameter reference&rdquo; syntax (<code>this.field</code> vs bare <code>name</code>) is novel ground in the Groovy annotation vocabulary. Real users haven&rsquo;t exercised it yet.</td>
+    <td>(a) At least one minor release of in-field use; (b) confirmation that <code>ModifiesChecker</code> coverage is complete (e.g. inherited methods, indirect mutation via helpers); (c) decision on whether array element mutation should require explicit declaration; (d) richer test suite (see &sect;5).</td>
+  </tr>
+  <tr>
+    <td><code>@ModifiesConditions</code></td>
+    <td>Container is bound to <code>@Modifies</code>; graduate together.</td>
+    <td>Tied to <code>@Modifies</code>.</td>
+  </tr>
+  <tr>
+    <td><code>@Decreases</code></td>
+    <td>First release. The runtime contract &mdash; strictly decreasing <em>and</em> non-negative &mdash; is opinionated; there&rsquo;s a real design question whether non-negativity should be a hard requirement or whether ordinal/<code>Comparable</code> termination measures (e.g. lex-ordered tuples, well-founded sets) should also be admissible. Discovering that mid-6.0 would force a breaking change.</td>
+    <td>(a) Use in anger; (b) decision on whether to relax to a pure <code>Comparable</code>-decreasing rule with non-negativity as opt-in; (c) interaction story with structured concurrency / virtual threads (does the variant need to be thread-local?).</td>
+  </tr>
+</table>
+
+<div class="callout callout-amber">
+  <strong>Alternative call for the team.</strong> If the team prefers the &ldquo;graduate the whole package&rdquo; approach &mdash;
+  reasoning that <code>@Incubating</code> on a single module&rsquo;s output is awkward to explain &mdash; the
+  fallback is to graduate all ten and accept that <code>@Modifies</code>/<code>@Decreases</code> semantics
+  can only be tightened (not loosened) in 6.x. The risk is concrete but bounded: the worst breaking change
+  would be tightening the <code>@Decreases</code> non-negativity rule or restricting <code>@Modifies</code>
+  syntax forms. I lean against this option but note it for completeness.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="doc-changes" class="section-anchor">4. Documentation Changes</h2>
+
+<h3>4.1 Required: user-guide bug to fix regardless of graduation outcome</h3>
+
+<div class="callout callout-amber">
+  <strong>Bug.</strong> <code>subprojects/groovy-contracts/src/spec/doc/contracts-userguide.adoc</code>
+  line 53 lists &ldquo;enabling contracts at package- or class-level with <code>@AssertionsEnabled</code>&rdquo;.
+  There is no <code>@AssertionsEnabled</code> annotation in the codebase &mdash; the actual annotation is
+  <code>@Contracted</code> (<code>checkAssertionsEnabled</code> exists only as an internal method on
+  <code>Configurator</code>). This is a leftover from the GContracts terminology and should be corrected.
+</div>
+
+<h3>4.2 Required: add a <code>@Decreases</code> section to the user guide</h3>
+
+<p>The user guide covers <code>@Modifies</code> at length (lines 144&ndash;247) but has no section on
+<code>@Decreases</code> at all, despite the annotation shipping. Add a section after
+&ldquo;Loop Invariants&rdquo; with: closure rules, the strictly-decreasing + non-negative contract,
+the <code>LoopVariantViolation</code> behaviour, and a worked example. Tag a code block in
+<code>ContractsTest.groovy</code> and include via <code>tags=</code> to match the rest of the guide.
+Do this even if <code>@Decreases</code> stays incubating &mdash; incubating doesn&rsquo;t mean undocumented.</p>
+
+<h3>4.3 Required: add a formal <code>@Contracted</code> section</h3>
+
+<p>Currently <code>@Contracted</code> appears only inside the &ldquo;Use within scripts&rdquo;-adjacent
+example code. Add a short, formal section explaining: package vs class targeting, what enabling does
+(it&rsquo;s the discovery mechanism for the AST xforms), interaction with JVM <code>-ea</code>/<code>-da</code>,
+and the relationship to the (mis-named) bullet currently in the feature list.</p>
+
+<h3>4.4 Required: javadoc <code>@since</code> tags on graduating annotations</h3>
+
+<p>Following the PropertyHandler / JavaShell precedent, add <code>@since 2.5.0</code> to
+<code>@Requires</code>, <code>@Ensures</code>, <code>@Invariant</code>, <code>@Contracted</code>
+(they were first absorbed under GROOVY-9671 which targeted 2.5/3.0 era), and <code>@since 6.0.0</code>
+to the containers if they haven&rsquo;t got one already (they currently don&rsquo;t). Without a <code>@since</code>
+tag the &ldquo;graduated&rdquo; status leaves no version anchor in the javadoc.</p>
+
+<h3>4.5 Optional but recommended: stability sentence in the user-guide intro</h3>
+
+<p>Mirror the wording used for prior graduations &mdash; one line near the top of
+<code>contracts-userguide.adoc</code> noting that the core annotations (<code>@Requires</code>,
+<code>@Ensures</code>, <code>@Invariant</code>, <code>@Contracted</code>) are stable from Groovy 6.0.0,
+with <code>@Modifies</code> and <code>@Decreases</code> remaining incubating pending feedback.</p>
+
+<h3>4.6 Optional: update <code>groovy.contracts</code> <code>package-info.java</code></h3>
+
+<p>The current package-info enumerates only the original trio (&ldquo;<code>@Requires</code> (precondition),
+<code>@Ensures</code> (postcondition), <code>@Invariant</code> (class invariant)&rdquo;). Extend it to
+list <code>@Contracted</code>, mention loop invariants, and mention <code>@Modifies</code> /
+<code>@Decreases</code> as incubating frame-condition / loop-variant additions. This is the first
+javadoc page a user lands on for the package.</p>
+
+<h3>4.7 Optional: integration guide cross-reference</h3>
+
+<p><code>src/spec/doc/guide-integrating.adoc</code> does not currently mention groovy-contracts.
+The JavaShell graduation added a section there. A short pointer (&ldquo;for design-by-contract support
+see the contracts user guide&rdquo;) would parallel that, but it&rsquo;s not blocking.</p>
+
+<!-- ============================================================ -->
+<h2 id="code-changes" class="section-anchor">5. Code Changes</h2>
+
+<h3>5.1 Annotation files to edit</h3>
+
+<p>For each graduating annotation: remove the <code>@Incubating</code> annotation, remove the
+<code>import org.apache.groovy.lang.annotation.Incubating;</code> line, and add an appropriate
+<code>@since</code> javadoc tag if missing.</p>
+
+<table>
+  <tr><th>File</th><th>Action</th></tr>
+  <tr><td><code>groovy/contracts/Requires.java</code></td><td>Remove <code>@Incubating</code> + import; add <code>@since 2.5.0</code>.</td></tr>
+  <tr><td><code>groovy/contracts/Ensures.java</code></td><td>Remove <code>@Incubating</code> + import; add <code>@since 2.5.0</code>.</td></tr>
+  <tr><td><code>groovy/contracts/Invariant.java</code></td><td>Remove <code>@Incubating</code> + import; add <code>@since 2.5.0</code>.</td></tr>
+  <tr><td><code>groovy/contracts/RequiresConditions.java</code></td><td>Remove <code>@Incubating</code> + import; add <code>@since 5.0.0</code> (when <code>@Repeatable</code> container was introduced).</td></tr>
+  <tr><td><code>groovy/contracts/EnsuresConditions.java</code></td><td>Remove <code>@Incubating</code> + import; add <code>@since 5.0.0</code>.</td></tr>
+  <tr><td><code>groovy/contracts/Invariants.java</code></td><td>Remove <code>@Incubating</code> + import; add <code>@since 5.0.0</code>.</td></tr>
+  <tr><td><code>groovy/contracts/Contracted.java</code></td><td>Already free of <code>@Incubating</code>; add <code>@since 2.5.0</code>.</td></tr>
+  <tr><td><code>groovy/contracts/Modifies.java</code></td><td><span class="badge badge-amber">leave as-is</span> &mdash; keep <code>@Incubating</code>.</td></tr>
+  <tr><td><code>groovy/contracts/ModifiesConditions.java</code></td><td><span class="badge badge-amber">leave as-is</span></td></tr>
+  <tr><td><code>groovy/contracts/Decreases.java</code></td><td><span class="badge badge-amber">leave as-is</span></td></tr>
+</table>
+
+<p><em>Per memory: only remove unused imports as part of this edit; don&rsquo;t reflow the imports list.</em></p>
+
+<h3>5.2 No code-behaviour changes proposed</h3>
+
+<p>Unlike GROOVY-12008 (Sealed types) which required strengthening the transform during graduation,
+the contract transforms have been hardened by recent issues (GROOVY-11878 loop invariants,
+GROOVY-11884 annotation validation gaps, GROOVY-11885 script support, GROOVY-11894 NullChecker
+interplay). No additional code hardening identified as a precondition for graduation of the
+core trio.</p>
+
+<!-- ============================================================ -->
+<h2 id="test-changes" class="section-anchor">6. Test Coverage</h2>
+
+<h3>6.1 Sufficient for graduation</h3>
+
+<p>The original trio has solid coverage across <code>SimplePreconditionTests</code>,
+<code>SimplePostconditionTests</code>, <code>ResultVariablePostconditionTests</code>,
+<code>OldVariablePostconditionTests</code>, <code>ResultAndOldVariablePostconditionTests</code>,
+<code>SimpleClassInvariantTests</code>, <code>POGOClassInvariantTests</code>,
+<code>LoopInvariantTests</code>, <code>InheritanceTests</code>, the compatibility suites
+(<code>CompileStaticTests</code>, <code>TypeCheckedTests</code>, <code>ImmutableTests</code>, etc.),
+and the example/documentation tests. No new tests are blocking the core trio&rsquo;s graduation.</p>
+
+<h3>6.2 Recommended additions (small)</h3>
+
+<ul>
+  <li>One direct-use test for each <code>@Repeatable</code> container
+      (<code>@RequiresConditions</code> / <code>@EnsuresConditions</code> / <code>@Invariants</code>)
+      that confirms hand-written container syntax still compiles and runs the right number of
+      assertions &mdash; the existing tests exercise them only via the synthesized path. Cheap insurance
+      now that the containers leave incubation.</li>
+  <li>Following the PropertyHandlerTest precedent (133-line test added at graduation), consider a
+      small <code>ContractsGraduationTest</code> in <code>src/spec/test/</code> that explicitly demonstrates
+      the stable surface &mdash; doubles as documentation.</li>
+</ul>
+
+<h3>6.3 Not required for this graduation, but flagged for the next one</h3>
+
+<p>If/when <code>@Modifies</code> and <code>@Decreases</code> graduate, test coverage will need to grow
+substantially. Today there is one <code>ModifiesTests</code> class and one <code>LoopDecreasesTests</code>
+class. For mature-API status the team will want: inheritance scenarios for <code>@Modifies</code>
+(does it inherit through overrides? how does it interact with <code>@Override</code>-via-trait?);
+edge cases for <code>@Decreases</code> (nested loops, <code>break</code>/<code>continue</code>,
+non-integer <code>Comparable</code> variants, negative-start variants).</p>
+
+<!-- ============================================================ -->
+<h2 id="other" class="section-anchor">7. Other / Out-of-Scope Notes</h2>
+
+<h3>7.1 <code>ModifiesChecker</code> in groovy-typecheckers</h3>
+
+<p>Lives in a different subproject (<code>groovy-typecheckers</code>) and was added in 2026
+(<a href="https://issues.apache.org/jira/browse/GROOVY-11910">GROOVY-11910</a>). Its stability is
+yoked to <code>@Modifies</code>. If the recommendation here is accepted (keep <code>@Modifies</code>
+incubating), <code>ModifiesChecker</code> should also remain incubating &mdash; verify and adjust
+during its own subproject&rsquo;s graduation pass.</p>
+
+<h3>7.2 Container annotations as &ldquo;hidden&rdquo; API</h3>
+
+<p>Worth considering, separately from graduation: marking the three (then four) container annotations
+as <code>@Internal</code> (or noting in their javadoc that they are not intended for direct use).
+They&rsquo;re only public because <code>@Repeatable</code> requires the container to be at least as
+visible as the contained annotation. Out of scope for this graduation but a sensible follow-up
+once they&rsquo;re no longer incubating.</p>
+
+<h3>7.3 GEP / website references</h3>
+
+<p>The contract-related mentions on <code>groovy-website/site/src/site/wiki</code> are all GEP documents
+which serve as historical design records; no edits needed. No marketing-facing page lists the contracts
+module as &ldquo;incubating&rdquo;, so there is no banner to take down.</p>
+
+<h3>7.4 Module distribution / build wiring</h3>
+
+<p><code>groovy-contracts</code> is included in <code>settings.gradle</code> (line 55) and is part of
+the standard distribution. No build-side changes are needed at graduation.</p>
+
+<h3>7.5 Release-note line</h3>
+
+<p>Following the established commit-message conventions (no separate <code>CHANGES.md</code> is
+maintained; the JIRA + commit message <em>is</em> the release-note line):</p>
+
+<pre><code>GROOVY-XXXXX: Graduate groovy-contracts from incubating to stable
+
+Remove @Incubating from the original GContracts trio (@Requires, @Ensures,
+@Invariant), the unmarked @Contracted, and the three @Repeatable container
+annotations (@RequiresConditions, @EnsuresConditions, @Invariants). Add
+@since tags. Fix stale @AssertionsEnabled reference in the user guide;
+add formal @Contracted and @Decreases sections.
+
+@Modifies, @ModifiesConditions, and @Decreases remain @Incubating in 6.0.0;
+revisit after user feedback in a 6.x release.</code></pre>
+
+<!-- ============================================================ -->
+<h2 id="action-summary" class="section-anchor">8. Action Summary (Checklist)</h2>
+
+<h4>Code (7 files)</h4>
+<ul>
+  <li>Remove <code>@Incubating</code> + import from <code>Requires</code>, <code>Ensures</code>,
+      <code>Invariant</code>, <code>RequiresConditions</code>, <code>EnsuresConditions</code>,
+      <code>Invariants</code>.</li>
+  <li>Add <code>@since</code> javadoc tags to the seven graduating files (six above + <code>Contracted</code>).</li>
+</ul>
+
+<h4>Docs (1 file, three sections)</h4>
+<ul>
+  <li><code>contracts-userguide.adoc</code>: fix <code>@AssertionsEnabled</code> &rarr; <code>@Contracted</code>
+      in the feature bullet list.</li>
+  <li><code>contracts-userguide.adoc</code>: add a <code>@Decreases</code> section after &ldquo;Loop Invariants&rdquo;.</li>
+  <li><code>contracts-userguide.adoc</code>: add a formal <code>@Contracted</code> section.</li>
+  <li>Optional: extend <code>groovy/contracts/package-info.java</code> to enumerate the full surface.</li>
+</ul>
+
+<h4>Tests (recommended, not blocking)</h4>
+<ul>
+  <li>One direct-use test per <code>@Repeatable</code> container (3 small test methods).</li>
+  <li>Optionally a <code>ContractsGraduationTest</code> in <code>src/spec/test/</code>.</li>
+</ul>
+
+<h4>Out of scope (track separately)</h4>
+<ul>
+  <li><code>ModifiesChecker</code> stability in groovy-typecheckers.</li>
+  <li>Marking container annotations <code>@Internal</code>.</li>
+  <li>Future graduation of <code>@Modifies</code> / <code>@Decreases</code> in 6.x or 7.0.</li>
+</ul>
+
+<hr class="spacer">
+<p class="subtitle">
+  All graduation calls in &sect;3 are <span class="proposed">proposed pending team review</span>.
+  Doc fixes in &sect;4.1&ndash;4.4 are independent of which annotations graduate and should land regardless.
+</p>
+
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ASF branch-protection ruleset additions for Groovy repos</title>
+<style>
+  :root {
+    --bg: #fafafa;
+    --fg: #1a1a1a;
+    --muted: #555;
+    --accent: #4298b5;
+    --code-bg: #f4f1ea;
+    --code-border: #e2dccd;
+    --rule: #d8d2c4;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    max-width: 860px;
+    margin: 2.5rem auto;
+    padding: 0 1.5rem;
+    line-height: 1.55;
+  }
+  h1 { font-size: 1.6rem; border-bottom: 2px solid var(--accent); padding-bottom: .35rem; }
+  h2 { font-size: 1.2rem; margin-top: 2.2rem; color: var(--accent); }
+  h3 { font-size: 1rem; margin-top: 1.6rem; font-family: "SF Mono", Menlo, monospace; }
+  code {
+    font-family: "SF Mono", Menlo, monospace;
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.92em;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    border-left: 3px solid var(--accent);
+    padding: 0.9rem 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+  pre code { background: none; padding: 0; }
+  table { border-collapse: collapse; margin: 1rem 0; font-size: 0.92rem; }
+  th, td { border: 1px solid var(--rule); padding: .4rem .7rem; text-align: left; vertical-align: top; }
+  th { background: var(--code-bg); }
+  .muted { color: var(--muted); font-size: 0.9rem; }
+  ul { padding-left: 1.3rem; }
+  li { margin: .25rem 0; }
+  .note { background: #fffbe6; border-left: 3px solid #d4b94b; padding: .6rem .9rem; margin: 1rem 0; font-size: 0.93rem; }
+</style>
+</head>
+<body>
+
+<h1>ASF branch-protection ruleset additions for Groovy repos</h1>
+
+<p class="muted">
+  ASF Infrastructure begins submitting branch-protection PRs against all public ASF GitHub
+  repositories on <strong>2026-05-15</strong>. PRs auto-merge after 30 days
+  (around 2026-06-15) if untouched. Applying the changes proactively lets the project
+  control wording and ensure release-branch patterns are actually covered.
+</p>
+
+<h2>Current state &amp; branch patterns</h2>
+
+<table>
+  <thead>
+    <tr><th>Repo</th><th>Release-branch pattern</th><th><code>.asf.yaml</code></th><th>Rulesets?</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>apache/groovy</code></td>
+      <td><code>GROOVY_*_X</code></td>
+      <td>exists</td>
+      <td>none</td>
+    </tr>
+    <tr>
+      <td><code>apache/groovy-geb</code></td>
+      <td><code>GEB_*_X</code></td>
+      <td>exists</td>
+      <td>none</td>
+    </tr>
+    <tr>
+      <td><code>apache/groovy-website</code></td>
+      <td>none (no version branches)</td>
+      <td>missing (404)</td>
+      <td>n/a</td>
+    </tr>
+  </tbody>
+</table>
+
+<p class="muted">
+  None of these repos use <code>rel/*</code> or <code>release/*</code>, so the ASF default
+  PR would only protect each repo's default branch. Real release branches need explicit
+  inclusion.
+</p>
+
+<h2>Recommended changes</h2>
+
+<h3>apache/groovy</h3>
+<p>Add under the existing <code>github:</code> key in <code>.asf.yaml</code>:</p>
+<pre><code>  rulesets:
+    - name: "Default branch protection"
+      type: branch
+      branches:
+        includes:
+          - "~DEFAULT_BRANCH"
+          - "GROOVY_*_X"
+      restrict_deletion: true
+      restrict_force_push: true</code></pre>
+
+<h3>apache/groovy-geb</h3>
+<p>Add under the existing <code>github:</code> key in <code>.asf.yaml</code>:</p>
+<pre><code>  rulesets:
+    - name: "Default branch protection"
+      type: branch
+      branches:
+        includes:
+          - "~DEFAULT_BRANCH"
+          - "GEB_*_X"
+      restrict_deletion: true
+      restrict_force_push: true</code></pre>
+
+<h3>apache/groovy-website</h3>
+<p>
+  No <code>.asf.yaml</code> exists today &mdash; create it. Default branch is
+  <code>asf-site</code> (not <code>master</code>); GitHub Pages is disabled, the site
+  is served by ASF infra directly from <code>asf-site</code>.
+</p>
+<pre><code>github:
+  rulesets:
+    - name: "Default branch protection"
+      type: branch
+      branches:
+        includes:
+          - "~DEFAULT_BRANCH"   # asf-site (published site)
+          - "master"            # source branch
+      restrict_deletion: true
+      restrict_force_push: true</code></pre>
+
+<h2>Notes</h2>
+<ul>
+  <li><code>~DEFAULT_BRANCH</code> auto-resolves &mdash; no need to hardcode <code>master</code>/<code>asf-site</code>.</li>
+  <li>Dormant <code>REL-BRANCH-*</code> / <code>REL_BRANCH_*</code> patterns on the main repo
+      are optional &mdash; add only for belt-and-braces on Groovy 2.x history.</li>
+  <li>Other Groovy repos (<code>groovy-examples</code>, <code>groovy-dev-site</code>,
+      <code>groovy-user-site</code>, <code>groovy-release</code>) were not surveyed.</li>
+  <li><code>apache/grails-core</code> (reference): uses <code>&lt;version&gt;.x</code>
+      pattern (e.g. <code>8.0.x</code>); their stronger layer is
+      <code>environments:</code> with required reviewers for release/docs/sdkman gates &mdash;
+      a model worth considering separately from this minimum-bar ruleset.</li>
+</ul>
+
+<div class="note">
+  <strong>References:</strong>
+  <a href="https://github.com/apache/infrastructure-asfyaml#rulesets">asfyaml rulesets docs</a>
+  &middot;
+  <a href="https://github.com/ossf/scorecard/blob/main/docs/checks.md#branch-protection">OpenSSF Scorecard branch-protection check</a>
+</div>
+
+</body>
+</html>

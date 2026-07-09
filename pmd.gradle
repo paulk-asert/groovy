@@ -1,0 +1,20 @@
+// Temporary PMD scan over Groovy core's Java sources.
+// To remove: delete this file, the config/pmd/ directory, and the
+// `apply from: 'pmd.gradle'` line at the bottom of build.gradle.
+
+apply plugin: 'pmd'
+
+pmd {
+    toolVersion = '7.7.0'
+    ignoreFailures = true
+    ruleSets = []
+    ruleSetFiles = files(rootProject.file('config/pmd/ruleset.xml'))
+    incrementalAnalysis = false
+}
+
+tasks.withType(Pmd).configureEach {
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}

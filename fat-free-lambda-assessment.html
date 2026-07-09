@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fat-Free Lambdas Assessment: GROOVY-12043 / 12044 / 12054</title>
+<style>
+  :root {
+    --bg: #fdfdfd;
+    --fg: #222;
+    --accent: #2563eb;
+    --accent-light: #dbeafe;
+    --green: #16a34a;
+    --green-light: #dcfce7;
+    --red: #dc2626;
+    --red-light: #fee2e2;
+    --amber: #d97706;
+    --amber-light: #fef3c7;
+    --gray: #64748b;
+    --gray-light: #f1f5f9;
+    --border: #e2e8f0;
+    --code-bg: #f8fafc;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    color: var(--fg);
+    background: var(--bg);
+    line-height: 1.65;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+  h1 { font-size: 1.75rem; margin-bottom: .25rem; }
+  h2 { font-size: 1.35rem; margin-top: 2.5rem; margin-bottom: .75rem; border-bottom: 2px solid var(--accent); padding-bottom: .3rem; }
+  h3 { font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: .5rem; }
+  p, li { margin-bottom: .5rem; }
+  ul, ol { padding-left: 1.5rem; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: .88em;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: .1em .35em;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1rem;
+    overflow-x: auto;
+    font-size: .85rem;
+    line-height: 1.5;
+    margin: .75rem 0 1rem;
+  }
+  pre code { border: none; padding: 0; background: none; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: .75rem 0 1rem;
+    font-size: .9rem;
+  }
+  th, td {
+    text-align: left;
+    padding: .45rem .6rem;
+    border: 1px solid var(--border);
+  }
+  th { background: var(--gray-light); font-weight: 600; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .subtitle { color: var(--gray); font-size: .95rem; margin-bottom: 1.5rem; }
+  .badge {
+    display: inline-block;
+    font-size: .75rem;
+    font-weight: 600;
+    padding: .15em .55em;
+    border-radius: 4px;
+    vertical-align: middle;
+  }
+  .badge-green { background: var(--green-light); color: var(--green); }
+  .badge-red   { background: var(--red-light);   color: var(--red); }
+  .badge-amber { background: var(--amber-light); color: var(--amber); }
+  .badge-blue  { background: var(--accent-light); color: var(--accent); }
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: var(--accent-light);
+    padding: .75rem 1rem;
+    margin: 1rem 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .callout-amber { border-left-color: var(--amber); background: var(--amber-light); }
+  .callout-green { border-left-color: var(--green); background: var(--green-light); }
+  .verdict {
+    display: inline-block;
+    padding: .6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin: .5rem 0;
+  }
+  .verdict-approve { background: var(--green-light); color: var(--green); }
+  .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
+  .summary-card { border: 1px solid var(--border); border-radius: 8px; padding: 1rem; }
+  .summary-card h4 { margin-bottom: .4rem; font-size: .95rem; }
+  .win { color: var(--green); font-weight: 600; }
+  .bad { color: var(--red); font-weight: 600; }
+  .mid { color: var(--amber); font-weight: 600; }
+  .diff-neutral { color: var(--gray); }
+  .noise { color: var(--gray); font-style: italic; }
+  .section-anchor { scroll-margin-top: 1rem; }
+  @media (max-width: 640px) {
+    .summary-grid { grid-template-columns: 1fr; }
+    table { font-size: .8rem; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Fat-Free Lambdas Assessment</h1>
+<p class="subtitle">
+  <a href="https://issues.apache.org/jira/browse/GROOVY-12043">GROOVY-12043</a> (curryWith helpers) &middot;
+  <a href="https://issues.apache.org/jira/browse/GROOVY-12044">GROOVY-12044</a> (CurriedClosure per-element allocation) &middot;
+  <a href="https://issues.apache.org/jira/browse/GROOVY-12054">GROOVY-12054</a> (fat-free DGM methods) &middot;
+  Author: Paul King &middot; 2 June 2026
+</p>
+
+<div class="callout callout-green">
+  <strong>Bottom line.</strong> The shipped fat-free idioms &mdash; the
+  <code>java.util.function</code>-typed DGM overloads plus
+  <code>Lambdas.curryWith</code> &mdash; run <strong>13&ndash;23&times; faster</strong>
+  than the closure / <code>rcurry</code> idioms on these predicate workloads and
+  cut per-call allocation from <strong>~72&ndash;108&nbsp;bytes <em>per element</em></strong>
+  to a <strong>flat 0&ndash;24&nbsp;bytes per call</strong>. The win holds in both
+  <code>indy</code> and <code>classic</code> modes.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="overview" class="section-anchor">1. What landed, and what this measures</h2>
+
+<p>Three issues bring the &ldquo;fat-free lambda&rdquo; pattern (Don Raab,
+<em>Fat-Free Lambdas in Java</em>) to Groovy &mdash; the idea that a
+<em>stateless</em> lambda plus an auxiliary argument captures nothing, so the JVM
+can share one instance instead of allocating a closure per call:</p>
+
+<table>
+  <tr><th>Issue</th><th>What it adds</th></tr>
+  <tr>
+    <td><strong>GROOVY-12043</strong> <span class="badge badge-blue">helpers</span></td>
+    <td><code>org.apache.groovy.util.Lambdas.curryWith(...)</code> right-partials a
+        <code>BiPredicate</code>/<code>BiFunction</code>/<code>BiConsumer</code> with one value,
+        returning a plain <code>Predicate</code>/<code>Function</code>/<code>Consumer</code>.
+        <code>Closures.curryWith(...)</code> returns the same thing lifted into a
+        <code>Closure</code> (a <code>PredicateClosure</code> etc.) for legacy
+        <code>Closure</code>-typed APIs.</td>
+  </tr>
+  <tr>
+    <td><strong>GROOVY-12044</strong> <span class="badge badge-blue">runtime</span></td>
+    <td>A fast path in <code>CurriedClosure.call(Object)</code> that skips one
+        wrapper <code>Object[1]</code> for the dominant single-curried-arg shape
+        &mdash; i.e. it trims the per-element cost of the <code>rcurry</code> idiom.</td>
+  </tr>
+  <tr>
+    <td><strong>GROOVY-12054</strong> <span class="badge badge-blue">DGM</span></td>
+    <td>A <code>java.util.function</code>-typed overload set on the core DGM methods:
+        <code>any</code>/<code>every</code>/<code>find</code>/<code>findAll</code>/<code>count</code>/<code>collect</code>/<code>each</code>/&hellip;
+        accepting <code>Predicate</code>/<code>Function</code>/<code>Consumer</code>, plus
+        <span class="badge badge-amber">@Incubating</span> two-arg
+        <code>BiPredicate</code>/<code>BiFunction</code><code>+param</code> variants
+        (the &ldquo;With&rdquo;-style overloads). The follow-up commit added
+        <code>count</code>, <code>any(BiPredicate,param)</code>,
+        <code>every(BiPredicate,param)</code> and lazy <code>collecting</code>/<code>findingAll</code>.</td>
+  </tr>
+</table>
+
+<p>The ad-hoc benchmark under <code>org.apache.groovy.adhoc</code> (originally a
+spike with hand-rolled stand-ins) has been rewired to call the <strong>shipped</strong>
+APIs and re-run. It compares eight ways (A&ndash;H) of writing the same
+predicate traversal, across three DGM shapes that each carry the full overload
+set.</p>
+
+<!-- ============================================================ -->
+<h2 id="bench" class="section-anchor">2. The benchmark</h2>
+
+<p>Eight variants, applied to three families. The per-element work
+(<code>String.startsWith</code>) and the traversal are identical across variants;
+only the lambda / closure machinery differs. Prefixes are rotated and
+<strong>never match</strong>, so every variant performs a full traversal
+(<code>find</code> returns <code>null</code>, <code>findAll</code> an empty list,
+<code>count</code> zero).</p>
+
+<table>
+  <tr><th>Variant</th><th>Idiom (shown for <code>find</code>)</th><th>Allocation shape</th></tr>
+  <tr><td><strong>A</strong> captureClosure</td><td><code>data.find { it.startsWith(prefix) }</code></td><td>capturing <code>Closure</code> per call</td></tr>
+  <tr><td><strong>B</strong> rcurryClosure</td><td><code>data.find(pred.rcurry(prefix))</code></td><td><code>Closure</code> + <code>CurriedClosure</code> (GROOVY-12044 path)</td></tr>
+  <tr><td><strong>C</strong> biPredicateParam</td><td><code>data.find((s,x)-&gt;s.startsWith(x), prefix)</code></td><td>real <code>BiPredicate</code>+param overload; stateless lambda</td></tr>
+  <tr><td><strong>D</strong> methodRefParam</td><td><code>data.find(String::startsWith, prefix)</code></td><td>real <code>BiPredicate</code>+param overload; method ref</td></tr>
+  <tr><td><strong>E</strong> baseline</td><td>hand-written <code>for</code> loop</td><td>lower bound</td></tr>
+  <tr><td><strong>F</strong> sharedRcurry</td><td><code>data.find(SHARED.rcurry(prefix))</code></td><td>hoisted closure + <code>rcurry</code> (isolates CurriedClosure)</td></tr>
+  <tr><td><strong>G</strong> lambdasCurryWith</td><td><code>data.find(Lambdas.curryWith(STARTS_WITH, prefix))</code></td><td>plain-functional <code>curryWith</code> &rarr; <code>Predicate</code></td></tr>
+  <tr><td><strong>H</strong> closuresCurryWith</td><td><code>data.find(Closures.curryWith(STARTS_WITH, prefix))</code></td><td>pre-curried <code>PredicateClosure</code> via the <code>Closure</code> path</td></tr>
+</table>
+
+<table>
+  <tr><th>Family</th><th>Shape</th><th>Overloads exercised</th></tr>
+  <tr><td><code>find</code></td><td>short-circuit element lookup (full traversal &mdash; no match)</td><td><code>find(Predicate)</code>, <code>find(BiPredicate,param)</code></td></tr>
+  <tr><td><code>findAll</code></td><td>full traversal building a result list (empty here)</td><td><code>findAll(Predicate)</code>, <code>findAll(BiPredicate,param)</code></td></tr>
+  <tr><td><code>count</code></td><td>full-traversal reducer; <strong>builds no collection</strong></td><td><code>count(Predicate)</code>, <code>count(BiPredicate,param)</code> <span class="badge badge-blue">added in follow-up</span></td></tr>
+</table>
+
+<p>C/D pass a <em>stateless</em> two-argument function plus the auxiliary
+<code>param</code> (nothing captured); G/H build a one-argument function from a
+shared <code>BiPredicate</code> singleton via <code>curryWith</code>. A/B/F are the
+classic closure idioms.</p>
+
+<!-- ============================================================ -->
+<h2 id="method" class="section-anchor">3. Methodology</h2>
+
+<div class="summary-grid">
+  <div class="summary-card">
+    <h4>Environment</h4>
+    <p>Apple M4 Pro (12 cores) &middot; macOS (darwin)<br>
+       Zulu OpenJDK 17.0.18<br>
+       Groovy 6.0.0-SNAPSHOT @ <code>371b22a1</code> (branch <code>fatFreeSpike</code>)<br>
+       JMH 1.37</p>
+  </div>
+  <div class="summary-card">
+    <h4>JMH config</h4>
+    <p>Throughput, ops/&micro;s &middot; 2 forks<br>
+       3&times;2&nbsp;s warmup, 5&times;2&nbsp;s measurement<br>
+       sizes 100 / 1000 / 10000 &middot; <code>gc</code> profiler<br>
+       run for both <code>-Pindy=true</code> and <code>-Pindy=false</code></p>
+  </div>
+</div>
+
+<div class="callout callout-amber">
+  <strong>Caveats.</strong> A single local machine, not a controlled CI run &mdash;
+  absolute throughput will vary by box, so read the <em>ratios between variants</em>,
+  not the raw ops/&micro;s. The dominant signal here is <strong>allocation</strong>
+  (<code>gc.alloc.rate.norm</code>, bytes/op), which is deterministic and
+  machine-independent. Because no prefix matches, results characterise the
+  full-traversal / no-match case; a high-hit-rate workload would narrow the
+  throughput gaps (less of the loop spent past the predicate) but not the
+  allocation gap.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="alloc" class="section-anchor">4. Results &mdash; allocation <span class="badge badge-green">headline</span></h2>
+
+<p>Bytes allocated per operation (<code>gc.alloc.rate.norm</code>), <strong>size&nbsp;10000</strong>.
+Lower is better.</p>
+
+<table>
+  <tr><th>Variant</th>
+      <th class="num">find (indy)</th><th class="num">find (classic)</th>
+      <th class="num">findAll (indy)</th><th class="num">count (indy)</th></tr>
+  <tr><td><strong>A</strong> captureClosure</td><td class="num bad">720,097</td><td class="num bad">720,081</td><td class="num bad">760,134</td><td class="num bad">720,088</td></tr>
+  <tr><td><strong>B</strong> rcurryClosure</td><td class="num bad">960,210</td><td class="num bad">1,080,569</td><td class="num bad">1,000,262</td><td class="num bad">960,235</td></tr>
+  <tr><td><strong>C</strong> biPredicateParam</td><td class="num win">0</td><td class="num win">0</td><td class="num win">24</td><td class="num win">0</td></tr>
+  <tr><td><strong>D</strong> methodRefParam</td><td class="num win">0</td><td class="num win">0</td><td class="num win">24</td><td class="num win">0</td></tr>
+  <tr><td><strong>E</strong> baseline</td><td class="num win">32</td><td class="num win">0</td><td class="num win">56</td><td class="num win">32</td></tr>
+  <tr><td><strong>F</strong> sharedRcurry</td><td class="num bad">960,154</td><td class="num bad">1,080,449</td><td class="num bad">1,000,210</td><td class="num bad">960,179</td></tr>
+  <tr><td><strong>G</strong> lambdasCurryWith</td><td class="num win">0</td><td class="num win">0</td><td class="num win">24</td><td class="num win">0</td></tr>
+  <tr><td><strong>H</strong> closuresCurryWith</td><td class="num mid">104</td><td class="num mid">68</td><td class="num mid">121</td><td class="num mid">104</td></tr>
+</table>
+
+<p>The decisive property is how allocation <strong>scales with workload size</strong>.
+The closure idioms allocate <em>per element</em>; the fat-free idioms are
+<em>flat</em>. <code>find</code> family, <code>indy</code>, bytes/op:</p>
+
+<table>
+  <tr><th>Variant</th><th class="num">size 100</th><th class="num">size 1000</th><th class="num">size 10000</th><th>scaling</th></tr>
+  <tr><td><strong>A</strong> captureClosure</td><td class="num">7,292</td><td class="num">72,092</td><td class="num">720,097</td><td class="bad">~72 B/element</td></tr>
+  <tr><td><strong>B</strong> rcurryClosure</td><td class="num">9,808</td><td class="num">96,220</td><td class="num">960,210</td><td class="bad">~96 B/element</td></tr>
+  <tr><td><strong>C</strong>/<strong>G</strong> fat-free</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="win">flat (zero)</td></tr>
+  <tr><td><strong>H</strong> closuresCurryWith</td><td class="num">76</td><td class="num">104</td><td class="num">104</td><td class="mid">flat (~1 closure/call)</td></tr>
+</table>
+
+<ul>
+  <li><strong>C, D, G &mdash; zero, size-independent.</strong> The stateless
+      <code>BiPredicate</code> (C) and method ref (D) capture nothing; the
+      <code>curryWith</code> lambda (G) captures the param but never escapes
+      <code>find</code>, so escape analysis removes it. <code>count</code>/<code>find</code>
+      return a cached <code>Integer(0)</code>/<code>null</code> on no match, so even
+      the result is free; <code>findAll</code> shows a constant 24&nbsp;B/op &mdash; the
+      one empty <code>ArrayList</code>.</li>
+  <li><strong>A, B, F &mdash; linear in the element count.</strong> Each element pays
+      for closure dispatch (A) and, for <code>rcurry</code>, a <code>CurriedClosure</code>
+      combine (B/F). At 10000 elements that is ~0.7&ndash;1.0&nbsp;<em>MB</em> per call.</li>
+  <li><strong>H &mdash; one allocation per call, then flat.</strong>
+      <code>Closures.curryWith</code> builds a single <code>PredicateClosure</code>
+      (~70&ndash;130&nbsp;B) and reuses it for the whole traversal &mdash; three to four
+      <em>orders of magnitude</em> less than A/B at size 10000.</li>
+</ul>
+
+<div class="callout">
+  <strong>The allocation win does not depend on <code>indy</code>.</strong> C/D/G stay
+  at 0&nbsp;B/op in <em>classic</em> mode too &mdash; non-capturing lambdas plus escape
+  analysis get there without the GROOVY-11905 singleton optimisation. Conversely,
+  <code>rcurry</code> (B/F) allocates <em>more</em> under classic
+  (~108&nbsp;B/element vs ~96), so the gap widens.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="thrpt" class="section-anchor">5. Results &mdash; throughput</h2>
+
+<p>Throughput in ops/&micro;s (higher is better), <strong>size&nbsp;10000</strong>.
+Speed-up columns are vs the capture-closure idiom (A) in the same mode.</p>
+
+<table>
+  <tr><th>Variant</th>
+      <th class="num">find indy</th><th class="num">find classic</th>
+      <th class="num">count indy</th><th class="num">findAll indy</th>
+      <th class="num">find: &times; vs A</th></tr>
+  <tr><td><strong>A</strong> captureClosure</td><td class="num">0.007</td><td class="num">0.006</td><td class="num">0.006</td><td class="num">0.006</td><td class="num">1&times;</td></tr>
+  <tr><td><strong>B</strong> rcurryClosure</td><td class="num bad">0.004</td><td class="num bad">0.003</td><td class="num bad">0.004</td><td class="num bad">0.004</td><td class="num bad">0.6&times;</td></tr>
+  <tr><td><strong>C</strong> biPredicateParam</td><td class="num win">0.095</td><td class="num win">0.095</td><td class="num win">0.090</td><td class="num win">0.079</td><td class="num win">13.6&times;</td></tr>
+  <tr><td><strong>D</strong> methodRefParam</td><td class="num win">0.094</td><td class="num win">0.098</td><td class="num win">0.089</td><td class="num win">0.079</td><td class="num win">13.4&times;</td></tr>
+  <tr><td><strong>E</strong> baseline</td><td class="num">0.070</td><td class="num">0.092</td><td class="num">0.070</td><td class="num">0.070</td><td class="num">10.0&times;</td></tr>
+  <tr><td><strong>F</strong> sharedRcurry</td><td class="num bad">0.004</td><td class="num bad">0.003</td><td class="num bad">0.004</td><td class="num bad">0.004</td><td class="num bad">0.6&times;</td></tr>
+  <tr><td><strong>G</strong> lambdasCurryWith</td><td class="num win">0.090</td><td class="num win">0.098</td><td class="num win">0.090</td><td class="num win">0.079</td><td class="num win">12.9&times;</td></tr>
+  <tr><td><strong>H</strong> closuresCurryWith</td><td class="num mid">0.076</td><td class="num mid">0.078</td><td class="num mid">0.075</td><td class="num mid">0.076</td><td class="num mid">10.9&times;</td></tr>
+</table>
+
+<ul>
+  <li><strong>Fat-free (C/D/G) win by ~13&times; over capture-closure and ~23&times;
+      over <code>rcurry</code></strong>, consistently across all three families and
+      both modes.</li>
+  <li><strong>G (<code>Lambdas.curryWith</code>) matches the direct
+      <code>BiPredicate</code>+param overloads (C/D)</strong> &mdash; the curry helper is
+      effectively free, so readability costs nothing.</li>
+  <li><strong>H (<code>Closures.curryWith</code>) lands ~11&times; A</strong> &mdash;
+      slower than the plain-functional path (it dispatches through <code>Closure</code>)
+      but still a large win, and the right tool when an existing API demands a
+      <code>Closure</code>.</li>
+  <li><strong>Baseline note.</strong> Under <code>indy</code> the fat-free variants
+      sit slightly <em>above</em> the naive hand-loop (E); under <code>classic</code>
+      E catches up. The likely cause is the JIT inlining the monomorphic functional
+      call into a tighter loop than the hand-written one in indy mode; the effect is
+      small and <em>not</em> material to the conclusion &mdash; the practical reading is
+      that the fat-free idioms perform <em>at hand-loop level</em>, while the closure
+      idioms are an order of magnitude behind.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="12044" class="section-anchor">6. What GROOVY-12044 buys, and where the real win is</h2>
+
+<p>B (fresh closure + <code>rcurry</code>) and F (hoisted singleton closure +
+<code>rcurry</code>) allocate almost identically (~960&nbsp;KB/op at size 10000), and
+hoisting the base closure barely moves throughput. That tells us the
+<code>rcurry</code> cost is dominated by the <em>per-element</em>
+<code>CurriedClosure</code> combine, not by creating the base closure.
+GROOVY-12044&rsquo;s fast path trims that per-element cost, but the structural
+win &mdash; turning ~1&nbsp;MB/op into ~0 &mdash; comes from <strong>not building a
+<code>Closure</code>/<code>CurriedClosure</code> at all</strong>, i.e. from the
+GROOVY-12054 functional overloads. The two changes are complementary:
+12044 makes the legacy idiom cheaper for code that can&rsquo;t move; 12054 lets new
+code skip the cost entirely.</p>
+
+<!-- ============================================================ -->
+<h2 id="ci" class="section-anchor">7. CI &amp; dashboards for the ad-hoc benchmarks</h2>
+
+<p>The ad-hoc benchmarks (package <code>org.apache.groovy.adhoc</code>) are
+deliberately excluded from the <code>jmh</code> / <code>jmh-classic</code> /
+<code>jmh-daily</code> suites &mdash; those filter on <code>.bench.</code> and
+<code>.perf.</code> patterns, which never match <code>.adhoc.</code>. They are
+exploratory, idiom-vs-idiom comparisons whose headline metric is allocation, not
+throughput-over-time, so folding them into the regression buckets would mix units
+and create alert noise.</p>
+
+<p>Decision (agreed): a <strong>separate <code>jmh-adhoc</code> workflow with its own
+dashboard</strong>, leaving the existing comparison buckets untouched.</p>
+
+<ul>
+  <li><code>.github/workflows/groovy-jmh-adhoc.yml</code> &mdash; manual
+      (<code>workflow_dispatch</code>) + weekly cron; runs the <code>\.adhoc\.</code>
+      pattern in <code>indy</code> and <code>classic</code> with
+      <code>-PjmhProfilers=gc</code>.</li>
+  <li>Publishes a <strong>throughput</strong> series (<code>jmh</code> tool) and a
+      separate <strong>allocation</strong> series (<code>customSmallerIsBetter</code>,
+      extracted from <code>gc.alloc.rate.norm</code> by
+      <code>jmh-adhoc-alloc.py</code>) under <code>dev/bench/jmh-adhoc/</code>.</li>
+  <li>A custom summary page (<code>jmh-adhoc-summary.html</code>) renders the latest
+      run as per-variant throughput + allocation bars, with an <code>indy</code>/<code>classic</code>
+      toggle.</li>
+  <li>A new opt-in <code>-PjmhProfilers</code> Gradle property attaches JMH profilers
+      (default behaviour unchanged).</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="verdict" class="section-anchor">8. Conclusions</h2>
+
+<div class="callout callout-green">
+  <span class="verdict verdict-approve">Fat-free idioms deliver as designed</span>
+  <ol style="margin-top:.5rem">
+    <li>The <code>java.util.function</code> overloads (C/D) and
+        <code>Lambdas.curryWith</code> (G) achieve <strong>zero, size-independent
+        allocation</strong> and <strong>~13&times; / ~23&times;</strong> the throughput of the
+        capture-closure / <code>rcurry</code> idioms &mdash; at hand-loop speed.</li>
+    <li><code>curryWith</code> is <strong>free</strong>: G matches the direct
+        <code>BiPredicate</code>+param overloads, so the readable form has no cost.</li>
+    <li><code>Closures.curryWith</code> (H) is the <strong>migration bridge</strong> for
+        <code>Closure</code>-typed APIs: one allocation per call instead of per element,
+        ~11&times; the closure idiom.</li>
+    <li>The benefit is <strong>independent of <code>indy</code></strong>; GROOVY-12044
+        helps code that must keep using <code>rcurry</code>, but the order-of-magnitude
+        win is in avoiding closures entirely.</li>
+    <li>Adding the <code>count</code> family (now that its overloads have landed)
+        confirms the pattern generalises across element-find, list-building, and
+        reducer shapes alike.</li>
+  </ol>
+</div>
+
+<h3>Suggested follow-ups <span class="badge badge-amber">proposed, pending team review</span></h3>
+<ol>
+  <li>Add a <strong>transform family</strong> (<code>collect</code> with
+      <code>Function</code> / <code>BiFunction</code>+param and
+      <code>Lambdas/Closures.curryWith(BiFunction)</code>) once a measurement design
+      is chosen that isolates the lambda cost from the unavoidable N-element result
+      list &mdash; e.g. report allocation <em>net of</em> the result, or compare against a
+      hand-loop that builds the same list.</li>
+  <li>Consider a <strong>high-hit-rate variant</strong> (prefixes that match) to show
+      how short-circuiting <code>find</code>/<code>any</code> behave when the predicate
+      usually succeeds.</li>
+  <li>If the fat-free overloads are promoted from <span class="badge badge-amber">@Incubating</span>,
+      promote this benchmark family alongside and keep the weekly <code>jmh-adhoc</code>
+      trend as the regression guard.</li>
+</ol>
+
+<hr style="margin-top:3rem; border:none; border-top:1px solid var(--border);">
+<p style="color:var(--gray); font-size:.85rem; margin-top:1rem;">
+  Assessment generated 2 June 2026. Data: JMH 1.37 on Zulu JDK 17.0.18 (Apple M4 Pro),
+  Groovy 6.0.0-SNAPSHOT @ <code>371b22a1</code>; <code>find</code>/<code>findAll</code>/<code>count</code>
+  &times; A&ndash;H &times; sizes 100/1000/10000 &times; {indy, classic}, <code>gc</code> profiler.
+  Benchmark sources: <code>subprojects/performance/src/jmh/groovy/org/apache/groovy/adhoc/</code>.
+</p>
+
+</body>
+</html>

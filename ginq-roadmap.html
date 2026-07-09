@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GINQ Roadmap — Future Directions for Groovy-Integrated Query</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --muted: #555;
+    --accent: #2563eb;
+    --border: #ddd;
+    --code-bg: #f5f5f5;
+    --table-stripe: #f9f9f9;
+    --done: #16a34a;
+    --in-progress: #ca8a04;
+    --planned: #6b7280;
+    --green-bg: #f0fdf4;
+    --yellow-bg: #fefce8;
+    --blue-bg: #eff6ff;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    color: var(--fg);
+    background: var(--bg);
+    line-height: 1.65;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+  h1 { font-size: 2rem; margin-bottom: 0.25rem; }
+  h2 { font-size: 1.5rem; margin-top: 2.5rem; margin-bottom: 0.75rem; border-bottom: 2px solid var(--border); padding-bottom: 0.3rem; }
+  h3 { font-size: 1.2rem; margin-top: 1.75rem; margin-bottom: 0.5rem; }
+  h4 { font-size: 1.05rem; margin-top: 1.25rem; margin-bottom: 0.4rem; }
+  p, li { margin-bottom: 0.5rem; }
+  ul, ol { padding-left: 1.5rem; }
+  .subtitle { color: var(--muted); font-size: 1.1rem; margin-bottom: 1.5rem; }
+  .date { color: var(--muted); font-size: 0.9rem; }
+  code {
+    font-family: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+    background: var(--code-bg);
+    padding: 0.15em 0.35em;
+    border-radius: 3px;
+    font-size: 0.9em;
+  }
+  pre {
+    background: var(--code-bg);
+    padding: 1rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 0.75rem 0 1rem;
+    font-size: 0.88em;
+    line-height: 1.5;
+  }
+  pre code { background: none; padding: 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.75rem 0 1rem;
+    font-size: 0.92em;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: var(--code-bg); font-weight: 600; }
+  tr:nth-child(even) td { background: var(--table-stripe); }
+  .status-done { color: var(--done); font-weight: 600; }
+  .status-progress { color: var(--in-progress); font-weight: 600; }
+  .status-planned { color: var(--planned); font-weight: 600; }
+  .callout {
+    border-left: 4px solid var(--accent);
+    padding: 0.75rem 1rem;
+    margin: 1rem 0;
+    background: var(--blue-bg);
+    border-radius: 0 6px 6px 0;
+  }
+  .callout-green {
+    border-left-color: var(--done);
+    background: var(--green-bg);
+  }
+  .callout-yellow {
+    border-left-color: var(--in-progress);
+    background: var(--yellow-bg);
+  }
+  .toc { margin: 1.5rem 0 2rem; }
+  .toc ul { list-style: none; padding-left: 0; }
+  .toc li { margin-bottom: 0.3rem; }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .toc .indent { padding-left: 1.5rem; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<h1>GINQ Roadmap</h1>
+<p class="subtitle">Future Directions for Groovy-Integrated Query</p>
+<p class="date">Living document — last updated 28 June 2026</p>
+
+<nav class="toc">
+<h3>Contents</h3>
+<ul>
+  <li><a href="#current-state">1. Current State</a></li>
+  <li><a href="#query-continuation">2. Query Continuation</a></li>
+  <li><a href="#sql-backend">3. SQL Backend (now GEP-26)</a></li>
+  <li><a href="#parallel">4. Parallel &amp; Async Processing</a>
+    <ul class="indent">
+      <li><a href="#parallel-current">4.1 Current Capabilities</a></li>
+      <li><a href="#parallel-gaps">4.2 Gaps vs PLINQ</a></li>
+      <li><a href="#parallel-gep18">4.3 Aligning with the bundled concurrency runtime (GEP-18)</a></li>
+      <li><a href="#parallel-async">4.4 Async Data Sources</a></li>
+    </ul>
+  </li>
+  <li><a href="#sequencing">5. Recommended Sequencing</a></li>
+  <li><a href="#dependencies">6. External Dependencies</a></li>
+</ul>
+</nav>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="current-state">1. Current State</h2>
+
+<div class="callout callout-green">
+<strong>GROOVY-11915 is complete.</strong> The <code>groupby...into</code> redesign shipped,
+providing first-class group variables via <code>GroupResult&lt;K,&nbsp;T&gt;</code>.
+This was identified as the foundation piece for both the SQL backend and parallel improvements.
+</div>
+
+<div class="callout">
+<strong>Two platform shifts since this document began.</strong>
+<ul>
+  <li><strong>GEP-18 (Integrated Concurrency and Parallel Processing) has merged.</strong> Core Groovy now
+      bundles native <code>async</code>/<code>await</code>/<code>defer</code>, an <code>Awaitable</code> type
+      with an <code>AwaitableAdapter</code> SPI (Reactor/RxJava adapters), channels
+      (<code>AsyncChannel</code>, <code>BroadcastChannel</code>, <code>ChannelSelect</code>), actors and
+      dataflow variables, a <code>Pool</code> / <code>ParallelScope</code> abstraction, GPars-style
+      <code>ParallelCollectionExtensions</code>, and <code>Cancellable</code>. The "future GPars module" this
+      roadmap once assumed is now a bundled, ASL2 core runtime. GINQ's parallel story is therefore no longer
+      "build a pool integration" but "align GINQ's bespoke pool with the bundled one" — see
+      <a href="#parallel-gep18">&sect;4.3</a>.</li>
+  <li><strong>The SQL backend is now specified as GEP-26.</strong> The detailed dual-provider design
+      (native&nbsp;+&nbsp;JOOQ) that previously lived in this roadmap has been promoted to a standalone
+      proposal — see <a href="#sql-backend">&sect;3</a>.</li>
+</ul>
+</div>
+
+<h3>What shipped</h3>
+<ul>
+  <li><strong><code>GroupResult&lt;K, T&gt;</code> interface</strong> extending <code>Queryable</code> — groups are real objects
+      with real method calls: <code>g.count()</code>, <code>g.sum()</code>, <code>g.toList()</code>,
+      <code>g.where()</code>, <code>g.orderBy()</code>, etc.</li>
+  <li><strong><code>groupByInto</code> on the Queryable API</strong> — clean runtime method usable from both the DSL and direct API calls.</li>
+  <li><strong>Property-style key access</strong> — <code>g.name</code> via <code>get(String)</code> and
+      <code>g["name"]</code> via <code>getAt(String)</code>, replacing the originally proposed <code>key(String)</code>.</li>
+  <li><strong><code>having</code> with <code>into</code></strong> — <code>having g.count() &gt; 1</code> uses the group variable directly.</li>
+  <li><strong>Backward compatible</strong> — classic <code>groupby</code> (without <code>into</code>) is unchanged.</li>
+  <li><strong>Set operations in the DSL</strong> — <code>union</code>, <code>unionall</code>,
+      <code>intersect</code>, and <code>minus</code> keywords combine complete <code>from...select</code>
+      expressions, with left-associative chaining (<code>Q1 union Q2 minus Q3</code>).</li>
+</ul>
+
+<h3>Example</h3>
+<pre><code>def result = GQ {
+    from s in sales
+    where s.amount > 50
+    groupby s.customer as customer into g
+    having g.count() > 1
+    orderby g.customer
+    select g.customer, g.count() as items, g.sum(s -> s.amount) as total
+}</code></pre>
+
+<p>Under the covers, this transforms into fluent API calls:</p>
+<pre><code>from(sales)
+    .where(s -> s.amount > 50)
+    .groupByInto(s -> s.customer, g -> g.count() > 1)
+    .orderBy(new Order(g -> g.key, true))
+    .select((g, q) -> Tuple.tuple(g.key, g.count(), g.sum(s -> s.amount)))</code></pre>
+
+<!-- ============================================================ -->
+<h2 id="query-continuation">2. Query Continuation</h2>
+
+<p>C# LINQ's <code>into</code> enables <em>query continuation</em> — after
+<code>group...into g</code>, you can add <code>where</code>, <code>orderby</code>,
+and other clauses that operate on <code>g</code> as a new data source:</p>
+
+<pre><code>// C# LINQ
+from f in fruits
+group f by f.Color into g
+where g.Count() > 1
+orderby g.Key
+select new { g.Key, Items = g.ToList() }</code></pre>
+
+<p>The Groovy equivalent would be:</p>
+
+<pre><code>GQL {
+    from f in fruits
+    groupby f.color into g
+    where g.count() > 1    // post-group filter (replaces 'having')
+    orderby g.key
+    select g.key, g.toList()
+}</code></pre>
+
+<h3>Current status</h3>
+<p>The <code>where</code> clause after <code>groupby...into</code> is currently rejected with a
+"reserved for future use" error. Users must use <code>having</code> instead. The <code>having</code>
+clause works fully with the group variable.</p>
+
+<h3>What's required</h3>
+<p><code>GinqExpression</code> currently has a fixed linear structure:</p>
+<pre><code>from → join* → where → groupby → having → orderby → limit → select</code></pre>
+
+<p>Full continuation would require a <strong>chainable/nested model</strong> where
+<code>groupby...into</code> produces a new data source and the rest of the query operates on it —
+essentially a <code>GinqExpression</code> containing a sub-<code>GinqExpression</code>:</p>
+
+<pre><code>GinqExpression
+├── from, join*, where, groupby (with into)
+└── continuation: GinqExpression
+    ├── implicit from (the group results)
+    ├── where, orderby, limit
+    └── select</code></pre>
+
+<div class="callout callout-yellow">
+<strong>Dependency:</strong> This could piggy-back on a general continuations feature for Groovy,
+which would provide the architectural substrate. Standalone implementation is moderate-to-high effort;
+with continuations support in the language, the GINQ-specific work would be lower.
+</div>
+
+<h3>Effort: High</h3>
+<p>This is follow-up work. The current <code>into</code> + <code>having</code> combination covers
+the most common use cases. Full continuation is the aspirational goal for C# LINQ parity.</p>
+
+<!-- ============================================================ -->
+<h2 id="sql-backend">3. SQL Backend</h2>
+
+<div class="callout">
+<strong>Now specified in
+<a href="https://groovy.apache.org/wiki/GEP-26.html">GEP-26: GINQ SQL Backend (Native and JOOQ Providers)</a></strong>
+(Draft, target Groovy&nbsp;7.0). The full design — architecture, intermediate model, expression translation,
+parameter binding, mixed-mode execution, module layout, effort, and phased delivery — lives in the GEP. This
+section keeps only a short summary so the roadmap stays self-orienting.
+</div>
+
+<p>GINQ's syntax maps almost 1:1 to SQL, so the same query text can execute either in memory (today's
+collection provider) or against a relational database. GEP-26 proposes a <strong>SQL execution backend</strong>
+delivered as two providers sharing one front-end:</p>
+
+<ul>
+  <li><strong>Native SQL provider</strong> — dependency-free, ANSI SQL via <code>groovy.sql.Sql</code>, fully ASL2.</li>
+  <li><strong>JOOQ provider</strong> — optional, dialect-aware, window functions, via JOOQ's plain-SQL DSL.</li>
+</ul>
+
+<p>Both consume a shared, provider-independent <code>SqlQuery</code> intermediate model produced once from the
+GINQ AST; each provider only renders the "last mile." A new high-level <code>provider</code> configuration key
+(<code>'native-sql'</code> / <code>'jooq-sql'</code> / <code>'sql'</code> auto-detect) selects the backend,
+sugar over the existing <code>astWalker</code> hook. The <code>groupby...into</code> redesign
+(GROOVY-11915) maps directly onto SQL <code>GROUP BY</code> + aggregates, which is what makes the walker
+tractable. Estimated ~2,400–3,650 lines across five phases, delivered in a new optional
+<code>groovy-ginq-sql</code> module.</p>
+
+<table>
+<tr><th>GINQ</th><th>SQL</th></tr>
+<tr><td><code>from e in 'employees'</code></td><td><code>FROM employees e</code></td></tr>
+<tr><td><code>join d in 'departments' on e.deptId == d.id</code></td><td><code>INNER JOIN departments d ON e.dept_id = d.id</code></td></tr>
+<tr><td><code>where e.salary > 50000</code></td><td><code>WHERE e.salary > ?</code></td></tr>
+<tr><td><code>groupby d.name into g</code></td><td><code>GROUP BY d.name</code></td></tr>
+<tr><td><code>having g.count() > 5</code></td><td><code>HAVING COUNT(*) > ?</code></td></tr>
+<tr><td><code>orderby e.salary in desc</code></td><td><code>ORDER BY e.salary DESC</code></td></tr>
+<tr><td><code>limit 10, 20</code></td><td><code>LIMIT 20 OFFSET 10</code></td></tr>
+<tr><td><code>select g.name, g.count(), g.avg(e -> e.salary)</code></td><td><code>SELECT d.name, COUNT(*), AVG(e.salary)</code></td></tr>
+<tr><td><code>union</code> / <code>unionall</code> / <code>intersect</code> / <code>minus</code></td><td><code>UNION</code> / <code>UNION ALL</code> / <code>INTERSECT</code> / <code>EXCEPT</code></td></tr>
+</table>
+
+<p>See <a href="https://groovy.apache.org/wiki/GEP-26.html">GEP-26</a> for the complete specification.</p>
+
+<!-- ============================================================ -->
+<h2 id="parallel">4. Parallel &amp; Async Processing</h2>
+
+<!-- ............................ -->
+<h3 id="parallel-current">4.1 Current Capabilities</h3>
+
+<p>GINQ already has parallel support via <code>@GQ(parallel: true)</code> or
+<code>GQ(parallel: true) { ... }</code>:</p>
+
+<pre><code>def result = GQ(parallel: true) {
+    from n in (1..1_000_000)
+    where n % 2 == 0
+    select n * n
+}</code></pre>
+
+<p>Under the hood — and note this implementation <em>predates</em> GEP-18 and is entirely self-contained:</p>
+<ul>
+  <li>A dedicated <code>ForkJoinPool</code> ("ginq-fj-thread-N") in <code>QueryableHelper.ThreadPoolHolder</code>,
+      sized by <code>-Dgroovy.ginq.parallelism</code> (default <code>availableProcessors + 1</code>)</li>
+  <li>A separate <code>ExecutorService</code> using virtual threads on JDK 21+ ("ginq-virtual-thread-N"),
+      falling back to a fixed pool on JDK 17</li>
+  <li>The whole query lambda is submitted via <code>submit(resultLambda).get()</code> so nested
+      <code>parallelStream()</code> calls inherit that pool; select/transform lambdas use
+      <code>QueryableHelper.supplyAsync()</code></li>
+  <li>A thread-local flag (<code>VAR_HOLDER</code>) carries <code>parallel=true</code>;
+      <code>QueryableCollection</code> branches on it to pick <code>groupingByConcurrent</code> /
+      <code>toConcurrentMap</code></li>
+</ul>
+
+<!-- ............................ -->
+<h3 id="parallel-gaps">4.2 Gaps vs PLINQ</h3>
+
+<p>The original gap analysis still holds, but several gaps are now <em>closable</em> simply by adopting the
+bundled GEP-18 primitives rather than building new machinery:</p>
+
+<table>
+<tr><th>PLINQ Feature</th><th>GINQ today</th><th>Closed by GEP-18 alignment?</th></tr>
+<tr><td>Parallel execution</td><td>Supported via <code>parallel: true</code></td><td>Already works</td></tr>
+<tr><td>Degree of parallelism</td><td>System property only</td><td class="status-progress">Yes — per-query <code>poolSize:</code> via <code>Pool.fixed(n)</code></td></tr>
+<tr><td>Shared / isolated pools</td><td>Single global pool</td><td class="status-progress">Yes — enclosing <code>ParallelScope.withPool</code> via <code>Pool.current()</code></td></tr>
+<tr><td>Cancellation</td><td>Not supported</td><td class="status-progress">Yes — <code>Cancellable</code> now exists; needs wiring</td></tr>
+<tr><td>Ordered parallel</td><td>Not supported</td><td class="status-planned">Independent — no <code>AsOrdered()</code> equivalent yet</td></tr>
+<tr><td>Partitioning strategy</td><td>Default only</td><td class="status-planned">Independent — relies on Java stream defaults</td></tr>
+<tr><td>Async iteration</td><td>Not supported</td><td>See <a href="#parallel-async">&sect;4.4</a> (async sources)</td></tr>
+</table>
+
+<!-- ............................ -->
+<h3 id="parallel-gep18">4.3 Aligning with the bundled concurrency runtime (GEP-18)</h3>
+
+<p>GEP-18 ships a general concurrency runtime in core Groovy. The pieces relevant to GINQ:</p>
+<ul>
+  <li><code>groovy.concurrent.Pool</code> (<code>extends Executor, AutoCloseable</code>) with factories
+      <code>virtual()</code> / <code>fixed(n)</code> / <code>cpu()</code> / <code>io()</code>;</li>
+  <li><code>Pool.current()</code> — the scope-bound pool set by <code>ParallelScope.withPool(int|Pool, body)</code>;
+      <code>Pool.withCurrent(pool, supplier)</code> to bind one for a body;</li>
+  <li><strong><code>Pool.asForkJoinPool()</code></strong> — documented as <em>"required for parallel stream
+      isolation"</em> (throws for virtual-thread pools);</li>
+  <li><code>ConcurrentConfig.getDefaultPool()</code> / <code>getDefaultParallelism()</code> /
+      <code>-Dgroovy.concurrent.poolsize</code> / <code>-Dgroovy.concurrent.virtual</code>;</li>
+  <li><code>ParallelCollectionExtensions</code> (GPars-style <code>eachParallel</code>/<code>collectParallel</code>/…)
+      and <code>Cancellable</code>.</li>
+</ul>
+
+<p>The platform anticipated this consumer: <code>asForkJoinPool()</code> exists precisely for the
+parallel-stream isolation that GINQ relies on. So GINQ's parallelism becomes a thin adapter over the bundled
+runtime rather than a private pool.</p>
+
+<h4>What alignment means</h4>
+<table>
+<tr><th>GINQ today</th><th>After alignment</th></tr>
+<tr><td><code>ThreadPoolHolder.FORKJOIN_POOL</code></td><td>resolved <code>Pool</code>'s <code>asForkJoinPool()</code></td></tr>
+<tr><td><code>ThreadPoolHolder.THREAD_POOL</code> (virtual)</td><td>resolved I/O pool for <code>supplyAsync</code> transforms</td></tr>
+<tr><td><code>submit(lambda).get()</code> on private pool</td><td><code>resolvedPool.asForkJoinPool().submit(lambda).get()</code></td></tr>
+<tr><td><code>-Dgroovy.ginq.parallelism</code></td><td>unify on <code>groovy.concurrent.poolsize</code>; keep old prop as a deprecated override one release</td></tr>
+<tr><td>bespoke <code>shutdown(mode)</code></td><td>gone for shared pools (GINQ doesn't own them); only close pools GINQ itself creates</td></tr>
+<tr><td><code>parallel: true</code> only</td><td><code>parallel: true</code> + optional <code>poolSize: n</code> + honoring an enclosing <code>ParallelScope.withPool</code></td></tr>
+</table>
+
+<p><strong>Pool resolution order</strong> (the core new logic, in <code>QueryableHelper</code>):</p>
+<ol>
+  <li>explicit <code>poolSize:</code> / pool from the query config → GINQ creates <code>Pool.fixed(n)</code> and
+      <em>owns</em> it (closes it after, try-with-resources);</li>
+  <li>else <code>Pool.current()</code> — an enclosing
+      <code>ParallelScope.withPool { GQ(parallel:true){…} }</code> — borrowed, not closed;</li>
+  <li>else <code>ConcurrentConfig.getDefaultPool()</code> — the shared managed default.</li>
+</ol>
+
+<pre><code>// Per-query pool size
+def result = GQ(parallel: true, poolSize: 4) { ... }
+
+// Share an application pool with other parallel work
+ParallelScope.withPool(myPool) {
+    def result = GQ(parallel: true) { ... }   // picks up Pool.current()
+}</code></pre>
+
+<h4>The three subtleties that are the real work (not the wiring)</h4>
+<ol>
+  <li><strong>Virtual pools can't back parallel streams.</strong> <code>asForkJoinPool()</code> throws on a
+      virtual pool, but GINQ's model is <code>parallelStream()</code> inside a <code>ForkJoinPool</code>. GINQ
+      must resolve a <em>FJP-backed</em> pool (<code>cpu()</code>/<code>fixed</code>) for the stream/groupby
+      work, using a virtual/IO pool only for the <code>supplyAsync</code> per-row transform path (which it
+      already separates today). <em>Decision needed:</em> if a user binds a virtual pool, does GINQ reject
+      parallel mode, fall back to a FJP for streams, or honor it only for the transform path?</li>
+  <li><strong>Scoped binding vs. <code>InheritableThreadLocal</code>.</strong> <code>Pool.current()</code> is
+      scope-bound; GINQ's <code>isParallel()</code> flag is an <code>InheritableThreadLocal</code> (propagates
+      on thread <em>creation</em>, not task submission to existing workers). Capture the pool before
+      <code>submit</code> and re-establish it on the worker via <code>Pool.withCurrent(...)</code>; audit the
+      existing <code>VAR_HOLDER</code> for the same hazard.</li>
+  <li><strong>Nested-parallelism deadlock.</strong> <code>QueryableCollection</code> already force-materializes
+      a hash table to "avoid nested parallel querying, which results in deadlock sometimes." Sharing one
+      bounded pool across nested queries (or with other <code>ParallelScope</code> work) changes the
+      saturation profile — verify the guard still holds; prefer FJP <code>ManagedBlocker</code>/work-stealing
+      semantics.</li>
+</ol>
+
+<h4>Files touched</h4>
+<ul>
+  <li><code>QueryableHelper.groovy</code> — replace <code>ThreadPoolHolder</code> with pool resolution;
+      <code>submit</code>/<code>supplyAsync</code> target the resolved pool; retire/rework <code>shutdown()</code></li>
+  <li><code>GinqAstWalker.groovy</code> — at the <code>setVar(PARALLEL)</code> + <code>submit(resultLambda).get()</code>
+      site, also resolve and bind the pool (wrap in <code>Pool.withCurrent</code>); thread <code>poolSize</code> through</li>
+  <li><code>QueryableCollection.java</code> — ensure the <code>parallelStream()</code> path runs under the
+      resolved FJP (no collector-logic change)</li>
+  <li><code>GinqGroovyMethods.groovy</code> — add <code>poolSize</code> (and maybe <code>pool</code>) to
+      <code>CONF_LIST</code> + <code>createConfiguration</code></li>
+  <li><code>GQ.java</code> — optionally add a <code>poolSize</code> annotation member later (additive, binary compatible)</li>
+</ul>
+
+<div class="callout callout-yellow">
+<strong>Tracking:</strong> this is the <em>GINQ ↔ GEP-18 integration</em> workstream — best tracked as a minor
+GEP / JIRA umbrella under the GINQ component, aligned to GEP-18. It is distinct from
+<a href="#sql-backend">GEP-26</a> (SQL) and from GINQ graduation (GROOVY-12042); graduation should keep the
+<code>parallel</code>/<code>poolSize</code> config explicitly open to additive growth. Effort: Medium,
+~300–600 lines + tests — most of it items 1–3, not the substitution.
+</div>
+
+<!-- ............................ -->
+<h3 id="parallel-async">4.4 Async Data Sources</h3>
+
+<p>With GEP-18 merged, the async primitives this once depended on now exist in core. Two levels:</p>
+
+<h4>Awaitable GINQ results — works today</h4>
+<pre><code>def result = async {
+    GQL {
+        from e in employees
+        where e.salary > 50000
+        select e.name
+    }
+}
+// ... do other work ...
+def names = await result</code></pre>
+<p>No GINQ changes needed — <code>async {}</code> wraps any blocking call, and <code>await</code> is now a
+language feature.</p>
+
+<h4>Async streaming data sources — future, now buildable against real APIs</h4>
+<pre><code>// GINQ over an AsyncChannel (groovy.concurrent.AsyncChannel now exists)
+def channel = new AsyncChannel&lt;Event&gt;()
+def alerts = GQ {
+    from e in channel    // async source
+    where e.severity > 3
+    select e.message
+}
+for await (alert in alerts) {
+    notify(alert)
+}</code></pre>
+<p>This requires <code>Queryable.from()</code> to accept async sources and a new lazy
+<code>AsyncQueryable</code> that pulls from an <code>AsyncChannel</code> with backpressure. It is a genuinely
+new design surface, but it now builds on the <em>merged</em> <code>AsyncChannel</code> / <code>Awaitable</code> /
+<code>for await</code> rather than a hypothetical proposal — so it is best handled as a small
+<strong>GEP-18 addendum</strong> rather than a standalone GEP.</p>
+
+<h4>Parallel &amp; async enhancement summary</h4>
+<table>
+<tr><th>Enhancement</th><th>Effort</th><th>Depends On</th><th>Status</th></tr>
+<tr><td>Awaitable GINQ results</td><td>Free</td><td>GEP-18 (merged)</td><td class="status-done">Works today</td></tr>
+<tr><td>Per-query pool size (<code>poolSize:</code>)</td><td>Low</td><td>GEP-18 alignment</td><td class="status-planned">Planned</td></tr>
+<tr><td>Shared pool via <code>ParallelScope.withPool</code></td><td>Low-Medium</td><td>GEP-18 alignment</td><td class="status-planned">Planned</td></tr>
+<tr><td>Cooperative cancellation</td><td>Medium</td><td>GEP-18 <code>Cancellable</code></td><td class="status-planned">Planned</td></tr>
+<tr><td>Ordered parallel mode</td><td>Medium</td><td>Nothing</td><td class="status-planned">Planned</td></tr>
+<tr><td>Async streaming data sources</td><td>High</td><td>GEP-18 addendum (<code>for await</code>)</td><td class="status-planned">Future</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<h2 id="sequencing">5. Recommended Sequencing</h2>
+
+<table>
+<tr><th>Priority</th><th>Item</th><th>Effort</th><th>Dependencies</th></tr>
+<tr>
+  <td>✅</td>
+  <td><strong>GROOVY-11915</strong> — <code>groupby...into</code> with <code>get</code>/<code>getAt</code> sugar, updated docs</td>
+  <td>Done</td>
+  <td>None</td>
+</tr>
+<tr>
+  <td>✅</td>
+  <td><strong>Set operations</strong> — <code>union</code>, <code>unionall</code>, <code>intersect</code>, <code>minus</code> DSL keywords with chaining</td>
+  <td>Done</td>
+  <td>None</td>
+</tr>
+<tr>
+  <td>✅</td>
+  <td><strong>GEP-18</strong> — Integrated Concurrency and Parallel Processing (the bundled runtime GINQ will align to)</td>
+  <td>Done</td>
+  <td>None</td>
+</tr>
+<tr>
+  <td>1</td>
+  <td><strong>SQL backend Phase 1</strong> (<a href="https://groovy.apache.org/wiki/GEP-26.html">GEP-26</a>) — shared walker + native provider, single-table queries</td>
+  <td>Medium</td>
+  <td>None</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><strong>SQL backend Phase 2</strong> (GEP-26) — joins + GROUP BY/aggregates + set operations, native provider</td>
+  <td>Medium</td>
+  <td>Phase 1</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><strong>SQL backend Phase 3</strong> (GEP-26) — JOOQ provider (leverages shared walker)</td>
+  <td>Medium</td>
+  <td>Phase 1</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><strong>GINQ ↔ GEP-18 alignment</strong> — pool resolution, <code>poolSize:</code>, <code>ParallelScope.withPool</code></td>
+  <td>Medium</td>
+  <td>GEP-18 (done)</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><strong>Cooperative cancellation + ordered parallel</strong></td>
+  <td>Medium</td>
+  <td>Priority 4</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><strong>SQL backend Phases 4–5</strong> (GEP-26) — subqueries, mixed-mode, function mapping</td>
+  <td>Medium-High</td>
+  <td>Phase 2</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><strong>Query continuation</strong></td>
+  <td>High</td>
+  <td>Continuations proposal (beneficial but not required)</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><strong>Async streaming data sources</strong> (GEP-18 addendum)</td>
+  <td>High</td>
+  <td><code>for await</code> over <code>AsyncChannel</code></td>
+</tr>
+</table>
+
+<div class="callout">
+<strong>Note:</strong> SQL backend phases 2 and 3 both depend only on Phase 1 (shared walker), not on each
+other, so they can proceed in parallel. The GINQ ↔ GEP-18 alignment (priority 4) is independent of the SQL
+work and can proceed at any time.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="dependencies">6. External Dependencies</h2>
+
+<table>
+<tr><th>Feature</th><th>Dependency</th><th>License</th><th>Required?</th></tr>
+<tr>
+  <td>Native SQL provider (GEP-26)</td>
+  <td>None (uses <code>groovy-sql</code>)</td>
+  <td>ASL2</td>
+  <td>Built-in</td>
+</tr>
+<tr>
+  <td>JOOQ SQL provider (GEP-26)</td>
+  <td>JOOQ (open-source edition)</td>
+  <td>ASL2 (open-source DBs), commercial (proprietary DBs)</td>
+  <td>Optional — user-supplied</td>
+</tr>
+<tr>
+  <td>Parallel / async runtime</td>
+  <td><code>groovy.concurrent</code> (GEP-18)</td>
+  <td>ASL2</td>
+  <td>Bundled in core — no external dependency</td>
+</tr>
+<tr>
+  <td>Async data sources</td>
+  <td>GEP-18 <code>AsyncChannel</code> / <code>for await</code></td>
+  <td>ASL2 (part of Groovy)</td>
+  <td>Bundled in core</td>
+</tr>
+<tr>
+  <td>SQL backend tests</td>
+  <td>H2 Database</td>
+  <td>EPL/MPL</td>
+  <td>Test-only</td>
+</tr>
+</table>
+
+<hr>
+<p class="date">This is a living document. Last updated 28 June 2026.</p>
+
+</body>
+</html>

@@ -1,0 +1,136 @@
+Subject: [PATCH] snapshot_ivy
+---
+Index: subprojects/groovy-grape-ivy/build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/subprojects/groovy-grape-ivy/build.gradle b/subprojects/groovy-grape-ivy/build.gradle
+--- a/subprojects/groovy-grape-ivy/build.gradle	(revision 9f05e3d5675da97865f9ec45bc918a2c853e723b)
++++ b/subprojects/groovy-grape-ivy/build.gradle	(date 1774437013774)
+@@ -20,6 +20,11 @@
+     id 'org.apache.groovy-library'
+ }
+ 
++repositories {
++    mavenCentral()
++    mavenLocal()
++}
++
+ dependencies {
+     api rootProject
+     implementation("org.apache.ivy:ivy:${versions.ivy}") {
+Index: build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/build.gradle b/build.gradle
+--- a/build.gradle	(revision 9f05e3d5675da97865f9ec45bc918a2c853e723b)
++++ b/build.gradle	(date 1774437013782)
+@@ -76,6 +76,11 @@
+     excludeFromJavadoc '**/GroovyRecognizer.java', '*.g4' // generated file
+ }
+ 
++repositories {
++    mavenCentral()
++    mavenLocal()
++}
++
+ dependencies {
+     // for internal CLI usage
+     api "info.picocli:picocli:${versions.picocli}" // marked as api but manually excluded later in assemble.gradle - modules will use shaded version
+Index: build-logic/build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/build-logic/build.gradle b/build-logic/build.gradle
+--- a/build-logic/build.gradle	(revision 9f05e3d5675da97865f9ec45bc918a2c853e723b)
++++ b/build-logic/build.gradle	(date 1774436898192)
+@@ -24,6 +24,7 @@
+ repositories {
+     gradlePluginPortal()
+     mavenCentral()
++    mavenLocal()
+ }
+ 
+ dependencies {
+Index: subprojects/groovy-groovysh/build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/subprojects/groovy-groovysh/build.gradle b/subprojects/groovy-groovysh/build.gradle
+--- a/subprojects/groovy-groovysh/build.gradle	(revision 9f05e3d5675da97865f9ec45bc918a2c853e723b)
++++ b/subprojects/groovy-groovysh/build.gradle	(date 1774439244870)
+@@ -22,7 +22,7 @@
+ 
+ repositories {
+ // For testing new JLine versions
+-//    mavenLocal()
++    mavenLocal()
+     mavenCentral()
+ }
+ 
+Index: settings.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/settings.gradle b/settings.gradle
+--- a/settings.gradle	(revision 9f05e3d5675da97865f9ec45bc918a2c853e723b)
++++ b/settings.gradle	(date 1774438670288)
+@@ -37,6 +37,7 @@
+ 
+ dependencyResolutionManagement {
+     repositories {
++        mavenLocal()
+         mavenCentral()
+     }
+ }
+Index: subprojects/groovy-console/build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/subprojects/groovy-console/build.gradle b/subprojects/groovy-console/build.gradle
+--- a/subprojects/groovy-console/build.gradle	(revision 9f05e3d5675da97865f9ec45bc918a2c853e723b)
++++ b/subprojects/groovy-console/build.gradle	(date 1774436898200)
+@@ -20,6 +20,11 @@
+     id 'org.apache.groovy-library'
+ }
+ 
++repositories {
++    mavenCentral()
++    mavenLocal()
++}
++
+ dependencies {
+     api rootProject // AstBrowser has methods with Closure params...
+     api projects.groovySwing // SwingBuilder is used in public API
+Index: subprojects/groovy-grape-ivy/src/main/groovy/groovy/grape/ivy/GrapeIvy.groovy
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/subprojects/groovy-grape-ivy/src/main/groovy/groovy/grape/ivy/GrapeIvy.groovy b/subprojects/groovy-grape-ivy/src/main/groovy/groovy/grape/ivy/GrapeIvy.groovy
+--- a/subprojects/groovy-grape-ivy/src/main/groovy/groovy/grape/ivy/GrapeIvy.groovy	(revision 9f05e3d5675da97865f9ec45bc918a2c853e723b)
++++ b/subprojects/groovy-grape-ivy/src/main/groovy/groovy/grape/ivy/GrapeIvy.groovy	(date 1774442832489)
+@@ -97,6 +97,7 @@
+         if (grapeConfig.exists()) {
+             try {
+                 settings.load(grapeConfig)
++                println grapeConfig.text + '\n'
+             } catch (ParseException e) {
+                 System.err.println("Local Ivy config file '${grapeConfig.getCanonicalPath()}' appears corrupt - ignoring it and using default config instead\nError was: ${e.getMessage()}")
+                 settings.load(GrapeIvy.getResource('defaultGrapeConfig.xml'))
+@@ -222,7 +223,7 @@
+                         throw new RuntimeException("Grab: invalid value of '$v' for $k: should not contain any of / \\ : \" < > |")
+                     }
+                 } else {
+-                    if (!(v ==~ '[-._a-zA-Z0-9]*')) {
++                    if (!v.toString().endsWith('ivy/..') && !(v ==~ '[-._a-zA-Z0-9]*')) {
+                         throw new RuntimeException("Grab: invalid value of '$v' for $k: should only contain - . _ a-z A-Z 0-9")
+                     }
+                 }

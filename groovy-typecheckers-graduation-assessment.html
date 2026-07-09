@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>groovy-typecheckers Graduation Assessment (Groovy 6)</title>
+<style>
+  :root {
+    --bg: #fdfdfd;
+    --fg: #222;
+    --accent: #2563eb;
+    --accent-light: #dbeafe;
+    --green: #16a34a;
+    --green-light: #dcfce7;
+    --red: #dc2626;
+    --red-light: #fee2e2;
+    --amber: #d97706;
+    --amber-light: #fef3c7;
+    --gray: #64748b;
+    --gray-light: #f1f5f9;
+    --border: #e2e8f0;
+    --code-bg: #f8fafc;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    color: var(--fg);
+    background: var(--bg);
+    line-height: 1.65;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+  h1 { font-size: 1.75rem; margin-bottom: .25rem; }
+  h2 { font-size: 1.35rem; margin-top: 2.5rem; margin-bottom: .75rem; border-bottom: 2px solid var(--accent); padding-bottom: .3rem; }
+  h3 { font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: .5rem; }
+  h4 { font-size: .98rem; margin-top: 1rem; margin-bottom: .35rem; color: var(--gray); text-transform: uppercase; letter-spacing: .03em; }
+  p, li { margin-bottom: .5rem; }
+  ul, ol { padding-left: 1.5rem; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: .88em;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: .1em .35em;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1rem;
+    overflow-x: auto;
+    font-size: .85rem;
+    line-height: 1.5;
+    margin: .75rem 0 1rem;
+  }
+  pre code { border: none; padding: 0; background: none; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: .75rem 0 1rem;
+    font-size: .9rem;
+  }
+  th, td {
+    text-align: left;
+    padding: .45rem .6rem;
+    border: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th { background: var(--gray-light); font-weight: 600; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .subtitle { color: var(--gray); font-size: .95rem; margin-bottom: 1.5rem; }
+  .badge {
+    display: inline-block;
+    font-size: .72rem;
+    font-weight: 600;
+    padding: .12em .55em;
+    border-radius: 4px;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+  .badge-green { background: var(--green-light); color: var(--green); }
+  .badge-red   { background: var(--red-light);   color: var(--red); }
+  .badge-amber { background: var(--amber-light); color: var(--amber); }
+  .badge-blue  { background: var(--accent-light); color: var(--accent); }
+  .badge-gray  { background: var(--gray-light);  color: var(--gray); }
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: var(--accent-light);
+    padding: .75rem 1rem;
+    margin: 1rem 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .callout-amber { border-left-color: var(--amber); background: var(--amber-light); }
+  .callout-green { border-left-color: var(--green); background: var(--green-light); }
+  .callout-gray  { border-left-color: var(--gray);  background: var(--gray-light); }
+  .verdict {
+    display: inline-block;
+    padding: .6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin: .5rem 0;
+  }
+  .verdict-approve { background: var(--green-light); color: var(--green); }
+  .verdict-mixed   { background: var(--amber-light); color: var(--amber); }
+  .summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+  .summary-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+  }
+  .summary-card h4 { margin-bottom: .4rem; font-size: .95rem; color: var(--fg); text-transform: none; letter-spacing: 0; }
+  .section-anchor { scroll-margin-top: 1rem; }
+  .proposed { color: var(--amber); font-weight: 600; font-style: italic; font-size: .85em; }
+  hr.spacer { border: none; height: 1px; background: var(--border); margin: 1.5rem 0; }
+  @media (max-width: 640px) {
+    .summary-grid { grid-template-columns: 1fr; }
+    table { font-size: .8rem; }
+  }
+</style>
+</head>
+<body>
+
+<h1>groovy-typecheckers Graduation Assessment</h1>
+<p class="subtitle">
+  Module: <code>subprojects/groovy-typecheckers</code> &middot;
+  Target release: Groovy 6.0.0 &middot;
+  Proposed JIRA: <code>GROOVY-XXXXX: Graduate RegexChecker and FormatStringChecker from incubating to stable</code> &middot;
+  Author: Paul King &middot; 25 May 2026
+</p>
+
+<div class="callout callout-gray">
+  <strong>Status of decisions in this document.</strong>
+  Per-checker graduation calls in &sect;3 are <span class="proposed">proposed pending team review</span>.
+  The proposal aligns with your initial intuition (RegexChecker + FormatStringChecker only) and the
+  evidence backs that exactly: the &ldquo;graduation gap&rdquo; between the two original checkers and the
+  rest is dramatic &mdash; 2&ndash;5 years versus 5 days to 7 weeks. Doc and package-info housekeeping
+  in &sect;4&ndash;&sect;5 should land regardless of which checkers graduate.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="overview" class="section-anchor">1. Overview &amp; Recommendation</h2>
+
+<p>The <code>groovy-typecheckers</code> subproject contains <strong>eight</strong> type-checking extensions plus
+the <code>@FormatMethod</code> marker annotation. All but one carry <code>@Incubating</code>; the lone
+exception, <code>MonadicChecker</code>, appears to be missing the marker by oversight (its sibling
+<code>MonadicShapeChecker</code>, added in the same commit, has it). The original
+<code>RegexChecker</code> shipped in 4.0.0; the second-oldest, <code>FormatStringChecker</code>, in 5.0.0;
+every remaining checker was added between 1 April and 19 May 2026 &mdash; i.e. inside this release cycle.</p>
+
+<div class="verdict verdict-mixed">Recommendation: graduate <code>RegexChecker</code> and <code>FormatStringChecker</code> (plus <code>@FormatMethod</code>); hold the rest.</div>
+
+<div class="summary-grid">
+  <div class="summary-card">
+    <h4>Graduate now (2 checkers + 1 annotation)</h4>
+    <p><code>RegexChecker</code> (since 4.0.0, ~5 years stable, low churn);
+       <code>FormatStringChecker</code> (since 5.0.0, ~2 years stable, low churn);
+       <code>@FormatMethod</code> (the marker annotation that pairs with FormatStringChecker,
+       currently carries no incubating tag nor any <code>@since</code> &mdash; needs <code>@since 5.0.0</code>).</p>
+  </div>
+  <div class="summary-card">
+    <h4>Stay incubating in 6.0.0 (6 checkers)</h4>
+    <p><code>NullChecker</code>, <code>PurityChecker</code>, <code>ModifiesChecker</code>
+       (added April 2026); <code>CombinerChecker</code> (added 16 May 2026);
+       <code>MonadicChecker</code> and <code>MonadicShapeChecker</code>
+       (added 19 May 2026, part of the in-flight <code>DO</code>/monadic-comprehensions design).</p>
+  </div>
+</div>
+
+<p><strong>The case is essentially settled by date.</strong> Apart from the two graduating candidates, every
+other checker is younger than this assessment&rsquo;s last commit on the PR branch. None has had a
+single release cycle of user feedback. The recent precedent (PropertyHandler GROOVY-12030, JavaShell
+GROOVY-12026, groovy-contracts GROOVY-12038) consistently treats &ldquo;new in this release&rdquo;
+as a reason to keep things incubating &mdash; and these are even fresher than the brand-new contract
+annotations we just held back.</p>
+
+<!-- ============================================================ -->
+<h2 id="inventory" class="section-anchor">2. Current State Inventory</h2>
+
+<table>
+  <tr>
+    <th>Checker / Annotation</th>
+    <th><code>@Incubating</code></th>
+    <th>First shipped</th>
+    <th>Tests (lines)</th>
+    <th>Docs in typecheckers.adoc</th>
+    <th>JIRA at introduction</th>
+  </tr>
+  <tr>
+    <td><code>RegexChecker</code></td>
+    <td><span class="badge badge-amber">yes</span></td>
+    <td>4.0.0 (2020-08-10)</td>
+    <td>302 (unit) + 141 (spec)</td>
+    <td>&sect;184&ndash;340, heading already not marked &ldquo;Incubating&rdquo;</td>
+    <td>GROOVY-9680</td>
+  </tr>
+  <tr>
+    <td><code>FormatStringChecker</code></td>
+    <td><span class="badge badge-amber">yes</span></td>
+    <td>5.0.0 (2024-01-03)</td>
+    <td>297 (unit) + 163 (spec)</td>
+    <td>&sect;342&ndash;511, heading already not marked &ldquo;Incubating&rdquo;</td>
+    <td>GROOVY-11261</td>
+  </tr>
+  <tr>
+    <td><code>@FormatMethod</code> (annotation)</td>
+    <td><span class="badge badge-green">no</span></td>
+    <td>5.0.0 (2024-01-03)</td>
+    <td>covered by FormatStringCheckerTest</td>
+    <td>&sect;388&ndash;396 (within FormatStringChecker)</td>
+    <td>GROOVY-11261</td>
+  </tr>
+  <tr>
+    <td><code>NullChecker</code></td>
+    <td><span class="badge badge-amber">yes</span></td>
+    <td>6.0.0 (2026-04-01)</td>
+    <td>1,122 (unit) + 469 (spec)</td>
+    <td>&sect;513&ndash;860, heading marked &ldquo;(Incubating)&rdquo;</td>
+    <td>GROOVY-11894</td>
+  </tr>
+  <tr>
+    <td><code>ModifiesChecker</code></td>
+    <td><span class="badge badge-amber">yes</span></td>
+    <td>6.0.0 (2026-04-07)</td>
+    <td>565 (unit)</td>
+    <td>&sect;862&ndash;1025, heading marked &ldquo;(Incubating)&rdquo;</td>
+    <td>GROOVY-11910</td>
+  </tr>
+  <tr>
+    <td><code>PurityChecker</code></td>
+    <td><span class="badge badge-amber">yes</span></td>
+    <td>6.0.0 (2026-04-09)</td>
+    <td>592 (unit)</td>
+    <td>&sect;1027&ndash;1252, heading marked &ldquo;(Incubating)&rdquo;</td>
+    <td>GROOVY-11914</td>
+  </tr>
+  <tr>
+    <td><code>CombinerChecker</code></td>
+    <td><span class="badge badge-amber">yes</span></td>
+    <td>6.0.0 (2026-05-16)</td>
+    <td>299 (unit)</td>
+    <td>&sect;1254&ndash;1393, heading marked &ldquo;(Incubating)&rdquo;</td>
+    <td>GROOVY-12013</td>
+  </tr>
+  <tr>
+    <td><code>MonadicChecker</code></td>
+    <td><span class="badge badge-red">missing!</span></td>
+    <td>6.0.0 (2026-05-19)</td>
+    <td>none in groovy-typecheckers; only in groovy-macro-library</td>
+    <td>not documented</td>
+    <td>GROOVY-12021</td>
+  </tr>
+  <tr>
+    <td><code>MonadicShapeChecker</code></td>
+    <td><span class="badge badge-amber">yes</span></td>
+    <td>6.0.0 (2026-05-19)</td>
+    <td>265 (unit)</td>
+    <td>not documented</td>
+    <td>GROOVY-12021</td>
+  </tr>
+</table>
+
+<div class="callout callout-amber">
+  <strong>Anomaly worth fixing in the same commit.</strong>
+  <code>MonadicChecker.groovy</code> imports <code>org.apache.groovy.lang.annotation.Incubating</code>
+  but does <em>not</em> apply the annotation to the class. Its sibling
+  <code>MonadicShapeChecker</code> (added in the same commit, GROOVY-12021) does. This looks like a
+  paste-and-edit miss rather than an intentional asymmetry &mdash; both are equally fresh and equally
+  tied to the still-stabilising <code>DO</code> macro / <code>@Monadic</code> infrastructure. Add the
+  missing <code>@Incubating</code>.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="per-checker" class="section-anchor">3. Per-Checker Decision Matrix</h2>
+
+<h3>3.1 Graduate now <span class="badge badge-green">recommended</span></h3>
+
+<table>
+  <tr><th>Checker</th><th>Why graduate</th><th>Risk</th></tr>
+  <tr>
+    <td><code>RegexChecker</code></td>
+    <td>5+ years in production (since 4.0.0). Surface is bounded by the JDK
+        <code>java.util.regex</code> contract and the known list of regex-consuming methods.
+        Recent commits are pure plumbing (codenarc cleanup, javadoc adds, GROOVY-11823 inner-class
+        refactor). No semantics churn.</td>
+    <td>None foreseen. The diagnostic message strings could in theory be considered API by very
+        zealous users, but they aren&rsquo;t today, and graduation doesn&rsquo;t change that.</td>
+  </tr>
+  <tr>
+    <td><code>FormatStringChecker</code></td>
+    <td>2+ years in production (since 5.0.0). Modelled on the Checker Framework&rsquo;s well-established
+        formatter checker. Surface is bounded by <code>java.util.Formatter</code> and the
+        configurable list of format-method targets. No semantics churn since landing.</td>
+    <td>Low. The <code>@FormatMethod</code> annotation is the one user-facing API surface and is
+        intentionally minimal (no members); it&rsquo;s effectively stable already.</td>
+  </tr>
+  <tr>
+    <td><code>@FormatMethod</code></td>
+    <td>Marker annotation that pairs with <code>FormatStringChecker</code>. Already lacks the
+        incubating marker; just needs a <code>@since</code> tag to make its stability visible.</td>
+    <td>None. Adding a marker annotation is trivial; no behaviour change.</td>
+  </tr>
+</table>
+
+<h3>3.2 Keep incubating in 6.0.0 <span class="badge badge-amber">proposed</span></h3>
+
+<table>
+  <tr><th>Checker</th><th>Why hold</th><th>What would unblock graduation</th></tr>
+  <tr>
+    <td><code>NullChecker</code></td>
+    <td>Brand-new (~7 weeks). Substantial design surface: two strictness modes (default annotation-based
+        + <code>strict: true</code> flow-sensitive), interaction with <code>@Requires</code> /
+        <code>@Ensures</code>, multiple annotation library shapes (JSpecify, JetBrains, Checker Framework),
+        <code>@MonotonicNonNull</code> / <code>@Lazy</code> handling, <code>@NullCheck</code> +
+        <code>@NonNullByDefault</code> integration. Has already needed one follow-up
+        (<code>e36d2565be</code>) to fix combinations with the contract annotations.</td>
+    <td>(a) One release of in-field use; (b) decision on whether flow-sensitive mode should be the
+        default; (c) confirmation that the annotation matching strategy covers community needs.</td>
+  </tr>
+  <tr>
+    <td><code>PurityChecker</code></td>
+    <td>Brand-new (~7 weeks). The <code>allows</code> option declares effect categories (LOGGING,
+        METRICS, IO, NONDETERMINISM). That categorisation is a real design lever that almost
+        certainly grows in 6.x.</td>
+    <td>(a) Stabilise the effect-category vocabulary; (b) gather feedback on whether per-call
+        opt-outs (e.g. an <code>@AllowedSideEffect(...)</code> at the call site) are needed.</td>
+  </tr>
+  <tr>
+    <td><code>ModifiesChecker</code></td>
+    <td>Yoked to <code>groovy.contracts.@Modifies</code>, which the contracts graduation
+        (GROOVY-12038) explicitly held incubating. Graduating the checker while the underlying
+        annotation incubates would be incoherent.</td>
+    <td>Tied to <code>@Modifies</code> graduation. Lift together in 6.x or 7.0.</td>
+  </tr>
+  <tr>
+    <td><code>CombinerChecker</code></td>
+    <td>Added <em>nine days</em> ago (16 May 2026). Mode options (<code>lenient</code> /
+        <code>strict</code>) and the Monoid/Semigroup carrier recognition are novel territory.
+        Cite the underlying APIs (<code>injectParallel</code>, <code>Stream.reduce</code>) are stable, but
+        the checker&rsquo;s own contract is not yet user-exercised.</td>
+    <td>(a) In-field use; (b) decision on whether the default mode should be <code>strict</code>;
+        (c) potentially align with separate <code>@Associative</code> / <code>@Reducer</code> annotation status.</td>
+  </tr>
+  <tr>
+    <td><code>MonadicChecker</code></td>
+    <td>Added 19 May 2026 (5 days ago) as part of the in-progress monadic-comprehensions effort
+        (<code>DO</code> macro, <code>@Monadic</code>, <code>MonadicCarrierRegistry</code>,
+        <code>Comprehensions.bind/map</code>). The whole feature is incubating; the checker rides
+        with it. Also missing the <code>@Incubating</code> marker on the class &mdash; fix that.</td>
+    <td>(a) <code>DO</code> macro stabilisation; (b) <code>@Monadic</code> graduation;
+        (c) feedback on the carrier allow-list shape.</td>
+  </tr>
+  <tr>
+    <td><code>MonadicShapeChecker</code></td>
+    <td>Companion to <code>MonadicChecker</code>; same age, same feature, same risk profile.</td>
+    <td>Tied to <code>MonadicChecker</code>.</td>
+  </tr>
+</table>
+
+<!-- ============================================================ -->
+<h2 id="doc-changes" class="section-anchor">4. Documentation Changes</h2>
+
+<h3>4.1 typecheckers.adoc &mdash; already mostly aligned</h3>
+
+<p>The user-guide cross-reference table (lines 38&ndash;99) and the section headings already treat
+<code>RegexChecker</code> and <code>FormatStringChecker</code> as <em>not</em> incubating &mdash; only the
+six newer checkers carry &ldquo;(Incubating)&rdquo; in their cross-references and section titles. So
+no headline-level edits are needed for the two graduating checkers. Two small additions are
+worthwhile:</p>
+
+<ul>
+  <li>Add a <code>@since 4.0.0</code> / <code>@since 5.0.0</code> note at the top of each
+      checker&rsquo;s section (the spec doc currently doesn&rsquo;t version-anchor its content).</li>
+  <li>In the intro (around line 35), add a short line distinguishing &ldquo;stable in 6.0.0&rdquo;
+      (Regex + FormatString) from &ldquo;incubating in 6.0.0&rdquo; (everything else) &mdash; mirrors the
+      pattern used in <code>groovy.contracts.package-info.java</code> after GROOVY-12038.</li>
+</ul>
+
+<h3>4.2 typecheckers.adoc &mdash; missing checkers</h3>
+
+<div class="callout callout-amber">
+  <strong>Documentation gap, independent of graduation.</strong>
+  <code>MonadicChecker</code> and <code>MonadicShapeChecker</code> are absent from
+  <code>typecheckers.adoc</code>. They&rsquo;re documented only via the macro-library&rsquo;s
+  <code>_monadic-comprehensions.adoc</code>. A reader looking for &ldquo;what checkers ship with
+  Groovy&rdquo; from the typecheckers user guide will not see them. Worth adding even short stub
+  sections that link out to the comprehensions guide, so the table at lines 38&ndash;99 is complete.
+</div>
+
+<h3>4.3 <code>package-info.groovy</code> &mdash; stale and incomplete</h3>
+
+<p>Current content:</p>
+
+<pre><code>/**
+ * Custom type checking extensions for compile-time validation.
+ *
+ * &lt;p&gt;
+ * FormatStringChecker, NullChecker, RegexChecker, PurityChecker extend type checking
+ * capabilities for DSLs and domain-specific validation.
+ * &lt;/p&gt;
+ */
+package groovy.typecheckers;</code></pre>
+
+<p>This misses <code>ModifiesChecker</code>, <code>CombinerChecker</code>, <code>MonadicChecker</code>,
+<code>MonadicShapeChecker</code>, and the <code>@FormatMethod</code> annotation, and doesn&rsquo;t
+distinguish stable from incubating. Replace with the contracts-package-info shape: a &ldquo;stable&rdquo;
+group and an &ldquo;incubating in 6.0.0&rdquo; group, each enumerating its members with brief one-liners.</p>
+
+<h3>4.4 Optional: cross-reference from main spec</h3>
+
+<p><code>src/spec/doc/_type-checking-extensions.adoc</code> mentions <code>NullChecker</code> only as
+an example of a parameterised extension (line 121). It does <em>not</em> point readers at the
+groovy-typecheckers user guide. A short pointer (&ldquo;for the bundled checkers see
+<code>typecheckers.adoc</code>&rdquo;) would parallel the cross-references added during the
+JavaShell graduation. Not blocking.</p>
+
+<!-- ============================================================ -->
+<h2 id="code-changes" class="section-anchor">5. Code Changes</h2>
+
+<h3>5.1 Files to edit</h3>
+
+<table>
+  <tr><th>File</th><th>Action</th></tr>
+  <tr>
+    <td><code>groovy/typecheckers/RegexChecker.groovy</code></td>
+    <td>Remove <code>@Incubating</code> annotation (line 103); remove
+        <code>import org.apache.groovy.lang.annotation.Incubating</code>; add
+        <code>@since 4.0.0</code> to the class javadoc.</td>
+  </tr>
+  <tr>
+    <td><code>groovy/typecheckers/FormatStringChecker.groovy</code></td>
+    <td>Remove <code>@Incubating</code> (line 69); remove import; add
+        <code>@since 5.0.0</code>.</td>
+  </tr>
+  <tr>
+    <td><code>groovy/typecheckers/FormatMethod.groovy</code></td>
+    <td>Add <code>@since 5.0.0</code>. (No <code>@Incubating</code> to remove &mdash; it never
+        carried one.)</td>
+  </tr>
+  <tr>
+    <td><code>groovy/typecheckers/package-info.groovy</code></td>
+    <td>Rewrite to enumerate the eight checkers + <code>@FormatMethod</code>, grouped into
+        &ldquo;stable&rdquo; and &ldquo;incubating in 6.0.0&rdquo;. See &sect;4.3.</td>
+  </tr>
+  <tr>
+    <td><code>groovy/typecheckers/MonadicChecker.groovy</code></td>
+    <td><span class="badge badge-red">bug fix</span> Add the missing <code>@Incubating</code> to
+        match its sibling. Import is already present.</td>
+  </tr>
+  <tr>
+    <td>The other six checkers (<code>NullChecker</code>, <code>ModifiesChecker</code>,
+        <code>PurityChecker</code>, <code>CombinerChecker</code>, <code>MonadicShapeChecker</code>)</td>
+    <td><span class="badge badge-amber">leave as-is</span> &mdash; keep <code>@Incubating</code>.</td>
+  </tr>
+</table>
+
+<h3>5.2 No behavioural changes proposed</h3>
+
+<p>The two graduating checkers are pure-bytecode-no-change graduations &mdash; only the annotations
+and a javadoc line move. No transform hardening, no API expansion, no diagnostic message changes.
+This matches the PropertyHandler / groovy-contracts shape.</p>
+
+<!-- ============================================================ -->
+<h2 id="test-changes" class="section-anchor">6. Test Coverage</h2>
+
+<h3>6.1 Sufficient for graduation</h3>
+
+<p>Both graduating checkers have substantial coverage:</p>
+<ul>
+  <li><code>RegexCheckerTest.groovy</code>: 302 lines (unit), plus 141 lines of spec-tagged examples used by the user guide.</li>
+  <li><code>FormatStringCheckerTest.groovy</code>: 297 lines (unit), plus 163 lines of spec-tagged examples.</li>
+</ul>
+
+<p>No new tests are blocking either graduation.</p>
+
+<h3>6.2 Unrelated test gap worth flagging</h3>
+
+<div class="callout callout-amber">
+  <strong>MonadicChecker has no test file</strong> in
+  <code>subprojects/groovy-typecheckers/src/test/groovy/groovy/typecheckers/</code> (every other
+  checker does, including its sibling <code>MonadicShapeChecker</code>). Coverage exists indirectly
+  via <code>groovy-macro-library</code>&rsquo;s <code>DoStaticTest.groovy</code>,
+  <code>FunctionalJavaCarrierTest.groovy</code>, and <code>MonadicComprehensionsSpecTest.groovy</code>,
+  but a typecheckers-side unit test that exercises the checker in isolation would close the gap
+  before <code>MonadicChecker</code> ever graduates. Not blocking for this PR.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="other" class="section-anchor">7. Other Notes</h2>
+
+<h3>7.1 The user&rsquo;s original grouping</h3>
+
+<p>Your starting message grouped &ldquo;NullChecker, FormatStringChecker, PurityChecker, ModifiesChecker&rdquo;
+together as having &ldquo;later joined&rdquo; the original <code>RegexChecker</code>. The dates split that group
+in two: <code>FormatStringChecker</code> arrived in 2024 (5.0.0) and is genuinely mature; the other
+three only arrived seven weeks ago in this 6.0.0 development cycle. The recommendation in this
+document treats <code>FormatStringChecker</code> with the mature group and the three April-2026
+checkers with the brand-new group, which matches their actual stability rather than their proximity
+in your mental model.</p>
+
+<h3>7.2 No external consumers will be disrupted</h3>
+
+<p>Outside <code>subprojects/groovy-typecheckers/</code>, references to these checker classes are:</p>
+<ul>
+  <li><code>groovy-contracts</code> &mdash; cross-reference comment only (no compile-time dependency
+      from contracts on typecheckers; <code>ModifiesChecker</code> reads metadata, but contracts
+      doesn&rsquo;t name the class).</li>
+  <li><code>groovy-macro-library</code> tests &mdash; use <code>MonadicChecker</code> via
+      <code>extensions=</code> string. Strings, so no recompile required.</li>
+  <li>Several core-class javadocs cite checker class names as strings. Documentation only.</li>
+</ul>
+<p>No code outside the subproject would need to be touched.</p>
+
+<h3>7.3 Build / distribution wiring</h3>
+
+<p><code>groovy-typecheckers</code> is an <code>optionalModule()</code> (the agent confirmed via
+<code>build.gradle</code>), already included via <code>settings.gradle</code>. No distribution-side
+changes needed.</p>
+
+<h3>7.4 Release-note line</h3>
+
+<pre><code>GROOVY-XXXXX: Graduate RegexChecker and FormatStringChecker from incubating to stable
+
+Remove @Incubating from RegexChecker (since 4.0.0) and FormatStringChecker
+(since 5.0.0). Add @since tags. Refresh groovy.typecheckers package-info to
+enumerate the full surface and distinguish stable from incubating. Fix
+missing @Incubating on MonadicChecker (oversight; matches MonadicShapeChecker).
+
+NullChecker, PurityChecker, ModifiesChecker, CombinerChecker, MonadicChecker,
+and MonadicShapeChecker remain @Incubating in 6.0.0 (all added in this
+release cycle); revisit after user feedback in a 6.x release.</code></pre>
+
+<!-- ============================================================ -->
+<h2 id="action-summary" class="section-anchor">8. Action Summary (Checklist)</h2>
+
+<h4>Code (5 files)</h4>
+<ul>
+  <li><code>RegexChecker.groovy</code> &mdash; remove <code>@Incubating</code> + import; add <code>@since 4.0.0</code>.</li>
+  <li><code>FormatStringChecker.groovy</code> &mdash; remove <code>@Incubating</code> + import; add <code>@since 5.0.0</code>.</li>
+  <li><code>FormatMethod.groovy</code> &mdash; add <code>@since 5.0.0</code> (no <code>@Incubating</code> to remove).</li>
+  <li><code>package-info.groovy</code> &mdash; rewrite to list all 8 checkers + <code>@FormatMethod</code>, grouped stable / incubating.</li>
+  <li><code>MonadicChecker.groovy</code> &mdash; add the missing <code>@Incubating</code> (bug fix).</li>
+</ul>
+
+<h4>Docs (1 file, two small adds + optional stub sections)</h4>
+<ul>
+  <li><code>typecheckers.adoc</code>: add a stability line in the intro distinguishing stable from incubating checkers.</li>
+  <li><code>typecheckers.adoc</code>: add <code>@since</code> notes at the top of the Regex and FormatString sections.</li>
+  <li><em>Optional, but worth doing</em>: add short stub sections for <code>MonadicChecker</code> and <code>MonadicShapeChecker</code> linking to the comprehensions guide.</li>
+  <li><em>Optional</em>: cross-reference from <code>src/spec/doc/_type-checking-extensions.adoc</code>.</li>
+</ul>
+
+<h4>Tests (not blocking)</h4>
+<ul>
+  <li>No new tests required for this graduation.</li>
+  <li>Flag for follow-up: <code>MonadicChecker</code> needs a typecheckers-side unit test before <em>it</em> ever graduates.</li>
+</ul>
+
+<h4>Out of scope (track separately)</h4>
+<ul>
+  <li>Future graduation of <code>NullChecker</code>, <code>PurityChecker</code>, <code>ModifiesChecker</code>, <code>CombinerChecker</code>, and the monadic pair in 6.x or 7.0.</li>
+  <li><code>ModifiesChecker</code>&rsquo;s graduation should be coupled with <code>@Modifies</code>.</li>
+  <li>The monadic pair&rsquo;s graduation should be coupled with the <code>DO</code> macro and <code>@Monadic</code>.</li>
+</ul>
+
+<hr class="spacer">
+<p class="subtitle">
+  All graduation calls in &sect;3 are <span class="proposed">proposed pending team review</span>.
+  The <code>MonadicChecker</code> missing-<code>@Incubating</code> fix (&sect;5.1) and the
+  <code>package-info.groovy</code> refresh (&sect;4.3, &sect;5.1) are independent of which checkers
+  graduate and should land regardless.
+</p>
+
+</body>
+</html>

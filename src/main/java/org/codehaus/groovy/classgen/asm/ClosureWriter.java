@@ -19,8 +19,10 @@
 package org.codehaus.groovy.classgen.asm;
 
 import org.codehaus.groovy.GroovyBugError;
+import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.ClassCodeExpressionTransformer;
 import org.codehaus.groovy.ast.CodeVisitorSupport;
 import org.codehaus.groovy.ast.ConstructorNode;
 import org.codehaus.groovy.ast.FieldNode;
@@ -32,39 +34,56 @@ import org.codehaus.groovy.ast.VariableScope;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
+import org.codehaus.groovy.ast.expr.ArrayExpression;
+import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.FieldExpression;
+import org.codehaus.groovy.ast.expr.PostfixExpression;
+import org.codehaus.groovy.ast.expr.PrefixExpression;
 import org.codehaus.groovy.ast.expr.TupleExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
+import org.codehaus.groovy.ast.stmt.ExpressionStatement;
+import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.ast.tools.GenericsUtils;
 import org.codehaus.groovy.classgen.AsmClassGenerator;
+import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.syntax.Token;
+import org.codehaus.groovy.syntax.Types;
 import org.objectweb.asm.MethodVisitor;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.apache.groovy.ast.tools.ClassNodeUtils.addGeneratedMethod;
 import static org.codehaus.groovy.ast.tools.GeneralUtils.args;
 import static org.codehaus.groovy.ast.tools.GeneralUtils.callThisX;
+import static org.codehaus.groovy.ast.tools.GeneralUtils.callX;
 import static org.codehaus.groovy.ast.tools.GeneralUtils.constX;
 import static org.codehaus.groovy.ast.tools.GeneralUtils.ctorSuperX;
 import static org.codehaus.groovy.ast.tools.GeneralUtils.nullX;
 import static org.codehaus.groovy.ast.tools.GeneralUtils.returnS;
 import static org.codehaus.groovy.ast.tools.GeneralUtils.stmt;
 import static org.codehaus.groovy.ast.tools.GeneralUtils.varX;
+import static org.codehaus.groovy.transform.sc.StaticCompilationMetadataKeys.STATIC_COMPILE_NODE;
 import static org.codehaus.groovy.transform.stc.StaticTypesMarker.INFERRED_RETURN_TYPE;
 import static org.objectweb.asm.Opcodes.ACC_FINAL;
 import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
 import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
 import static org.objectweb.asm.Opcodes.ACC_STATIC;
+import static org.objectweb.asm.Opcodes.AASTORE;
 import static org.objectweb.asm.Opcodes.ACC_SYNTHETIC;
+import static org.objectweb.asm.Opcodes.ACONST_NULL;
 import static org.objectweb.asm.Opcodes.ALOAD;
+import static org.objectweb.asm.Opcodes.ANEWARRAY;
 import static org.objectweb.asm.Opcodes.DUP;
 import static org.objectweb.asm.Opcodes.GETFIELD;
 import static org.objectweb.asm.Opcodes.INVOKESPECIAL;
@@ -110,6 +129,16 @@ public class ClosureWriter {
      * @param expression the closure expression
      */
     public void writeClosure(final ClosureExpression expression) {
+        // @PackedClosures spike: for an eligible top-level closure in a @PackedClosures scope, hoist the
+        // body to a method on the enclosing class and emit a shared PackedClosure adapter, instead of
+        // generating a per-closure inner class. Captured variables are threaded by value. Closures nested
+        // inside another closure are left alone (their enclosing context is a generated function, not the
+        // owner class), as are closures needing real Closure semantics.
+        if (isPackedScope() && !controller.isInGeneratedFunction() && isPackable(expression)) {
+            writePackedClosure(expression);
+            return;
+        }
+
         CompileStack compileStack = controller.getCompileStack();
         MethodVisitor mv = controller.getMethodVisitor();
         ClassNode classNode = controller.getClassNode();
@@ -156,6 +185,300 @@ public class ClosureWriter {
         //cv.visitMethodInsn(INVOKESPECIAL, innerClassinternalName, "<init>", prototype + ")V");
         mv.visitMethodInsn(INVOKESPECIAL, closureClassinternalName, "<init>", BytecodeHelper.getMethodDescriptor(ClassHelper.VOID_TYPE, localVariableParams), false);
         controller.getOperandStack().replace(ClassHelper.CLOSURE_TYPE, localVariableParams.length);
+    }
+
+    private int packedCounter;
+
+    /** True when the enclosing method or class is annotated {@code @PackedClosures}. */
+    private boolean isPackedScope() {
+        MethodNode m = controller.getMethodNode();
+        if (m != null && hasPackedAnnotation(m.getAnnotations())) return true;
+        for (ClassNode c = controller.getClassNode(); c != null; c = c.getOuterClass()) {
+            if (hasPackedAnnotation(c.getAnnotations())) return true;
+        }
+        return false;
+    }
+
+    private static boolean hasPackedAnnotation(final List<AnnotationNode> annotations) {
+        for (AnnotationNode a : annotations) {
+            if (a.getClassNode() != null && "groovy.transform.PackedClosures".equals(a.getClassNode().getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Spike packability gate: pack read-only closures (including nested and captures). Captured-variable
+     * writes are supported via Reference threading for a flat closure only (declined if the body also
+     * contains a nested closure, or uses an unsupported compound-assignment operator). Anything needing a
+     * real Closure — delegate/owner/thisObject/resolveStrategy or {@code super} — is declined.
+     */
+    private static boolean isPackable(final ClosureExpression expression) {
+        Statement code = expression.getCode();
+        if (code == null) return false;
+        boolean[] ok = {true};
+        code.visit(new CodeVisitorSupport() {
+            @Override public void visitClosureExpression(final ClosureExpression e) { } // don't descend; judged independently
+            @Override public void visitVariableExpression(final VariableExpression ve) {
+                if (ve.isSuperExpression() || FORBIDDEN_CLOSURE_NAMES.contains(ve.getName())) ok[0] = false;
+            }
+        });
+        // A captured write (possibly inside a nested closure) using an unsupported assignment operator
+        // can't be Reference-rewritten, so decline the whole closure.
+        return ok[0] && !hasUnsupportedCapturedWrite(expression);
+    }
+
+    /** True if a captured variable is written with an operator other than {@code =} or a supported compound op. */
+    private static boolean hasUnsupportedCapturedWrite(final ClosureExpression expression) {
+        Set<String> captured = capturedNames(expression);
+        boolean[] bad = {false};
+        if (expression.getCode() != null) {
+            expression.getCode().visit(new CodeVisitorSupport() { // descends into nested closures
+                @Override public void visitBinaryExpression(final BinaryExpression be) {
+                    int op = be.getOperation().getType();
+                    if (Types.isAssignment(op) && op != Types.ASSIGN
+                            && be.getLeftExpression() instanceof VariableExpression
+                            && captured.contains(((VariableExpression) be.getLeftExpression()).getName())
+                            && compoundToBase(op) < 0) {
+                        bad[0] = true;
+                    }
+                    super.visitBinaryExpression(be);
+                }
+            });
+        }
+        return bad[0];
+    }
+
+    private static Set<String> capturedNames(final ClosureExpression expression) {
+        Set<String> captured = new HashSet<>();
+        VariableScope vs = expression.getVariableScope();
+        if (vs != null) {
+            for (Iterator<Variable> it = vs.getReferencedLocalVariablesIterator(); it.hasNext(); ) {
+                captured.add(it.next().getName());
+            }
+        }
+        return captured;
+    }
+
+    /** Captured variables that are written (reassigned) in the body — these need Reference threading. */
+    private static Set<String> writtenCaptureNames(final ClosureExpression expression) {
+        Set<String> captured = capturedNames(expression);
+        Set<String> written = new HashSet<>();
+        if (expression.getCode() != null) {
+            expression.getCode().visit(new CodeVisitorSupport() { // descends into nested closures
+                @Override public void visitBinaryExpression(final BinaryExpression be) {
+                    if (Types.isAssignment(be.getOperation().getType())
+                            && be.getLeftExpression() instanceof VariableExpression) {
+                        String n = ((VariableExpression) be.getLeftExpression()).getName();
+                        if (captured.contains(n)) written.add(n);
+                    }
+                    super.visitBinaryExpression(be);
+                }
+                @Override public void visitPostfixExpression(final PostfixExpression pe) {
+                    recordIncrement(pe.getExpression());
+                    super.visitPostfixExpression(pe);
+                }
+                @Override public void visitPrefixExpression(final PrefixExpression pe) {
+                    recordIncrement(pe.getExpression());
+                    super.visitPrefixExpression(pe);
+                }
+                private void recordIncrement(final Expression operand) {
+                    if (operand instanceof VariableExpression && captured.contains(((VariableExpression) operand).getName())) {
+                        written.add(((VariableExpression) operand).getName());
+                    }
+                }
+            });
+        }
+        return written;
+    }
+
+    /** Maps a compound-assignment operator (e.g. {@code +=}) to its binary operator ({@code +}); -1 if unsupported. */
+    private static int compoundToBase(final int op) {
+        switch (op) {
+            case Types.PLUS_EQUAL: return Types.PLUS;
+            case Types.MINUS_EQUAL: return Types.MINUS;
+            case Types.MULTIPLY_EQUAL: return Types.MULTIPLY;
+            case Types.DIVIDE_EQUAL: return Types.DIVIDE;
+            case Types.MOD_EQUAL: return Types.MOD;
+            default: return -1;
+        }
+    }
+
+    private static final Set<String> FORBIDDEN_CLOSURE_NAMES =
+            new HashSet<>(java.util.Arrays.asList("owner", "delegate", "thisObject", "directive", "resolveStrategy"));
+
+    /** Turns a trailing bare expression into a return (spike: top-level trailing statement only). */
+    private static void ensureImplicitReturn(final Statement code) {
+        if (code instanceof BlockStatement) {
+            List<Statement> statements = ((BlockStatement) code).getStatements();
+            if (!statements.isEmpty()) {
+                Statement last = statements.get(statements.size() - 1);
+                if (last instanceof ExpressionStatement) {
+                    statements.set(statements.size() - 1, returnS(((ExpressionStatement) last).getExpression()));
+                }
+            }
+        }
+    }
+
+    /** Rebinds read-only captured-variable references in the moved body to the hoisted method's parameters. */
+    private static void rebindCaptured(final Statement body, final Map<String, Parameter> capturedParams) {
+        body.visit(new CodeVisitorSupport() {
+            @Override public void visitVariableExpression(final VariableExpression ve) {
+                Parameter p = capturedParams.get(ve.getName());
+                if (p != null) {
+                    ve.setAccessedVariable(p);
+                    ve.setClosureSharedVariable(false);
+                }
+            }
+        });
+    }
+
+    /**
+     * Rewrites written captured variables to go through their {@code groovy.lang.Reference} parameter:
+     * a read {@code v} becomes {@code v.get()}, an assignment {@code v = x} becomes {@code v.set(x)}, and a
+     * compound {@code v op= x} becomes {@code v.set(v.get() op x)}. The parameter holds the shared Reference,
+     * so writes propagate back to the enclosing scope.
+     */
+    private static void rewriteWrittenCaptures(final Statement body, final Map<String, Parameter> writtenParams, final SourceUnit source) {
+        ClassCodeExpressionTransformer transformer = new ClassCodeExpressionTransformer() {
+            @Override protected SourceUnit getSourceUnit() { return source; }
+            @Override public Expression transform(final Expression exp) {
+                if (exp instanceof ClosureExpression) {
+                    // transformExpression does not recurse into closure bodies, so descend manually to
+                    // rewrite writes that occur inside a nested closure
+                    ClosureExpression ce = (ClosureExpression) exp;
+                    if (ce.getCode() != null) ce.getCode().visit(this);
+                    return ce;
+                }
+                if (exp instanceof BinaryExpression) {
+                    BinaryExpression be = (BinaryExpression) exp;
+                    int op = be.getOperation().getType();
+                    if (Types.isAssignment(op) && be.getLeftExpression() instanceof VariableExpression) {
+                        Parameter p = writtenParams.get(((VariableExpression) be.getLeftExpression()).getName());
+                        if (p != null) {
+                            Expression rhs = transform(be.getRightExpression());
+                            Expression value = (op == Types.ASSIGN) ? rhs
+                                    : new BinaryExpression(callX(varX(p), "get"),
+                                            Token.newSymbol(compoundToBase(op), be.getOperation().getStartLine(), be.getOperation().getStartColumn()),
+                                            rhs);
+                            return callX(varX(p), "set", args(value));
+                        }
+                    }
+                } else if (exp instanceof PostfixExpression) {
+                    Expression r = rewriteIncrement(((PostfixExpression) exp).getExpression(), ((PostfixExpression) exp).getOperation().getType());
+                    if (r != null) return r;
+                } else if (exp instanceof PrefixExpression) {
+                    Expression r = rewriteIncrement(((PrefixExpression) exp).getExpression(), ((PrefixExpression) exp).getOperation().getType());
+                    if (r != null) return r;
+                } else if (exp instanceof VariableExpression) {
+                    Parameter p = writtenParams.get(((VariableExpression) exp).getName());
+                    if (p != null) return callX(varX(p), "get"); // read -> Reference.get()
+                }
+                return super.transform(exp);
+            }
+
+            // v++ / ++v / v-- / --v  ->  v.set(v.get() +/- 1). NB: value-in-expression postfix semantics
+            // (returning the old value) are not preserved; the common statement-context use is correct.
+            private Expression rewriteIncrement(final Expression operand, final int op) {
+                if (!(operand instanceof VariableExpression)) return null;
+                Parameter p = writtenParams.get(((VariableExpression) operand).getName());
+                if (p == null) return null;
+                int base = (op == Types.PLUS_PLUS) ? Types.PLUS : Types.MINUS;
+                Expression combined = new BinaryExpression(callX(varX(p), "get"), Token.newSymbol(base, -1, -1), constX(1));
+                return callX(varX(p), "set", args(combined));
+            }
+        };
+        body.visit(transformer);
+    }
+
+    /**
+     * Emits a packed closure: hoists the body to a synthetic method on the enclosing class (captured
+     * variables become leading, by-value parameters) and constructs a shared {@code PackedClosure}
+     * adapter that dispatches to it — no inner class.
+     */
+    private void writePackedClosure(final ClosureExpression expression) {
+        ClassNode enclosing = controller.getClassNode();
+        MethodVisitor mv = controller.getMethodVisitor();
+        AsmClassGenerator acg = controller.getAcg();
+        OperandStack os = controller.getOperandStack();
+
+        List<String> captured = new ArrayList<>();
+        VariableScope vs = expression.getVariableScope();
+        if (vs != null) {
+            for (Iterator<Variable> it = vs.getReferencedLocalVariablesIterator(); it.hasNext(); ) {
+                captured.add(it.next().getName());
+            }
+        }
+
+        Parameter[] closureParams = expression.isParameterSpecified()
+                ? expression.getParameters()
+                : new Parameter[]{new Parameter(ClassHelper.OBJECT_TYPE, "it")};
+        int arity = closureParams.length;
+
+        Set<String> written = writtenCaptureNames(expression);
+        Parameter[] methodParams = new Parameter[captured.size() + closureParams.length];
+        Map<String, Parameter> readOnlyParams = new HashMap<>();
+        Map<String, Parameter> writtenParams = new HashMap<>();
+        for (int i = 0; i < captured.size(); i++) {
+            String cn = captured.get(i);
+            Parameter p = new Parameter(ClassHelper.OBJECT_TYPE, cn);
+            methodParams[i] = p;
+            (written.contains(cn) ? writtenParams : readOnlyParams).put(cn, p);
+        }
+        System.arraycopy(closureParams, 0, methodParams, captured.size(), closureParams.length);
+
+        Statement body = expression.getCode();
+        rebindCaptured(body, readOnlyParams);                       // read-only captures -> plain param (by value)
+        rewriteWrittenCaptures(body, writtenParams, controller.getSourceUnit()); // written captures -> Reference.get()/set()
+        ensureImplicitReturn(body); // added after ReturnAdder, so wire the trailing expression as a return
+
+        String name = "$packed$closure$" + (packedCounter++);
+        MethodNode hoisted = new MethodNode(name, ACC_PUBLIC | ACC_SYNTHETIC, ClassHelper.OBJECT_TYPE,
+                methodParams, ClassNode.EMPTY_ARRAY, body);
+        // The body carries Object-typed captures/params, so compile it dynamically (its inferred types
+        // are not available this late); matches the AST prototype's @CompileStatic(SKIP).
+        hoisted.putNodeMetaData(STATIC_COMPILE_NODE, Boolean.FALSE);
+        addGeneratedMethod(enclosing, hoisted);
+
+        String pc = "org/codehaus/groovy/runtime/PackedClosure";
+        mv.visitTypeInsn(NEW, pc);
+        mv.visitInsn(DUP);
+        mv.visitVarInsn(ALOAD, 0);
+        os.push(ClassHelper.OBJECT_TYPE);   // owner
+        mv.visitLdcInsn(name);
+        os.push(ClassHelper.STRING_TYPE);   // method name
+        if (captured.isEmpty()) {
+            mv.visitInsn(ACONST_NULL);
+            os.push(ClassHelper.OBJECT_TYPE.makeArray());
+        } else {
+            // Build Object[] of captured values: written vars pass their shared Reference (so writes
+            // propagate), read-only vars pass their value.
+            BytecodeHelper.pushConstant(mv, captured.size());
+            os.push(ClassHelper.int_TYPE);
+            mv.visitTypeInsn(ANEWARRAY, "java/lang/Object");
+            os.replace(ClassHelper.OBJECT_TYPE.makeArray());
+            for (int i = 0; i < captured.size(); i++) {
+                String cn = captured.get(i);
+                mv.visitInsn(DUP);
+                os.push(ClassHelper.OBJECT_TYPE.makeArray());
+                BytecodeHelper.pushConstant(mv, i);
+                os.push(ClassHelper.int_TYPE);
+                if (written.contains(cn)) {
+                    loadReference(cn, controller);       // shared Reference holder
+                } else {
+                    new VariableExpression(cn).visit(acg); // value
+                    os.box();
+                }
+                mv.visitInsn(AASTORE);
+                os.remove(3);
+            }
+        }
+        mv.visitLdcInsn(arity);
+        os.push(ClassHelper.int_TYPE);      // visible arity
+        mv.visitMethodInsn(INVOKESPECIAL, pc, "<init>",
+                "(Ljava/lang/Object;Ljava/lang/String;[Ljava/lang/Object;I)V", false);
+        os.replace(ClassHelper.CLOSURE_TYPE, 4); // owner, name, captured[], arity -> Closure
     }
 
     /**

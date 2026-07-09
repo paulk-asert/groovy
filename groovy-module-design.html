@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>@Module: Lightweight Module Boundaries for Groovy &mdash; Design Document</title>
+<style>
+  :root {
+    --bg: #fdfdfd;
+    --fg: #222;
+    --accent: #2563eb;
+    --accent-light: #dbeafe;
+    --green: #16a34a;
+    --green-light: #dcfce7;
+    --red: #dc2626;
+    --red-light: #fee2e2;
+    --amber: #d97706;
+    --amber-light: #fef3c7;
+    --gray: #64748b;
+    --gray-light: #f1f5f9;
+    --border: #e2e8f0;
+    --code-bg: #f8fafc;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    color: var(--fg);
+    background: var(--bg);
+    line-height: 1.65;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+  h1 { font-size: 1.75rem; margin-bottom: .25rem; }
+  h2 { font-size: 1.35rem; margin-top: 2.5rem; margin-bottom: .75rem; border-bottom: 2px solid var(--accent); padding-bottom: .3rem; }
+  h3 { font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: .5rem; }
+  h4 { font-size: .98rem; margin-top: 1rem; margin-bottom: .35rem; color: var(--gray); text-transform: uppercase; letter-spacing: .03em; }
+  p, li { margin-bottom: .5rem; }
+  ul, ol { padding-left: 1.5rem; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: .88em;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: .1em .35em;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1rem;
+    overflow-x: auto;
+    font-size: .85rem;
+    line-height: 1.5;
+    margin: .75rem 0 1rem;
+  }
+  pre code { border: none; padding: 0; background: none; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: .75rem 0 1rem;
+    font-size: .9rem;
+  }
+  th, td {
+    text-align: left;
+    padding: .45rem .6rem;
+    border: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th { background: var(--gray-light); font-weight: 600; }
+  .subtitle { color: var(--gray); font-size: .95rem; margin-bottom: 1.5rem; }
+  .badge {
+    display: inline-block;
+    font-size: .72rem;
+    font-weight: 600;
+    padding: .12em .55em;
+    border-radius: 4px;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+  .badge-green { background: var(--green-light); color: var(--green); }
+  .badge-red   { background: var(--red-light);   color: var(--red); }
+  .badge-amber { background: var(--amber-light); color: var(--amber); }
+  .badge-blue  { background: var(--accent-light); color: var(--accent); }
+  .badge-gray  { background: var(--gray-light);  color: var(--gray); }
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: var(--accent-light);
+    padding: .75rem 1rem;
+    margin: 1rem 0;
+    border-radius: 0 6px 6px 0;
+  }
+  .callout-amber { border-left-color: var(--amber); background: var(--amber-light); }
+  .callout-green { border-left-color: var(--green); background: var(--green-light); }
+  .callout-gray  { border-left-color: var(--gray);  background: var(--gray-light); }
+  .callout-red   { border-left-color: var(--red);   background: var(--red-light); }
+  .proposed { color: var(--amber); font-weight: 600; font-style: italic; font-size: .85em; }
+  .section-anchor { scroll-margin-top: 1rem; }
+  hr.spacer { border: none; height: 1px; background: var(--border); margin: 1.5rem 0; }
+  .summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+  .summary-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+  }
+  .summary-card h4 { margin-bottom: .4rem; font-size: .95rem; color: var(--fg); text-transform: none; letter-spacing: 0; }
+  .phase {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    margin: .75rem 0;
+    background: var(--code-bg);
+  }
+  .phase h4 { color: var(--accent); text-transform: none; letter-spacing: 0; font-size: 1rem; margin-bottom: .3rem; }
+  .err-example { background: #fff5f5; border-left: 4px solid var(--red); padding: .6rem .9rem; margin: .5rem 0; border-radius: 0 4px 4px 0; font-family: 'JetBrains Mono', monospace; font-size: .82rem; white-space: pre-wrap; }
+  @media (max-width: 640px) {
+    .summary-grid { grid-template-columns: 1fr; }
+    table { font-size: .8rem; }
+  }
+</style>
+</head>
+<body>
+
+<h1>@Module: Lightweight Module Boundaries for Groovy</h1>
+<p class="subtitle">
+  Design Document &middot; Status: <span class="proposed">exploratory, pending team review</span> &middot;
+  Target release: <span class="badge badge-blue">Groovy 7 (proposed)</span> &middot;
+  Author: Paul King &middot; 24 May 2026
+</p>
+
+<div class="callout callout-gray">
+  <strong>Purpose &amp; status.</strong> This document sketches what an <code>@Module</code> annotation
+  could look like in Groovy &mdash; what it declares, what the AST transform enforces, and how it
+  interacts with existing visibility features. It is inspired in shape (not implementation) by
+  Spring Modulith's <em>application module</em> concept, distilled down to the parts that fit a
+  language rather than a framework. Every design decision below is
+  <span class="proposed">proposed pending team review</span>; alternatives are spelled out so the
+  call can be revised in one place.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="motivation" class="section-anchor">1. Motivation</h2>
+
+<p>Large Groovy codebases &mdash; Grails apps, Gradle plugin authoring, Spock-driven test platforms,
+internal monoliths &mdash; tend to grow flat package structures where any class can reach into any
+other class. Java has two answers: (a) <code>package-private</code>, too fine-grained for a logical
+module that spans several packages, and (b) JPMS, too coarse and too disruptive for most app-level
+work (separate jars, <code>module-info.java</code>, classpath/module-path split).</p>
+
+<p>Groovy's strength is compile-time metaprogramming. An AST transform that reads a small declarative
+annotation and enforces it at compile time can land the &ldquo;<em>this package and these three sibling
+packages form a logical module, and nothing outside the module reaches into its guts</em>&rdquo;
+guarantee without any of the JPMS deployment machinery.</p>
+
+<p>Three concrete pressures motivate this now:</p>
+<ul>
+  <li><strong>Modular monoliths</strong> are an active architectural pattern; Spring Modulith has
+      demonstrated demand and a working compile-time-verification model.</li>
+  <li><strong>Library API protection.</strong> Groovy's own subprojects already wrestle with which
+      classes are public surface vs internal (the <code>@Internal</code> /
+      <code>@PackageScope</code> / <code>@Incubating</code> patchwork). A first-class module concept
+      gives library authors a clearer story than &ldquo;don't import from a package whose name
+      contains <code>.internal.</code>&rdquo;.</li>
+  <li><strong>Tooling.</strong> Once modules are declared, groovydoc can render them, IDEs can warn
+      on cross-module reaches, and architecture-rule DSLs have a target.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="goals" class="section-anchor">2. Goals &amp; Non-Goals</h2>
+
+<h3>2.1 Goals</h3>
+<ul>
+  <li>Declare logical modules by annotating <code>package-info.groovy</code> &mdash; no new file types,
+      no build-system changes required.</li>
+  <li>Enforce, at compile time, that one module's code only references types from modules it has
+      explicitly declared as dependencies.</li>
+  <li>Enforce, at compile time, that one module's code only references the <em>exported</em>
+      surface of another module &mdash; not its internals.</li>
+  <li>Detect cyclic dependencies between modules.</li>
+  <li>Be opt-in. Code without <code>@Module</code> behaves exactly as today.</li>
+  <li>Coexist cleanly with <code>@PackageScope</code>, <code>@Internal</code>, JPMS, and the existing
+      <code>@Incubating</code> tier.</li>
+</ul>
+
+<h3>2.2 Non-Goals</h3>
+<ul>
+  <li><strong>Not</strong> a JPMS replacement. <code>@Module</code> is a source-level / logical concept;
+      JPMS is a runtime-level / packaging concept. They can coexist.</li>
+  <li><strong>Not</strong> a DI container or component scanner. Module discovery is purely lexical.</li>
+  <li><strong>Not</strong> a runtime event bus, observability layer, or persistence story. Those are
+      framework concerns (Grails, Spring Boot) and are out of scope for the language.</li>
+  <li><strong>Not</strong> a full architecture-rules DSL (cycle detection lives inside the transform;
+      richer rules are a separate, later proposal).</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="shape" class="section-anchor">3. The <code>@Module</code> Annotation</h2>
+
+<h3>3.1 Declaration site</h3>
+<p>The primary declaration site is <code>package-info.groovy</code>:</p>
+
+<pre><code>@Module(
+    name = 'orders',
+    allowedDependencies = ['common', 'customers'],
+    exports = ['api', 'events']
+)
+package acme.shop.orders
+</code></pre>
+
+<p>The annotation applies to the package it is attached to and, by default, to every sub-package
+beneath it. Sub-packages may opt out or refine by declaring their own
+<code>package-info.groovy</code> with <code>@Module</code> (see &sect;3.4).</p>
+
+<h3>3.2 Attributes</h3>
+<table>
+  <tr><th>Attribute</th><th>Type</th><th>Required</th><th>Meaning</th></tr>
+  <tr>
+    <td><code>name</code></td>
+    <td><code>String</code></td>
+    <td><span class="badge badge-amber">conditional</span></td>
+    <td>Logical module identifier used in <code>allowedDependencies</code>.
+        If omitted, defaults to the leaf segment of the package name (<code>acme.shop.orders</code> &rarr; <code>orders</code>).</td>
+  </tr>
+  <tr>
+    <td><code>allowedDependencies</code></td>
+    <td><code>String[]</code></td>
+    <td><span class="badge badge-gray">no</span></td>
+    <td>Logical names of modules this module may reference. Empty array means &ldquo;no cross-module references allowed&rdquo;.
+        Omitted (default <code>{}</code>) is treated the same. See &sect;6 for how this interacts with
+        the JDK and external libraries (which are unrestricted).</td>
+  </tr>
+  <tr>
+    <td><code>exports</code></td>
+    <td><code>String[]</code></td>
+    <td><span class="badge badge-gray">no</span></td>
+    <td>Sub-package names (relative to the declaring package) whose contents form the module's
+        public surface. If omitted, the module exports everything (back-compat / shallow adoption).
+        See &sect;4.</td>
+  </tr>
+  <tr>
+    <td><code>displayName</code></td>
+    <td><code>String</code></td>
+    <td><span class="badge badge-gray">no</span></td>
+    <td>Human-readable label for groovydoc / diagrams. Defaults to <code>name</code>.</td>
+  </tr>
+  <tr>
+    <td><code>onCycle</code></td>
+    <td><code>Severity</code></td>
+    <td><span class="badge badge-gray">no</span></td>
+    <td>One of <code>ERROR</code>, <code>WARNING</code>, <code>IGNORE</code>.
+        Default <span class="proposed">proposed: <code>ERROR</code></span>; some teams may want
+        <code>WARNING</code> while migrating.</td>
+  </tr>
+</table>
+
+<h3>3.3 Module identity</h3>
+<p>A module's identity is its <code>name</code>, not the package it lives in. This is deliberate:
+it lets a module be renamed at the package level without breaking the dependency graph, and it lets
+two modules in unrelated package trees reference each other by short logical names. The transform
+maintains a global map <code>name &rarr; declaringPackage</code> and rejects name collisions at
+compile time.</p>
+
+<h3>3.4 Nested modules</h3>
+<p>A package annotated <code>@Module</code> inside another <code>@Module</code> package is treated as
+a separate module that <em>belongs to the same code base</em> but is its own boundary. Cross-module
+rules apply between parent and child exactly as between siblings.
+<span class="proposed">Proposed pending review</span> &mdash; the alternative (implicit
+&ldquo;sub-modules&rdquo; that inherit parent permissions) is more convenient but blurs the model.</p>
+
+<!-- ============================================================ -->
+<h2 id="visibility" class="section-anchor">4. The Exports Model</h2>
+
+<p>By default, every type a module declares is visible to any module that lists it in
+<code>allowedDependencies</code>. To tighten that, a module enumerates exported sub-packages:</p>
+
+<pre><code>@Module(
+    name = 'orders',
+    allowedDependencies = ['common'],
+    exports = ['api', 'events']
+)
+package acme.shop.orders
+</code></pre>
+
+<p>Then:</p>
+<ul>
+  <li><code>acme.shop.orders.api.*</code> &mdash; visible to other modules.</li>
+  <li><code>acme.shop.orders.events.*</code> &mdash; visible to other modules.</li>
+  <li><code>acme.shop.orders.internal.*</code> &mdash; <strong>not</strong> visible to other modules.</li>
+  <li><code>acme.shop.orders.*</code> (the module's root) &mdash; <strong>not</strong> visible to other modules.</li>
+</ul>
+
+<div class="callout">
+  <strong>Default behaviour with no <code>exports</code> declared.</strong>
+  Everything is exported. This makes adoption cheap: add <code>@Module</code> first, get
+  dependency-direction enforcement, and only later refine to exported / internal once the API
+  surface is understood. <span class="proposed">Proposed pending review</span>; an alternative is
+  &ldquo;<code>exports</code> required, blank means nothing exported&rdquo;, but that punishes
+  incremental adoption.
+</div>
+
+<h3>4.1 Type-level overrides</h3>
+<p>For finer control without restructuring packages, a type can be explicitly marked:</p>
+<ul>
+  <li><code>@PublicApi</code> &mdash; export this type even if its package is not in <code>exports</code>.</li>
+  <li><code>@InternalApi</code> &mdash; do not export this type even if its package is in <code>exports</code>.</li>
+</ul>
+<p>These compose with the package-level setting and produce a single resolved visibility per type.
+<span class="proposed">Proposed pending review</span> &mdash; an alternative is to leave fine
+control to <code>@PackageScope</code> and not introduce new annotations; the counter-argument is
+that <code>@PackageScope</code> is a single-class concept and doesn't compose well with the
+module-wide story.</p>
+
+<!-- ============================================================ -->
+<h2 id="enforcement" class="section-anchor">5. Compile-Time Enforcement</h2>
+
+<h3>5.1 Phases</h3>
+<p>The AST transform runs in two phases:</p>
+
+<ol>
+  <li><strong>Discovery</strong> (per compilation unit, very early): collect every
+      <code>@Module</code> declaration reachable on the source path and the compile classpath, build
+      the module graph, and verify the graph itself (no name collisions, no cycles unless
+      <code>onCycle != ERROR</code>).</li>
+  <li><strong>Reference checking</strong> (after type resolution): for every type reference in the
+      unit being compiled, determine the source module and the target module; if they differ,
+      verify (a) the dependency is allowed and (b) the target is exported.</li>
+</ol>
+
+<h3>5.2 What counts as a reference?</h3>
+<ul>
+  <li>Imports (including <code>import static</code>).</li>
+  <li>Fully qualified type references in code.</li>
+  <li>Superclass / interface / generic-bound references.</li>
+  <li>Annotation usages.</li>
+  <li>Method-call receivers <em>where the receiver type is known statically</em>. Dynamic invocations
+      against <code>def</code> typed receivers cannot be checked at compile time and are <strong>not</strong>
+      flagged. <span class="proposed">Proposed pending review</span> &mdash; a future
+      <code>@CompileStatic</code>-only stricter mode could close this hole at the cost of
+      surprising users in dynamic-only code.</li>
+</ul>
+
+<h3>5.3 What does <em>not</em> count?</h3>
+<ul>
+  <li>Strings that happen to look like FQNs.</li>
+  <li><code>Class.forName(...)</code> / reflection.</li>
+  <li>Test-only references when the test source set is excluded
+      (<span class="proposed">proposed pending review</span> &mdash; the default scope is &ldquo;main
+      source set only&rdquo;, with a build-property opt-in for tests).</li>
+</ul>
+
+<h3>5.4 Error messages</h3>
+<p>Two canonical error shapes:</p>
+
+<div class="err-example">acme/shop/orders/OrderService.groovy: error:
+  module 'orders' is not allowed to reference module 'billing'
+  (no entry in @Module.allowedDependencies)
+  reference: import acme.shop.billing.api.Invoice
+</div>
+
+<div class="err-example">acme/shop/orders/OrderService.groovy: error:
+  type 'acme.shop.customers.internal.CustomerStore' is internal to module 'customers'
+  and cannot be referenced from module 'orders'
+  (package 'internal' is not in module 'customers' exports = [api, events])
+</div>
+
+<h3>5.5 Suppression</h3>
+<p>A targeted <code>@SuppressWarnings('GroovyModuleAccess')</code> at the field / method / class
+level suppresses one or more violations, mirroring the existing patterns Groovy already uses for
+type-checker overrides. Project-wide suppression should be done via the build, not in source.</p>
+
+<!-- ============================================================ -->
+<h2 id="examples" class="section-anchor">6. Worked Examples</h2>
+
+<h3>6.1 Minimal module declaration</h3>
+
+<pre><code>// src/main/groovy/acme/shop/common/package-info.groovy
+@Module(name = 'common')
+package acme.shop.common
+</code></pre>
+
+<p>A leaf module with no dependencies and full exports. Compiles unchanged from today's behaviour.</p>
+
+<h3>6.2 Two modules, one-directional</h3>
+
+<pre><code>// acme/shop/customers/package-info.groovy
+@Module(name = 'customers', exports = ['api'])
+package acme.shop.customers
+
+// acme/shop/orders/package-info.groovy
+@Module(
+    name = 'orders',
+    allowedDependencies = ['customers'],
+    exports = ['api']
+)
+package acme.shop.orders
+</code></pre>
+
+<p>Now <code>orders</code> may import <code>acme.shop.customers.api.*</code> but not
+<code>acme.shop.customers.internal.*</code>. The reverse direction is rejected at compile time.</p>
+
+<h3>6.3 Type-level override</h3>
+
+<pre><code>package acme.shop.orders.internal
+
+import groovy.transform.module.PublicApi
+
+@PublicApi
+class OrderEvent { ... }   // exported despite living in an internal sub-package
+</code></pre>
+
+<h3>6.4 External libraries and the JDK</h3>
+<p>Any reference to a type whose package is not covered by an <code>@Module</code> declaration is
+treated as &ldquo;outside the module system&rdquo; and is unrestricted. This means the JDK, every
+Groovy-stdlib package, and every third-party library work without ceremony. The model only kicks in
+between packages that have actively opted in.</p>
+
+<!-- ============================================================ -->
+<h2 id="interactions" class="section-anchor">7. Interactions with Existing Features</h2>
+
+<table>
+  <tr><th>Feature</th><th>Interaction</th></tr>
+  <tr>
+    <td><code>@PackageScope</code></td>
+    <td>Orthogonal. <code>@PackageScope</code> remains the single-class, package-private mechanism.
+        <code>@Module</code> operates at a coarser grain.</td>
+  </tr>
+  <tr>
+    <td><code>@Internal</code> (groovydoc filter)</td>
+    <td>Remains a doc-only filter. A natural follow-up would be to make <code>@Internal</code>
+        imply <code>@InternalApi</code> for module purposes, but that is
+        <span class="proposed">proposed pending review</span> &mdash; some users use
+        <code>@Internal</code> on members of types that are themselves public surface.</td>
+  </tr>
+  <tr>
+    <td><code>@Incubating</code></td>
+    <td>Orthogonal. A type can be exported and incubating; the two annotations describe different
+        things (visibility vs. stability).</td>
+  </tr>
+  <tr>
+    <td>JPMS (<code>module-info.java</code>)</td>
+    <td>Independent. A jar that contains <code>@Module</code> packages can equally well declare a
+        JPMS module; <code>@Module</code> is enforced at compile time by the Groovy compiler, JPMS
+        is enforced at runtime by the JVM. There is no required correspondence between
+        <code>@Module.name</code> and the JPMS module name.</td>
+  </tr>
+  <tr>
+    <td><code>@CompileStatic</code> / <code>@TypeChecked</code></td>
+    <td>The transform uses whatever type information is available. Static-typed code gets full
+        coverage; dynamic call sites are unchecked (see &sect;5.2).</td>
+  </tr>
+  <tr>
+    <td>Sealed hierarchies</td>
+    <td>Complementary. Sealed restricts <em>who can extend</em>; module exports restrict
+        <em>who can reference</em>. A sealed hierarchy that lives entirely inside an
+        internal sub-package is a strong &ldquo;closed-world&rdquo; signal.</td>
+  </tr>
+  <tr>
+    <td>Java sources in the same compilation</td>
+    <td>The Groovy compiler can <em>read</em> <code>@Module</code> annotations on Java
+        <code>package-info.java</code> files for graph construction, but cannot enforce against
+        Java source compiled by <code>javac</code>. <span class="proposed">Proposed pending
+        review</span>: ship a companion annotation processor as a follow-up for symmetry.</td>
+  </tr>
+</table>
+
+<!-- ============================================================ -->
+<h2 id="tooling" class="section-anchor">8. Tooling Touchpoints</h2>
+
+<p>Out of scope for the initial transform, but listed here so the design doesn't paint them into
+a corner:</p>
+
+<ul>
+  <li><strong>Groovydoc.</strong> Per-module index pages, exported-type listings, and a generated
+      dependency diagram (PlantUML or Mermaid source emitted alongside the HTML).</li>
+  <li><strong>IDE integration.</strong> IntelliJ / Eclipse can read the same annotations to surface
+      violations interactively rather than waiting for a compile.</li>
+  <li><strong>Gradle / Maven.</strong> A small reporting task that dumps the discovered module graph
+      as JSON for downstream tooling (architecture-rule plugins, dashboards).</li>
+  <li><strong>Runtime introspection.</strong> A <code>groovy.lang.Module</code> reflective API that
+      reports a class's declaring module is plausible but not load-bearing.
+      <span class="proposed">Proposed pending review</span> &mdash; defer until there is a concrete
+      caller.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="phasing" class="section-anchor">9. Implementation Phasing</h2>
+
+<div class="phase">
+  <h4>Phase 1 &mdash; Annotation + dependency-direction enforcement</h4>
+  <p>Ship <code>@Module(name, allowedDependencies, displayName, onCycle)</code>, no
+  <code>exports</code> yet (effectively &ldquo;everything exported&rdquo;). Detect missing
+  dependencies and cycles. This is the smallest useful slice and is enough to express &ldquo;these
+  modules form a DAG&rdquo;.</p>
+</div>
+
+<div class="phase">
+  <h4>Phase 2 &mdash; Exports + type-level overrides</h4>
+  <p>Add <code>exports</code>, <code>@PublicApi</code>, <code>@InternalApi</code>. This is where the
+  &ldquo;don't reach into another module's guts&rdquo; story lands.</p>
+</div>
+
+<div class="phase">
+  <h4>Phase 3 &mdash; Groovydoc integration</h4>
+  <p>Module landing pages and dependency diagrams. Reuses the metadata Phase 1 already produces.</p>
+</div>
+
+<div class="phase">
+  <h4>Phase 4 (optional) &mdash; Java APT companion</h4>
+  <p>An annotation processor that enforces the same rules against Java source so a mixed-language
+  module is symmetric. Only worth doing if mixed-language adoption shows up.</p>
+</div>
+
+<div class="phase">
+  <h4>Phase 5 (optional) &mdash; Runtime reflective API</h4>
+  <p>A small <code>groovy.lang.Module</code> facade that lets frameworks query module membership at
+  runtime. Defer until requested by a concrete caller (Grails, a tracing library, etc.).</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="risks" class="section-anchor">10. Risks &amp; Open Questions</h2>
+
+<div class="summary-grid">
+  <div class="summary-card">
+    <h4>Risk: dynamic Groovy escape hatch</h4>
+    <p>Code that uses <code>def</code> receivers and dynamic dispatch can sidestep the checks
+    entirely. <em>Mitigation:</em> document the boundary clearly; the checks are best understood as
+    &ldquo;<code>@CompileStatic</code>-strength&rdquo; with degraded coverage in dynamic code, not
+    as a security boundary.</p>
+  </div>
+  <div class="summary-card">
+    <h4>Risk: classpath-wide discovery cost</h4>
+    <p>Building the module graph requires scanning <code>package-info</code> classes on the compile
+    classpath. <em>Mitigation:</em> cache the graph per compilation; the set of declaring packages
+    is small.</p>
+  </div>
+  <div class="summary-card">
+    <h4>Open: should <code>@Module</code> imply <code>@Internal</code> for groovydoc?</h4>
+    <p>Tempting symmetry, but <code>@Internal</code> is already used at member level on otherwise
+    public types. Likely <strong>no</strong> direct implication; introduce a separate filter mode
+    in groovydoc if needed.</p>
+  </div>
+  <div class="summary-card">
+    <h4>Open: name vs package as identity</h4>
+    <p>This document proposes logical <code>name</code> as identity. The alternative is to use the
+    fully qualified package name. Logical names are friendlier; FQNs avoid a global namespace.
+    <span class="proposed">Proposed pending review.</span></p>
+  </div>
+  <div class="summary-card">
+    <h4>Open: should there be a <code>module-info.groovy</code> file?</h4>
+    <p>JPMS-style. Rejected here for symmetry: Groovy already uses <code>package-info.groovy</code>
+    for package-level annotations, and a second file type introduces parsing/build wrinkles.</p>
+  </div>
+  <div class="summary-card">
+    <h4>Open: enforcement default for unannotated callers</h4>
+    <p>Code with no <code>@Module</code> reaching <em>into</em> a module: allowed (so scripts and
+    integration tests work) or rejected (stronger guarantee)? Proposed default:
+    <strong>allowed</strong>, with an opt-in &ldquo;closed&rdquo; mode set on the module itself.
+    <span class="proposed">Proposed pending review.</span></p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="reference" class="section-anchor">11. Reference Sketch</h2>
+
+<h4>Annotation</h4>
+<pre><code>package groovy.transform.module
+
+import java.lang.annotation.*
+import org.codehaus.groovy.transform.GroovyASTTransformationClass
+
+@Retention(RetentionPolicy.RUNTIME)
+@Target([ElementType.PACKAGE])
+@GroovyASTTransformationClass('org.codehaus.groovy.transform.module.ModuleASTTransformation')
+@interface Module {
+    String name() default ''
+    String[] allowedDependencies() default []
+    String[] exports() default []
+    String displayName() default ''
+    Severity onCycle() default Severity.ERROR
+
+    enum Severity { ERROR, WARNING, IGNORE }
+}
+</code></pre>
+
+<h4>Type-level overrides</h4>
+<pre><code>package groovy.transform.module
+
+@Retention(RetentionPolicy.RUNTIME)
+@Target([ElementType.TYPE])
+@interface PublicApi {}
+
+@Retention(RetentionPolicy.RUNTIME)
+@Target([ElementType.TYPE])
+@interface InternalApi {}
+</code></pre>
+
+<h4>Transform skeleton</h4>
+<pre><code>// org.codehaus.groovy.transform.module.ModuleASTTransformation
+
+@GroovyASTTransformation(phase = CompilePhase.SEMANTIC_ANALYSIS)
+class ModuleASTTransformation extends AbstractASTTransformation {
+    void visit(ASTNode[] nodes, SourceUnit source) {
+        ModuleGraph graph = ModuleGraph.forCompilation(source)
+        graph.verifyTopology(source)              // cycles, name collisions
+        new ReferenceVisitor(graph, source)
+            .visitModule(source.getAST())          // every type reference
+    }
+}
+</code></pre>
+
+<!-- ============================================================ -->
+<h2 id="summary" class="section-anchor">12. Summary</h2>
+
+<p>An <code>@Module</code> annotation on <code>package-info.groovy</code> &mdash; backed by a Groovy
+AST transform that verifies dependency direction and exported surface at compile time &mdash; gives
+Groovy users a lightweight, opt-in way to keep monoliths honest, without dragging in a framework,
+JPMS deployment surgery, or any runtime cost. Phase 1 alone (dependency-direction enforcement,
+no exports model) is small enough to land as a single GEP and is independently useful.</p>
+
+<p>The design above is deliberately conservative on the language surface: one annotation, a couple
+of optional type-level helpers, and an AST transform. Everything richer &mdash; module-aware
+groovydoc, an architecture-rules DSL, runtime reflection, Java-source enforcement &mdash; is left
+for follow-up GEPs where each can be evaluated on its own merits.</p>
+
+<div class="callout callout-amber">
+  <strong>Next step.</strong> If the broad shape is acceptable, the smallest valuable cut to
+  prototype is Phase 1 against a real Groovy subproject (e.g. one of the GROOVY-XXXXX work areas
+  that already wrestles with internal-vs-public boundaries) to validate the error messages and the
+  classpath-discovery model before committing to <code>exports</code>.
+</div>
+
+</body>
+</html>
