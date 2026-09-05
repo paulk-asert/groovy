@@ -408,14 +408,6 @@
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-nio/src/main/java/org/apache/groovy/nio/extensions/NioExtensions\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-reactor/src/main/java/org/apache/groovy/reactor/ReactorAwaitableAdapter\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-rxjava/src/main/java/org/apache/groovy/rxjava/RxJavaAwaitableAdapter\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-templates/src/main/groovy/groovy/text/StreamingTemplateEngine\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-templates/src/main/groovy/groovy/text/XmlTemplateEngine\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-templates/src/main/groovy/groovy/text/markup/BaseTemplate\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-templates/src/main/groovy/groovy/text/markup/IncludeType\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-templates/src/main/groovy/groovy/text/markup/MarkupBuilderCodeTransformer\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-templates/src/main/groovy/groovy/text/markup/MarkupTemplateEngine\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-templates/src/main/groovy/groovy/text/markup/TemplateASTTransformer\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-templates/src/main/groovy/groovy/text/markup/TemplateConfiguration\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-test-junit6/src/main/java/groovy/junit6/plugin/ForkedJvm\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-test-junit6/src/main/java/groovy/junit6/plugin/ForkedJvmExtension\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-test/src/main/java/groovy/test/GroovyAssert\.java$"/>

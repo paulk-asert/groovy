@@ -315,12 +315,9 @@ class GateUnusedImportRule extends UnusedImportRule {
 
 def fullyQualifiedNameBaseline = [
     'StaxBuilderTest',
-    'TemplateEnginesTest',
     'builder.AntBuilderSpecTest',
-    'groovy.SimpleTemplateEngineTest',
     'groovy.ant.AntTest',
     'groovy.bugs.Groovy5025Bug',
-    'groovy.bugs.groovy4585.Groovy4585Bug',
     'groovy.cli.commons.CliBuilder',
     'groovy.cli.commons.package-info',
     'groovy.cli.picocli.CliBuilder',
@@ -545,6 +542,7 @@ def unusedImportBaseline = [] as Set   // the tree is clean; keep it so
 def documentationSnippets = [
     'DOMBuilderTest',
     'SaxBuilderTest',
+    'TemplateEnginesTest',
     'UserGuideXmlSlurperTest',
     'groovy.xml.UserGuideMarkupBuilderTest',
     'groovy.xml.UserGuideXmlParserTest',
