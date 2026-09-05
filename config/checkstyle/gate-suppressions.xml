@@ -48,6 +48,12 @@
     <!-- DataSet imports org.codehaus.groovy.ast.stmt.Statement and closes java.sql.Statements as well -->
     <suppress id="FullyQualifiedName" files="subprojects/groovy-sql/src/main/java/groovy/sql/DataSet\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-sql/src/main/java/groovy/sql/DataSet\.java$"/>
+    <!-- Groovyc imports org.apache.tools.ant.types.Path and handles a java.nio.file.Path as well -->
+    <suppress id="FullyQualifiedName" files="subprojects/groovy-ant/src/main/java/org/codehaus/groovy/ant/Groovyc\.java$"/>
+    <!-- GroovyPosixCommands imports org.jline.utils.InputStreamReader and reads with a java.io.InputStreamReader as well -->
+    <suppress id="FullyQualifiedName" files="subprojects/groovy-groovysh/src/main/groovy/org/apache/groovy/groovysh/jline/GroovyPosixCommands\.java$"/>
+    <!-- the deprecated callsite classes point at their namesakes in org.codehaus.groovy.runtime -->
+    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-callsite/src/main/java/org/codehaus/groovy/runtime/callsite/BooleanClosure(ForMapPredicate|Predicate|Wrapper)\.java$"/>
 
 
     <!-- baseline: FullyQualifiedName, 120 files -->
@@ -133,10 +139,6 @@
     <suppress id="FullyQualifiedName" files="src/test/groovy/org/codehaus/groovy/runtime/m12n/TestStringExtension\.java$"/>
     <suppress id="FullyQualifiedName" files="src/test/groovy/org/codehaus/groovy/tools/TestDgmConverter\.java$"/>
     <suppress id="FullyQualifiedName" files="src/test/java/org/apache/groovy/parser/antlr4/internal/ErrorStrategyTest\.java$"/>
-    <suppress id="FullyQualifiedName" files="subprojects/groovy-ant/src/main/java/groovy/ant/AntBuilder\.java$"/>
-    <suppress id="FullyQualifiedName" files="subprojects/groovy-ant/src/main/java/org/codehaus/groovy/ant/Groovyc\.java$"/>
-    <suppress id="FullyQualifiedName" files="subprojects/groovy-ant/src/main/java/org/codehaus/groovy/ant/Groovydoc\.java$"/>
-    <suppress id="FullyQualifiedName" files="subprojects/groovy-ant/src/test/groovy/org/codehaus/groovy/ant/GroovycTest\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-contracts/src/main/java/org/apache/groovy/contracts/generation/BaseGenerator\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-contracts/src/main/java/org/apache/groovy/contracts/generation/ClassInvariantGenerator\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-contracts/src/main/java/org/apache/groovy/contracts/generation/PostconditionGenerator\.java$"/>
@@ -147,8 +149,6 @@
     <suppress id="FullyQualifiedName" files="subprojects/groovy-groovydoc/src/main/java/org/codehaus/groovy/tools/groovydoc/GroovyDocTool\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-groovydoc/src/main/java/org/codehaus/groovy/tools/groovydoc/SimpleGroovyRootDoc\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-groovydoc/src/test/groovy/org/codehaus/groovy/tools/groovydoc/GroovyDocToolTest\.java$"/>
-    <suppress id="FullyQualifiedName" files="subprojects/groovy-groovysh/src/main/groovy/org/apache/groovy/groovysh/jline/GroovyEngine\.java$"/>
-    <suppress id="FullyQualifiedName" files="subprojects/groovy-groovysh/src/main/groovy/org/apache/groovy/groovysh/jline/GroovyPosixCommands\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-test-junit6/src/main/java/groovy/junit6/plugin/ForkedJvmExtension\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-test-junit6/src/main/java/groovy/junit6/plugin/ForkedJvmTestRunner\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-test/src/main/java/groovy/test/NotYetImplemented\.java$"/>
@@ -156,7 +156,6 @@
     <suppress id="FullyQualifiedName" files="subprojects/groovy-yaml/src/main/java/groovy/yaml/YamlSlurper\.java$"/>
 
     <!-- baseline: FullyQualifiedNameInJavadoc, 282 files -->
-    <suppress id="FullyQualifiedNameInJavadoc" files="build/generated/sources/antlr4/org/apache/groovy/parser/antlr4/GroovyLexer\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/beans/package-info\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/cli/package-info\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/concurrent/Awaitable\.java$"/>
@@ -341,11 +340,6 @@
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/codehaus/groovy/vmplugin/v9/ClassFinder\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/codehaus/groovy/vmplugin/v9/Java9\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="src/test/groovy/groovy/lang/EmptyRangeTest\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-ant/src/main/java/org/codehaus/groovy/ant/Groovyc\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-callsite/src/main/java/org/codehaus/groovy/runtime/callsite/BooleanClosureForMapPredicate\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-callsite/src/main/java/org/codehaus/groovy/runtime/callsite/BooleanClosurePredicate\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-callsite/src/main/java/org/codehaus/groovy/runtime/callsite/BooleanClosureWrapper\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-callsite/src/main/java/org/codehaus/groovy/runtime/callsite/BooleanReturningMethodInvoker\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-contracts/src/main/java/groovy/contracts/Decreases\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-contracts/src/main/java/groovy/contracts/Ensures\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-contracts/src/main/java/groovy/contracts/EnsuresConditions\.java$"/>

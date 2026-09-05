@@ -315,9 +315,6 @@ class GateUnusedImportRule extends UnusedImportRule {
 }
 
 def fullyQualifiedNameBaseline = [
-    'StaxBuilderTest',
-    'builder.AntBuilderSpecTest',
-    'groovy.ant.AntTest',
     'groovy.bugs.Groovy5025Bug',
     'groovy.cli.commons.CliBuilder',
     'groovy.cli.commons.package-info',
@@ -336,16 +333,10 @@ def fullyQualifiedNameBaseline = [
     'org.apache.groovy.dateutil.TimeCategoryTest',
     'org.apache.groovy.docgenerator.GDKDocTool',
     'org.apache.groovy.docgenerator.JavaExtensionSourceSetTest',
-    'org.apache.groovy.groovysh.commands.CompletionTest',
-    'org.apache.groovy.groovysh.commands.DocTest',
-    'org.apache.groovy.groovysh.commands.HelpFlagTest',
-    'org.apache.groovy.groovysh.jline.GroovyCommands',
     'org.apache.groovy.nio.extensions.NioExtensionsTest',
-    'org.codehaus.groovy.ant.GroovyTest2Class',
     'org.codehaus.groovy.ast.builder.AstBuilderFromCodeTest',
     'org.codehaus.groovy.control.customizers.ASTTransformationCustomizerTest',
     'org.codehaus.groovy.macro.matcher.ASTMatcher',
-    'org.codehaus.groovy.runtime.callsite.CachedMethodCallSitesTest',
     'org.codehaus.groovy.tools.groovydoc.GroovyDocToolTestSampleGroovy',
     'org.codehaus.groovy.tools.groovydoc.testfiles.ExampleVisibilityG',
     'org.codehaus.groovy.tools.groovydoc.testfiles.a.DescendantD',
@@ -489,8 +480,10 @@ def unusedImportBaseline = [] as Set   // the tree is clean; keep it so
 def documentationSnippets = [
     'DOMBuilderTest',
     'SaxBuilderTest',
+    'StaxBuilderTest',
     'TemplateEnginesTest',
     'UserGuideXmlSlurperTest',
+    'builder.AntBuilderSpecTest',
     'groovy.xml.UserGuideMarkupBuilderTest',
     'groovy.xml.UserGuideXmlParserTest',
 ] as Set
