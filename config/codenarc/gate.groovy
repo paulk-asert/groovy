@@ -74,22 +74,37 @@ class QualifiedNames {
 
     private final Map<String, String> importedByName = [:]
     private final Set<String> declaredInFile
+    /** star-imported packages, each ending with a dot */
+    private final List<String> starPackages
 
     QualifiedNames(ModuleNode module) {
         module?.imports?.each { importedByName[it.alias] = it.className }
         declaredInFile = (module?.classes*.nameWithoutPackage ?: []) as Set
+        starPackages = module?.starImports*.packageName ?: []
     }
 
     /**
      * Whether the qualification is required: the simple name is bound to another
-     * type by an import or by a class declared in the same file. java.lang is
-     * never checked, since def, implicit supertypes and the like surface as
-     * java.lang types in the unresolved AST.
+     * type by an import, by a class declared in the same file, or by a star import
+     * of a package that has a class of that name (java.awt.* supplying List, say).
+     * java.lang is never checked, since def, implicit supertypes and the like
+     * surface as java.lang types in the unresolved AST.
      */
     boolean isNeeded(String packagePath, String simpleName) {
         if (packagePath == 'java.lang') return true
         String bound = importedByName[simpleName]
-        (bound != null && bound != "${packagePath}.${simpleName}".toString()) || declaredInFile.contains(simpleName)
+        if (bound != null) return bound != "${packagePath}.${simpleName}".toString()
+        if (declaredInFile.contains(simpleName)) return true
+        starPackages.any { String pkg -> pkg != packagePath + '.' && classExists(pkg + simpleName) }
+    }
+
+    private static boolean classExists(String name) {
+        try {
+            Class.forName(name, false, QualifiedNames.classLoader)
+            true
+        } catch (Throwable ignored) {
+            false
+        }
     }
 }
 
@@ -332,18 +347,6 @@ def fullyQualifiedNameBaseline = [
     'groovy.sql.SqlHelperTestCase',
     'groovy.sql.SqlTest',
     'groovy.sql.SqlTestConstants',
-    'groovy.swing.SwingBuilder',
-    'groovy.swing.SwingBuilderBindingsTest',
-    'groovy.swing.SwingBuilderTableTest',
-    'groovy.swing.SwingBuilderTest',
-    'groovy.swing.binding.JTableMetaMethods',
-    'groovy.swing.factory.BoxLayoutFactory',
-    'groovy.swing.factory.ColumnFactory',
-    'groovy.swing.factory.ColumnModelFactory',
-    'groovy.swing.factory.DialogFactory',
-    'groovy.swing.factory.InternalFrameFactory',
-    'groovy.swing.factory.LayoutFactory',
-    'groovy.swing.factory.ScrollPaneFactory',
     'groovy.toml.TomlParserTest',
     'groovy.typecheckers.CombinerChecker',
     'groovy.typecheckers.CombinerCheckerTest',
