@@ -332,8 +332,6 @@ def fullyQualifiedNameBaseline = [
     'groovy.http.HttpBuilderClientTest',
     'groovy.junit6.plugin.GroovyDisabledIf',
     'groovy.junit6.plugin.GroovyEnabledIf',
-    'groovy.servlet.AbstractHttpServletTest',
-    'groovy.servlet.ServletBindingTest',
     'groovy.toml.TomlParserTest',
     'groovy.typecheckers.CombinerChecker',
     'groovy.typecheckers.CombinerCheckerTest',

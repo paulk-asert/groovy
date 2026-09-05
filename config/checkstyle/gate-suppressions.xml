@@ -408,8 +408,6 @@
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-nio/src/main/java/org/apache/groovy/nio/extensions/NioExtensions\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-reactor/src/main/java/org/apache/groovy/reactor/ReactorAwaitableAdapter\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-rxjava/src/main/java/org/apache/groovy/rxjava/RxJavaAwaitableAdapter\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-servlet/src/main/java/groovy/servlet/AbstractHttpServlet\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-servlet/src/main/java/groovy/servlet/TemplateServlet\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-templates/src/main/groovy/groovy/text/StreamingTemplateEngine\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-templates/src/main/groovy/groovy/text/XmlTemplateEngine\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-templates/src/main/groovy/groovy/text/markup/BaseTemplate\.java$"/>
