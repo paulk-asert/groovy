@@ -136,8 +136,6 @@
     <suppress id="FullyQualifiedName" files="subprojects/groovy-groovydoc/src/test/groovy/org/codehaus/groovy/tools/groovydoc/GroovyDocToolTest\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-groovysh/src/main/groovy/org/apache/groovy/groovysh/jline/GroovyEngine\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-groovysh/src/main/groovy/org/apache/groovy/groovysh/jline/GroovyPosixCommands\.java$"/>
-    <suppress id="FullyQualifiedName" files="subprojects/groovy-jmx/src/test/groovy/groovy/jmx/Dummy\.java$"/>
-    <suppress id="FullyQualifiedName" files="subprojects/groovy-jmx/src/test/java/groovy/jmx/builder/JmxConnectorHelper\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-json/src/main/java/groovy/json/DefaultJsonGenerator\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-json/src/main/java/org/apache/groovy/json/internal/Exceptions\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-json/src/main/java/org/apache/groovy/json/internal/NumberValue\.java$"/>

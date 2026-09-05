@@ -69,7 +69,12 @@ import java.util.regex.Pattern
 class QualifiedNames {
     /** two or more lowercase package segments, then a type name */
     static final Pattern QUALIFIED_TYPE = ~/^([a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)+)\.([A-Z]\w*)$/
-    static final Pattern PACKAGE_PATH = ~/^[a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)+$/
+    /**
+     * a static reference is only taken for package-qualified when the chain starts
+     * with a package root: a lowercase chain such as {@code map.attributes.Id} is
+     * otherwise a property path on a variable
+     */
+    static final Pattern PACKAGE_PATH = ~/^(?:java|javax|jakarta|jdk|org|com|net|io|groovy)(?:\.[a-z][a-z0-9_]*)+$/
     static final Pattern LINK_TAG = ~/\{@link(?:plain)?\s+([a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)+)\.([A-Z]\w*)/
 
     private final Map<String, String> importedByName = [:]
@@ -326,14 +331,6 @@ def fullyQualifiedNameBaseline = [
     'groovy.grape.ivy.StrictCachedGrapesResolverTest',
     'groovy.grape.maven.GrapeMaven',
     'groovy.http.HttpBuilderClientTest',
-    'groovy.jmx.ImportModuleJmxTest',
-    'groovy.jmx.builder.JmxBeanFactoryTest',
-    'groovy.jmx.builder.JmxBeansFactoryTest',
-    'groovy.jmx.builder.JmxBuilderTools',
-    'groovy.jmx.builder.JmxEmbeddedMetaMapBuilderTest',
-    'groovy.jmx.builder.JmxEmitterFactoryTest',
-    'groovy.jmx.builder.JmxMetaMapBuilderTest',
-    'groovy.jmx.builder.JmxTimerFactory',
     'groovy.json.DefaultJsonGeneratorTest',
     'groovy.json.JsonBuilderTest',
     'groovy.json.JsonSlurperClassicTest',
@@ -491,7 +488,6 @@ def fullyQualifiedNameBaseline = [
     'groovy.transform.stc.StringGMClosureParamTypeInferenceSTCTest',
     'groovy.ui.GroovyMainTest',
     'groovy.util.ConfigSlurper',
-    'groovy.util.ConfigSlurperTest',
     'groovy.util.GroovyScriptEngineReloadingTest',
     'groovy.util.MiscScriptTest',
     'groovy.util.ObservableListTest',
@@ -508,7 +504,6 @@ def fullyQualifiedNameBaseline = [
     'org.apache.groovy.parser.antlr4.Groovy12173',
     'org.apache.groovy.parser.antlr4.internal.MissingDelimiterDiagnosticTest',
     'org.apache.groovy.runtime.indy.IndyInvalidationTest',
-    'org.codehaus.groovy.ast.AnnotationNodeTest',
     'org.codehaus.groovy.ast.Groovy9871',
     'org.codehaus.groovy.ast.query.AstQueryTest',
     'org.codehaus.groovy.ast.tools.GenericsUtilsTest',
