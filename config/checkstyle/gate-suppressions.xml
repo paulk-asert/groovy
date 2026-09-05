@@ -124,8 +124,6 @@
     <suppress id="FullyQualifiedName" files="subprojects/groovy-ant/src/main/java/org/codehaus/groovy/ant/Groovyc\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-ant/src/main/java/org/codehaus/groovy/ant/Groovydoc\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-ant/src/test/groovy/org/codehaus/groovy/ant/GroovycTest\.java$"/>
-    <suppress id="FullyQualifiedName" files="subprojects/groovy-console/src/main/groovy/groovy/console/ui/text/FindReplaceUtility\.java$"/>
-    <suppress id="FullyQualifiedName" files="subprojects/groovy-console/src/main/groovy/groovy/console/ui/text/TextUndoManager\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-contracts/src/main/java/org/apache/groovy/contracts/generation/BaseGenerator\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-contracts/src/main/java/org/apache/groovy/contracts/generation/ClassInvariantGenerator\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-contracts/src/main/java/org/apache/groovy/contracts/generation/PostconditionGenerator\.java$"/>
