@@ -311,11 +311,8 @@ class GateUnusedImportRule extends UnusedImportRule {
 }
 
 def fullyQualifiedNameBaseline = [
-    'DOMBuilderTest',
-    'SaxBuilderTest',
     'StaxBuilderTest',
     'TemplateEnginesTest',
-    'UserGuideXmlSlurperTest',
     'builder.AntBuilderSpecTest',
     'groovy.DateTest',
     'groovy.SimpleTemplateEngineTest',
@@ -359,12 +356,6 @@ def fullyQualifiedNameBaseline = [
     'groovy.typecheckers.RegexCheckerTest',
     'groovy.typecheckers.SqlInjectionCheckerTest',
     'groovy.typecheckers.package-info',
-    'groovy.xml.GpathSyntaxTestSupport',
-    'groovy.xml.MarkupWithWriterTest',
-    'groovy.xml.MixedMarkupTestSupport',
-    'groovy.xml.UserGuideMarkupBuilderTest',
-    'groovy.xml.UserGuideXmlParserTest',
-    'groovy.xml.XmlSecurityTest',
     'groovy.yaml.YamlParserTest',
     'org.apache.groovy.contracts.spock.SpockIntegrationTests',
     'org.apache.groovy.contracts.tests.post.OldVariablePostconditionTests',
@@ -559,11 +550,22 @@ def fullyQualifiedNameBaseline = [
 
 def unusedImportBaseline = [] as Set   // the tree is clean; keep it so
 
+// Deliberate exceptions, not a baseline: user-guide snippets (src/spec/test,
+// included by tag) that show a fully qualified name to the reader on purpose,
+// because the import that would replace it lies outside the tagged region.
+def documentationSnippets = [
+    'DOMBuilderTest',
+    'SaxBuilderTest',
+    'UserGuideXmlSlurperTest',
+    'groovy.xml.UserGuideMarkupBuilderTest',
+    'groovy.xml.UserGuideXmlParserTest',
+] as Set
+
 ruleset {
     description 'The lint gate: rules that fail the build. Advisory rules live in codenarc.groovy.'
 
     rule(GateUnnecessaryFullyQualifiedNameRule) {
-        baseline = fullyQualifiedNameBaseline
+        baseline = fullyQualifiedNameBaseline + documentationSnippets
     }
 
     rule(GateUnusedImportRule) {

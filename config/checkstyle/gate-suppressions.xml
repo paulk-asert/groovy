@@ -36,6 +36,16 @@
 -->
 <suppressions>
 
+    <!-- deliberate exceptions: the simple name is taken by another import -->
+    <!-- XmlUtil imports groovy.util.Node and works with org.w3c.dom.Node as well -->
+    <suppress id="FullyQualifiedName" files="subprojects/groovy-xml/src/main/java/groovy/xml/XmlUtil\.java$"/>
+    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-xml/src/main/java/groovy/xml/XmlUtil\.java$"/>
+    <!-- XmlExtensions imports org.w3c.dom.Node and extends groovy.util.Node as well -->
+    <suppress id="FullyQualifiedName" files="subprojects/groovy-xml/src/main/java/org/apache/groovy/xml/extensions/XmlExtensions\.java$"/>
+    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-xml/src/main/java/org/apache/groovy/xml/extensions/XmlExtensions\.java$"/>
+    <!-- DOMCategory imports groovy.namespace.QName and takes a javax.xml.namespace.QName as well -->
+    <suppress id="FullyQualifiedName" files="subprojects/groovy-xml/src/main/java/groovy/xml/dom/DOMCategory\.java$"/>
+
 
     <!-- baseline: FullyQualifiedName, 120 files -->
     <suppress id="FullyQualifiedName" files="src/main/java/groovy/beans/VetoableASTTransformation\.java$"/>
@@ -146,10 +156,6 @@
     <suppress id="FullyQualifiedName" files="subprojects/groovy-test/src/main/java/groovy/test/NotYetImplemented\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-toml/src/main/java/groovy/toml/TomlSlurper\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-typecheckers/src/test/groovy/groovy/typecheckers/support/nullmarked/package-info\.java$"/>
-    <suppress id="FullyQualifiedName" files="subprojects/groovy-xml/src/main/java/groovy/xml/StAXSupport\.java$"/>
-    <suppress id="FullyQualifiedName" files="subprojects/groovy-xml/src/main/java/groovy/xml/XmlUtil\.java$"/>
-    <suppress id="FullyQualifiedName" files="subprojects/groovy-xml/src/main/java/groovy/xml/dom/DOMCategory\.java$"/>
-    <suppress id="FullyQualifiedName" files="subprojects/groovy-xml/src/main/java/org/apache/groovy/xml/extensions/XmlExtensions\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-yaml/src/main/java/groovy/yaml/YamlSlurper\.java$"/>
 
     <!-- baseline: FullyQualifiedNameInJavadoc, 282 files -->
@@ -427,10 +433,5 @@
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-test/src/main/java/groovy/test/GroovyAssert\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-test/src/main/java/groovy/test/GroovyTestCase\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-test/src/main/java/groovy/test/package-info\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-xml/src/main/java/groovy/xml/SerializeOptions\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-xml/src/main/java/groovy/xml/XmlSlurper\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-xml/src/main/java/groovy/xml/XmlUtil\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-xml/src/main/java/org/apache/groovy/xml/extensions/XmlExtensions\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-xml/src/main/java/org/apache/groovy/xml/tools/DomToGroovy\.java$"/>
 
 </suppressions>
