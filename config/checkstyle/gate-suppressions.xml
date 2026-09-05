@@ -146,9 +146,6 @@
     <suppress id="FullyQualifiedName" files="subprojects/groovy-groovydoc/src/test/groovy/org/codehaus/groovy/tools/groovydoc/GroovyDocToolTest\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-groovysh/src/main/groovy/org/apache/groovy/groovysh/jline/GroovyEngine\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-groovysh/src/main/groovy/org/apache/groovy/groovysh/jline/GroovyPosixCommands\.java$"/>
-    <suppress id="FullyQualifiedName" files="subprojects/groovy-json/src/main/java/groovy/json/DefaultJsonGenerator\.java$"/>
-    <suppress id="FullyQualifiedName" files="subprojects/groovy-json/src/main/java/org/apache/groovy/json/internal/Exceptions\.java$"/>
-    <suppress id="FullyQualifiedName" files="subprojects/groovy-json/src/main/java/org/apache/groovy/json/internal/NumberValue\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-sql/src/main/java/groovy/sql/DataSet\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-sql/src/main/java/groovy/sql/SqlWhereVisitor\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-test-junit6/src/main/java/groovy/junit6/plugin/ForkedJvmExtension\.java$"/>
@@ -403,11 +400,6 @@
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-groovydoc/src/test/groovy/org/codehaus/groovy/tools/groovydoc/testfiles/alias/api/Foo\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-groovydoc/src/test/groovy/org/codehaus/groovy/tools/groovydoc/testfiles/alias/lib/Foo\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-http-builder/src/main/java/groovy/http/package-info\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-json/src/main/java/groovy/json/JsonGenerator\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-json/src/main/java/groovy/json/JsonSlurper\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-json/src/main/java/groovy/json/package-info\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-json/src/main/java/org/apache/groovy/json/internal/JsonParserCharArray\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-json/src/main/java/org/apache/groovy/json/internal/JsonParserUsingCharacterSource\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-jsr223/src/main/java/org/codehaus/groovy/jsr223/GroovyScriptEngineFactory\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-macro-library/src/main/groovy/org/apache/groovy/macrolib/MacroLibGroovyMethods\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-macro/src/main/groovy/org/codehaus/groovy/macro/transform/MacroCallTransformingVisitor\.java$"/>

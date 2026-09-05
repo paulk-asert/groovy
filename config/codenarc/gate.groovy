@@ -77,15 +77,18 @@ class QualifiedNames {
     static final Pattern PACKAGE_PATH = ~/^(?:java|javax|jakarta|jdk|org|com|net|io|groovy)(?:\.[a-z][a-z0-9_]*)+$/
     static final Pattern LINK_TAG = ~/\{@link(?:plain)?\s+([a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)+)\.([A-Z]\w*)/
 
+    /** the packages Groovy imports by default, which bind simple names just as a star import does */
+    private static final List<String> DEFAULT_STAR_PACKAGES = ['java.util.', 'java.io.', 'java.net.', 'groovy.lang.', 'groovy.util.']
+
     private final Map<String, String> importedByName = [:]
     private final Set<String> declaredInFile
-    /** star-imported packages, each ending with a dot */
+    /** star-imported packages, explicit and default, each ending with a dot */
     private final List<String> starPackages
 
     QualifiedNames(ModuleNode module) {
         module?.imports?.each { importedByName[it.alias] = it.className }
         declaredInFile = (module?.classes*.nameWithoutPackage ?: []) as Set
-        starPackages = module?.starImports*.packageName ?: []
+        starPackages = (module?.starImports*.packageName ?: []) + DEFAULT_STAR_PACKAGES
     }
 
     /**
@@ -314,7 +317,6 @@ def fullyQualifiedNameBaseline = [
     'StaxBuilderTest',
     'TemplateEnginesTest',
     'builder.AntBuilderSpecTest',
-    'groovy.DateTest',
     'groovy.SimpleTemplateEngineTest',
     'groovy.ant.AntTest',
     'groovy.bugs.Groovy5025Bug',
@@ -328,12 +330,6 @@ def fullyQualifiedNameBaseline = [
     'groovy.grape.ivy.StrictCachedGrapesResolverTest',
     'groovy.grape.maven.GrapeMaven',
     'groovy.http.HttpBuilderClientTest',
-    'groovy.json.DefaultJsonGeneratorTest',
-    'groovy.json.JsonBuilderTest',
-    'groovy.json.JsonSlurperClassicTest',
-    'groovy.json.JsonSlurperMalformedStringTest',
-    'groovy.json.StreamingJsonBuilderTest',
-    'groovy.json.StringEscapeUtilsTest',
     'groovy.junit6.plugin.GroovyDisabledIf',
     'groovy.junit6.plugin.GroovyEnabledIf',
     'groovy.servlet.AbstractHttpServletTest',
@@ -361,7 +357,6 @@ def fullyQualifiedNameBaseline = [
     'org.apache.groovy.contracts.tests.post.OldVariablePostconditionTests',
     'org.apache.groovy.datetime.TimeCategoryTest',
     'org.apache.groovy.dateutil.TimeCategoryTest',
-    'org.apache.groovy.dateutil.extensions.DateUtilExtensionsTest',
     'org.apache.groovy.docgenerator.GDKDocTool',
     'org.apache.groovy.docgenerator.JavaExtensionSourceSetTest',
     'org.apache.groovy.groovysh.commands.CompletionTest',
@@ -435,7 +430,6 @@ def fullyQualifiedNameBaseline = [
     'groovy.NestedClassTest',
     'groovy.NewExpressionTest',
     'groovy.PropertyTest',
-    'groovy.SqlDateTest',
     'groovy.StaticImportTest',
     'groovy.annotations.MyIntegerAnno',
     'groovy.beans.ListenerList',
