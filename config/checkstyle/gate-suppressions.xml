@@ -153,7 +153,6 @@
     <suppress id="FullyQualifiedName" files="subprojects/groovy-test-junit6/src/main/java/groovy/junit6/plugin/ForkedJvmTestRunner\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-test/src/main/java/groovy/test/NotYetImplemented\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-toml/src/main/java/groovy/toml/TomlSlurper\.java$"/>
-    <suppress id="FullyQualifiedName" files="subprojects/groovy-typecheckers/src/test/groovy/groovy/typecheckers/support/nullmarked/package-info\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-yaml/src/main/java/groovy/yaml/YamlSlurper\.java$"/>
 
     <!-- baseline: FullyQualifiedNameInJavadoc, 282 files -->
