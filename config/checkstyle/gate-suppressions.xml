@@ -45,6 +45,9 @@
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-xml/src/main/java/org/apache/groovy/xml/extensions/XmlExtensions\.java$"/>
     <!-- DOMCategory imports groovy.namespace.QName and takes a javax.xml.namespace.QName as well -->
     <suppress id="FullyQualifiedName" files="subprojects/groovy-xml/src/main/java/groovy/xml/dom/DOMCategory\.java$"/>
+    <!-- DataSet imports org.codehaus.groovy.ast.stmt.Statement and closes java.sql.Statements as well -->
+    <suppress id="FullyQualifiedName" files="subprojects/groovy-sql/src/main/java/groovy/sql/DataSet\.java$"/>
+    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-sql/src/main/java/groovy/sql/DataSet\.java$"/>
 
 
     <!-- baseline: FullyQualifiedName, 120 files -->
@@ -146,8 +149,6 @@
     <suppress id="FullyQualifiedName" files="subprojects/groovy-groovydoc/src/test/groovy/org/codehaus/groovy/tools/groovydoc/GroovyDocToolTest\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-groovysh/src/main/groovy/org/apache/groovy/groovysh/jline/GroovyEngine\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-groovysh/src/main/groovy/org/apache/groovy/groovysh/jline/GroovyPosixCommands\.java$"/>
-    <suppress id="FullyQualifiedName" files="subprojects/groovy-sql/src/main/java/groovy/sql/DataSet\.java$"/>
-    <suppress id="FullyQualifiedName" files="subprojects/groovy-sql/src/main/java/groovy/sql/SqlWhereVisitor\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-test-junit6/src/main/java/groovy/junit6/plugin/ForkedJvmExtension\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-test-junit6/src/main/java/groovy/junit6/plugin/ForkedJvmTestRunner\.java$"/>
     <suppress id="FullyQualifiedName" files="subprojects/groovy-test/src/main/java/groovy/test/NotYetImplemented\.java$"/>
@@ -409,9 +410,6 @@
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-rxjava/src/main/java/org/apache/groovy/rxjava/RxJavaAwaitableAdapter\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-servlet/src/main/java/groovy/servlet/AbstractHttpServlet\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-servlet/src/main/java/groovy/servlet/TemplateServlet\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-sql/src/main/java/groovy/sql/DataSet\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-sql/src/main/java/groovy/sql/GroovyRowResult\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-sql/src/main/java/groovy/sql/Sql\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-templates/src/main/groovy/groovy/text/StreamingTemplateEngine\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-templates/src/main/groovy/groovy/text/XmlTemplateEngine\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-templates/src/main/groovy/groovy/text/markup/BaseTemplate\.java$"/>
