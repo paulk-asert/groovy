@@ -155,28 +155,6 @@
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/io/FileVisitResult\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/namespace/package-info\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/time/Timed\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/transform/ASTTest\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/transform/ActiveMethod\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/transform/BaseScript\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/transform/EqualsAndHashCode\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/transform/Monadic\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/transform/PackedClosures\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/transform/Parallel\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/transform/SafeRegex\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/transform/SelfType\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/transform/SourceURI\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/transform/builder/package-info\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/transform/options/package-info\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/transform/package-info\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/transform/stc/ClassTag\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/transform/stc/ClosureParams\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/transform/stc/ClosureSignatureConflictResolver\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/transform/stc/ClosureSignatureHint\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/transform/stc/IncorrectTypeHintException\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/transform/stc/MapEntryOrKeyValue\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/transform/stc/PickAnyArgumentHint\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/transform/stc/SingleSignatureClosureHint\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/transform/stc/package-info\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/ui/package-info\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/util/DelegatingScript\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/util/GroovyScriptEngine\.java$"/>
