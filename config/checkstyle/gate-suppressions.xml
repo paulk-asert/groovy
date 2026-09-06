@@ -59,6 +59,14 @@
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-contracts/src/main/java/org/apache/groovy/contracts/generation/(ClassInvariant|Postcondition|Precondition)Generator\.java$"/>
     <!-- groovydoc fixtures: the two Foo classes link to each other by name, which is what the alias test renders -->
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-groovydoc/src/test/groovy/org/codehaus/groovy/tools/groovydoc/testfiles/alias/(api|lib)/Foo\.java$"/>
+    <!-- org.apache.groovy.util.Arrays is itself named Arrays and delegates to java.util.Arrays -->
+    <suppress id="FullyQualifiedName" files="src/main/java/org/apache/groovy/util/Arrays\.java$"/>
+    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/apache/groovy/util/Arrays\.java$"/>
+    <!-- AstBuilder imports the ANTLR Token and builds org.codehaus.groovy.syntax.Tokens as well -->
+    <suppress id="FullyQualifiedName" files="src/main/java/org/apache/groovy/parser/antlr4/AstBuilder\.java$"/>
+    <!-- GroovydocManager imports the groovy.lang.Groovydoc annotation and builds groovy.lang.groovydoc.Groovydoc values -->
+    <suppress id="FullyQualifiedName" files="src/main/java/org/apache/groovy/parser/antlr4/GroovydocManager\.java$"/>
+    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/apache/groovy/parser/antlr4/GroovydocManager\.java$"/>
     <!-- DelegatesTo declares its own nested @Target, so the annotation is java.lang.annotation.Target in full -->
     <suppress id="FullyQualifiedName" files="src/main/java/groovy/lang/DelegatesTo\.java$"/>
     <!-- DateUtilExtensions imports java.util.Date and converts java.sql.Dates as well -->
@@ -72,11 +80,6 @@
     <suppress id="FullyQualifiedName" files="src/main/java/groovy/cli/Unparsed\.java$"/>
     <suppress id="FullyQualifiedName" files="src/main/java/groovy/util/Node\.java$"/>
     <suppress id="FullyQualifiedName" files="src/main/java/groovy/util/logging/Log\.java$"/>
-    <suppress id="FullyQualifiedName" files="src/main/java/org/apache/groovy/ast/tools/ClassNodeUtils\.java$"/>
-    <suppress id="FullyQualifiedName" files="src/main/java/org/apache/groovy/parser/antlr4/AstBuilder\.java$"/>
-    <suppress id="FullyQualifiedName" files="src/main/java/org/apache/groovy/parser/antlr4/GroovydocManager\.java$"/>
-    <suppress id="FullyQualifiedName" files="src/main/java/org/apache/groovy/util/Arrays\.java$"/>
-    <suppress id="FullyQualifiedName" files="src/main/java/org/apache/groovy/util/concurrent/ConcurrentReferenceHashMap\.java$"/>
     <suppress id="FullyQualifiedName" files="src/main/java/org/codehaus/groovy/ast/ClassHelper\.java$"/>
     <suppress id="FullyQualifiedName" files="src/main/java/org/codehaus/groovy/ast/ClassNode\.java$"/>
     <suppress id="FullyQualifiedName" files="src/main/java/org/codehaus/groovy/ast/GenericsType\.java$"/>
@@ -142,7 +145,6 @@
     <suppress id="FullyQualifiedName" files="src/test/groovy/org/codehaus/groovy/classgen/DerivedBean\.java$"/>
     <suppress id="FullyQualifiedName" files="src/test/groovy/org/codehaus/groovy/runtime/m12n/TestStringExtension\.java$"/>
     <suppress id="FullyQualifiedName" files="src/test/groovy/org/codehaus/groovy/tools/TestDgmConverter\.java$"/>
-    <suppress id="FullyQualifiedName" files="src/test/java/org/apache/groovy/parser/antlr4/internal/ErrorStrategyTest\.java$"/>
 
     <!-- baseline: FullyQualifiedNameInJavadoc, 282 files -->
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/beans/package-info\.java$"/>
@@ -163,27 +165,6 @@
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/util/logging/package-info\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/util/regex/BalancedGroup\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/util/regex/RegexGuard\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/apache/groovy/internal/runtime/invoke/DirectInvoker\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/apache/groovy/internal/runtime/invoke/InvokerBytecode\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/apache/groovy/io/StringBuilderWriter\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/apache/groovy/lang/annotation/GroovyABI\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/apache/groovy/parser/antlr4/AstBuilder\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/apache/groovy/parser/antlr4/internal/DescriptiveErrorStrategy\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/apache/groovy/parser/antlr4/internal/MissingDelimiterDiagnostic\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/apache/groovy/parser/antlr4/internal/RecoveringDescriptiveErrorStrategy\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/apache/groovy/runtime/async/AsyncSupport\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/apache/groovy/runtime/async/DefaultAsyncChannel\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/apache/groovy/runtime/async/FlowPublisherAdapter\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/apache/groovy/runtime/async/SelectClaim\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/apache/groovy/runtime/async/package-info\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/apache/groovy/runtime/indy/SwitchPointInvalidator\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/apache/groovy/util/BeanUtils\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/apache/groovy/util/JavaShell\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/apache/groovy/util/Lambdas\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/apache/groovy/util/concurrent/ConcurrentReferenceHashMap\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/apache/groovy/util/concurrent/concurrentlinkedhashmap/ConcurrentLinkedHashMap\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/apache/groovy/util/concurrent/concurrentlinkedhashmap/EvictionListener\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/apache/groovy/util/concurrent/concurrentlinkedhashmap/package-info\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/codehaus/groovy/ast/ClassCodeVisitorSupport\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/codehaus/groovy/ast/ClassNode\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/codehaus/groovy/ast/CodeVisitorSupport\.java$"/>
