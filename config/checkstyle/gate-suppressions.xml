@@ -78,8 +78,6 @@
     <suppress id="FullyQualifiedName" files="src/main/java/groovy/beans/VetoableASTTransformation\.java$"/>
     <suppress id="FullyQualifiedName" files="src/main/java/groovy/cli/Option\.java$"/>
     <suppress id="FullyQualifiedName" files="src/main/java/groovy/cli/Unparsed\.java$"/>
-    <suppress id="FullyQualifiedName" files="src/main/java/groovy/util/Node\.java$"/>
-    <suppress id="FullyQualifiedName" files="src/main/java/groovy/util/logging/Log\.java$"/>
     <suppress id="FullyQualifiedName" files="src/main/java/org/codehaus/groovy/ast/ClassHelper\.java$"/>
     <suppress id="FullyQualifiedName" files="src/main/java/org/codehaus/groovy/ast/ClassNode\.java$"/>
     <suppress id="FullyQualifiedName" files="src/main/java/org/codehaus/groovy/ast/GenericsType\.java$"/>
@@ -158,13 +156,6 @@
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/namespace/package-info\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/time/Timed\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/ui/package-info\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/util/DelegatingScript\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/util/GroovyScriptEngine\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/util/function/FloatUnaryOperator\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/util/function/TriConsumer\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/util/logging/package-info\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/util/regex/BalancedGroup\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/util/regex/RegexGuard\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/codehaus/groovy/ast/ClassCodeVisitorSupport\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/codehaus/groovy/ast/ClassNode\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/codehaus/groovy/ast/CodeVisitorSupport\.java$"/>
