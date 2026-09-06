@@ -59,6 +59,8 @@
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-contracts/src/main/java/org/apache/groovy/contracts/generation/(ClassInvariant|Postcondition|Precondition)Generator\.java$"/>
     <!-- groovydoc fixtures: the two Foo classes link to each other by name, which is what the alias test renders -->
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-groovydoc/src/test/groovy/org/codehaus/groovy/tools/groovydoc/testfiles/alias/(api|lib)/Foo\.java$"/>
+    <!-- DelegatesTo declares its own nested @Target, so the annotation is java.lang.annotation.Target in full -->
+    <suppress id="FullyQualifiedName" files="src/main/java/groovy/lang/DelegatesTo\.java$"/>
     <!-- DateUtilExtensions imports java.util.Date and converts java.sql.Dates as well -->
     <suppress id="FullyQualifiedName" files="subprojects/groovy-dateutil/src/main/java/org/apache/groovy/dateutil/extensions/DateUtilExtensions\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-dateutil/src/main/java/org/apache/groovy/dateutil/extensions/DateUtilExtensions\.java$"/>
@@ -68,12 +70,6 @@
     <suppress id="FullyQualifiedName" files="src/main/java/groovy/beans/VetoableASTTransformation\.java$"/>
     <suppress id="FullyQualifiedName" files="src/main/java/groovy/cli/Option\.java$"/>
     <suppress id="FullyQualifiedName" files="src/main/java/groovy/cli/Unparsed\.java$"/>
-    <suppress id="FullyQualifiedName" files="src/main/java/groovy/lang/Closure\.java$"/>
-    <suppress id="FullyQualifiedName" files="src/main/java/groovy/lang/DelegatesTo\.java$"/>
-    <suppress id="FullyQualifiedName" files="src/main/java/groovy/lang/GroovyClassLoader\.java$"/>
-    <suppress id="FullyQualifiedName" files="src/main/java/groovy/lang/GroovyCodeSource\.java$"/>
-    <suppress id="FullyQualifiedName" files="src/main/java/groovy/lang/MetaClassImpl\.java$"/>
-    <suppress id="FullyQualifiedName" files="src/main/java/groovy/lang/TracingInterceptor\.java$"/>
     <suppress id="FullyQualifiedName" files="src/main/java/groovy/util/Node\.java$"/>
     <suppress id="FullyQualifiedName" files="src/main/java/groovy/util/logging/Log\.java$"/>
     <suppress id="FullyQualifiedName" files="src/main/java/org/apache/groovy/ast/tools/ClassNodeUtils\.java$"/>
@@ -157,18 +153,6 @@
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/concurrent/package-info\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/grape/package-info\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/io/FileVisitResult\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/lang/Closure\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/lang/DelegatesTo\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/lang/GroovyClassLoader\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/lang/IntRange\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/lang/ListWithDefault\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/lang/MetaMethod\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/lang/MetaObjectProtocol\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/lang/Newify\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/lang/annotation/ExtendedElementType\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/lang/annotation/ExtendedTarget\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/lang/annotation/package-info\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/lang/groovydoc/package-info\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/namespace/package-info\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/time/Timed\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/transform/ASTTest\.java$"/>
@@ -332,6 +316,5 @@
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/codehaus/groovy/vmplugin/v8/Java8\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/codehaus/groovy/vmplugin/v9/ClassFinder\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/codehaus/groovy/vmplugin/v9/Java9\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="src/test/groovy/groovy/lang/EmptyRangeTest\.java$"/>
 
 </suppressions>
