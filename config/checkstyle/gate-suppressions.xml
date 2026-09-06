@@ -59,6 +59,9 @@
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-contracts/src/main/java/org/apache/groovy/contracts/generation/(ClassInvariant|Postcondition|Precondition)Generator\.java$"/>
     <!-- groovydoc fixtures: the two Foo classes link to each other by name, which is what the alias test renders -->
     <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-groovydoc/src/test/groovy/org/codehaus/groovy/tools/groovydoc/testfiles/alias/(api|lib)/Foo\.java$"/>
+    <!-- DateUtilExtensions imports java.util.Date and converts java.sql.Dates as well -->
+    <suppress id="FullyQualifiedName" files="subprojects/groovy-dateutil/src/main/java/org/apache/groovy/dateutil/extensions/DateUtilExtensions\.java$"/>
+    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-dateutil/src/main/java/org/apache/groovy/dateutil/extensions/DateUtilExtensions\.java$"/>
 
 
     <!-- baseline: FullyQualifiedName, 120 files -->
@@ -144,13 +147,6 @@
     <suppress id="FullyQualifiedName" files="src/test/groovy/org/codehaus/groovy/runtime/m12n/TestStringExtension\.java$"/>
     <suppress id="FullyQualifiedName" files="src/test/groovy/org/codehaus/groovy/tools/TestDgmConverter\.java$"/>
     <suppress id="FullyQualifiedName" files="src/test/java/org/apache/groovy/parser/antlr4/internal/ErrorStrategyTest\.java$"/>
-    <suppress id="FullyQualifiedName" files="subprojects/groovy-dateutil/src/main/java/org/apache/groovy/dateutil/extensions/DateUtilExtensions\.java$"/>
-    <suppress id="FullyQualifiedName" files="subprojects/groovy-grape-ivy/src/main/java/groovy/grape/ivy/PlatformLoggingMessageLogger\.java$"/>
-    <suppress id="FullyQualifiedName" files="subprojects/groovy-test-junit6/src/main/java/groovy/junit6/plugin/ForkedJvmExtension\.java$"/>
-    <suppress id="FullyQualifiedName" files="subprojects/groovy-test-junit6/src/main/java/groovy/junit6/plugin/ForkedJvmTestRunner\.java$"/>
-    <suppress id="FullyQualifiedName" files="subprojects/groovy-test/src/main/java/groovy/test/NotYetImplemented\.java$"/>
-    <suppress id="FullyQualifiedName" files="subprojects/groovy-toml/src/main/java/groovy/toml/TomlSlurper\.java$"/>
-    <suppress id="FullyQualifiedName" files="subprojects/groovy-yaml/src/main/java/groovy/yaml/YamlSlurper\.java$"/>
 
     <!-- baseline: FullyQualifiedNameInJavadoc, 282 files -->
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/groovy/beans/package-info\.java$"/>
@@ -337,25 +333,5 @@
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/codehaus/groovy/vmplugin/v9/ClassFinder\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="src/main/java/org/codehaus/groovy/vmplugin/v9/Java9\.java$"/>
     <suppress id="FullyQualifiedNameInJavadoc" files="src/test/groovy/groovy/lang/EmptyRangeTest\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-datetime/src/main/java/org/apache/groovy/datetime/extensions/DateTimeExtensions\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-datetime/src/main/java/org/apache/groovy/datetime/extensions/DateTimeStaticExtensions\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-dateutil/src/main/java/org/apache/groovy/dateutil/extensions/DateUtilExtensions\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-dateutil/src/main/java/org/apache/groovy/dateutil/extensions/DateUtilStaticExtensions\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-ginq/src/main/groovy/groovy/ginq/transform/GQ\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-ginq/src/main/groovy/groovy/ginq/transform/package-info\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-grape-ivy/src/main/java/groovy/grape/ivy/PlatformLoggingMessageLogger\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-http-builder/src/main/java/groovy/http/package-info\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-jsr223/src/main/java/org/codehaus/groovy/jsr223/GroovyScriptEngineFactory\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-macro-library/src/main/groovy/org/apache/groovy/macrolib/MacroLibGroovyMethods\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-macro/src/main/groovy/org/codehaus/groovy/macro/transform/MacroCallTransformingVisitor\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-macro/src/main/groovy/org/codehaus/groovy/macro/transform/MacroClass\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-nio/src/main/java/org/apache/groovy/nio/extensions/NioExtensions\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-reactor/src/main/java/org/apache/groovy/reactor/ReactorAwaitableAdapter\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-rxjava/src/main/java/org/apache/groovy/rxjava/RxJavaAwaitableAdapter\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-test-junit6/src/main/java/groovy/junit6/plugin/ForkedJvm\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-test-junit6/src/main/java/groovy/junit6/plugin/ForkedJvmExtension\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-test/src/main/java/groovy/test/GroovyAssert\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-test/src/main/java/groovy/test/GroovyTestCase\.java$"/>
-    <suppress id="FullyQualifiedNameInJavadoc" files="subprojects/groovy-test/src/main/java/groovy/test/package-info\.java$"/>
 
 </suppressions>
