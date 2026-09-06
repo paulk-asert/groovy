@@ -327,8 +327,6 @@ def fullyQualifiedNameBaseline = [
     'groovy.http.HttpBuilderClientTest',
     'groovy.toml.TomlParserTest',
     'groovy.yaml.YamlParserTest',
-    'org.apache.groovy.contracts.spock.SpockIntegrationTests',
-    'org.apache.groovy.contracts.tests.post.OldVariablePostconditionTests',
     'org.apache.groovy.datetime.TimeCategoryTest',
     'org.apache.groovy.dateutil.TimeCategoryTest',
     'org.apache.groovy.docgenerator.GDKDocTool',
@@ -337,11 +335,6 @@ def fullyQualifiedNameBaseline = [
     'org.codehaus.groovy.ast.builder.AstBuilderFromCodeTest',
     'org.codehaus.groovy.control.customizers.ASTTransformationCustomizerTest',
     'org.codehaus.groovy.macro.matcher.ASTMatcher',
-    'org.codehaus.groovy.tools.groovydoc.GroovyDocToolTestSampleGroovy',
-    'org.codehaus.groovy.tools.groovydoc.testfiles.ExampleVisibilityG',
-    'org.codehaus.groovy.tools.groovydoc.testfiles.a.DescendantD',
-    'org.codehaus.groovy.tools.groovydoc.testfiles.alias.FooAdapter',
-    'org.codehaus.groovy.tools.groovydoc.testfiles.anno.Groovy',
     // core
     'SyntaxTest',
     'TraitsSpecificationTest',
@@ -488,11 +481,21 @@ def documentationSnippets = [
     'groovy.xml.UserGuideXmlParserTest',
 ] as Set
 
+// Deliberate exceptions: groovydoc test fixtures whose qualified names are the
+// input under test (a qualified superclass, an annotation written in full, an
+// adapter linking two namesake classes).
+def groovydocFixtures = [
+    'org.codehaus.groovy.tools.groovydoc.testfiles.ExampleVisibilityG',
+    'org.codehaus.groovy.tools.groovydoc.testfiles.a.DescendantD',
+    'org.codehaus.groovy.tools.groovydoc.testfiles.alias.FooAdapter',
+    'org.codehaus.groovy.tools.groovydoc.testfiles.anno.Groovy',
+] as Set
+
 ruleset {
     description 'The lint gate: rules that fail the build. Advisory rules live in codenarc.groovy.'
 
     rule(GateUnnecessaryFullyQualifiedNameRule) {
-        baseline = fullyQualifiedNameBaseline + documentationSnippets
+        baseline = fullyQualifiedNameBaseline + documentationSnippets + groovydocFixtures
     }
 
     rule(GateUnusedImportRule) {
